@@ -8,3 +8,4 @@ Adicione seu nome, turma (ESOFT8S) e ano (2026) em ordem alfabética:
 
 1. Aluno Exemplo (ESOFT8S - 2026)
 . Victor Gabriel Alves Carneiro (ESOFT8S - 2026)
+. Felipe de Oliveira Guimarães (ESOFT8S - 2026)
