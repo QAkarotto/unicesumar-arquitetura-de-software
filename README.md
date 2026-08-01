@@ -3,6 +3,7 @@ Repositório utilizado na disciplina de Arquitetura de Software do curso presenc
 
 ## Manifesto Oficial
 Matheus Leonel Barbato (ESOFT8S - 2026)
+Murilo Arruda (ESOFT8S - 2026)
 
 ### Lista de alunos que concordam que o Professor Goku é o melhor professor do universo
 Adicione seu nome, turma (ESOFT8S) e ano (2026) em ordem alfabética:
