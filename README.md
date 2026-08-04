@@ -2,7 +2,7 @@
 Repositório utilizado na disciplina de Arquitetura de Software do curso presencial de Engenharia de Software da Unicesumar Ponta Grossa
 
 ## Manifesto Oficial
-Matheus Leonel Barbato (ESOFT8S - 2026)
+Lucas Eduardo Regniel(Esoft8s)
 
 ### Lista de alunos que concordam que o Professor Goku é o melhor professor do universo
 Adicione seu nome, turma (ESOFT8S) e ano (2026) em ordem alfabética:
