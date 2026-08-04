@@ -9,4 +9,5 @@ Adicione seu nome, turma (ESOFT8S) e ano (2026) em ordem alfabética:
 
 1. Lucas Fernando Hass (ESOFT8S - 2026)
 3. Matheus Leonel Barbato (ESOFT8S - 2026)
+4. Ramon Albini Vieira (ESOFT8S - 2026)
 2. Victor Gabriel Alves Carneiro (ESOFT8S - 2026)
