@@ -1,0 +1,52 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="03 - Nivel de Componente - Pedidos" id="03_-_Nivel_de_Componente_-_Pedidos">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="container" value="&lt;b&gt;Subsistema Pedidos — Java / Spring Boot&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#6DB33F;dashed=1;verticalAlign=top;fontSize=13;fontStyle=1;fontColor=#6DB33F;spacingTop=8;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="1220" height="620" as="geometry"/>
+        </mxCell>
+        <mxCell id="controller" value="&lt;i&gt;«@RestController»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Controller de Pedidos&lt;/b&gt;&lt;br&gt;&lt;i&gt;expõe endpoints REST&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#6DB33F;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="120" width="320" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="servico" value="&lt;i&gt;«@Service»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Serviço de Pedidos&lt;/b&gt;&lt;br&gt;&lt;i&gt;orquestra as regras de negócio&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#6DB33F;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="470" y="300" width="320" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="validador" value="&lt;i&gt;«@Component»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Validador de Pedido&lt;/b&gt;&lt;br&gt;&lt;i&gt;regras de validação&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#6DB33F;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="870" y="300" width="300" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="repositorio" value="&lt;i&gt;«Spring Data JPA»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Repositório de Pedidos&lt;/b&gt;&lt;br&gt;&lt;i&gt;acesso a dados (JPA)&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#6DB33F;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="130" y="480" width="320" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="integracao_pp" value="&lt;i&gt;«@Component»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Integração com PayPal&lt;/b&gt;&lt;br&gt;&lt;i&gt;cliente REST para PayPal API&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#6DB33F;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="730" y="480" width="320" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="postgres" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;i&gt;dados de pedidos&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E3EAF2;strokeColor=#336791;fontSize=12;verticalAlign=bottom;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="150" y="660" width="260" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="paypal_api" value="&lt;i&gt;«sistema externo»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PayPal API&lt;/b&gt;&lt;br&gt;&lt;i&gt;processamento de pagamentos&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8ECFB;strokeColor=#003087;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="960" y="670" width="300" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge0" value="chama" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#607D8B;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="controller" target="servico">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge1" value="valida pedido" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#607D8B;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="servico" target="validador">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge2" value="persiste / consulta" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#607D8B;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="servico" target="repositorio">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge3" value="solicita pagamento" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#607D8B;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="servico" target="integracao_pp">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge4" value="JDBC / JPA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#336791;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="repositorio" target="postgres">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge5" value="REST / HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#003087;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="integracao_pp" target="paypal_api">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,43 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="01 - Nivel de Sistema" id="01_-_Nivel_de_Sistema">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="cliente" value="&lt;b&gt;Cliente&lt;/b&gt;&lt;br&gt;&lt;i&gt;consumidor final&lt;/i&gt;" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#5C6BC0;fontSize=12;verticalAlign=bottom;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="160" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="restaurante" value="&lt;b&gt;Restaurante&lt;/b&gt;&lt;br&gt;&lt;i&gt;estabelecimento parceiro&lt;/i&gt;" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#5C6BC0;fontSize=12;verticalAlign=bottom;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="320" width="160" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="entregador" value="&lt;b&gt;Entregador&lt;/b&gt;&lt;br&gt;&lt;i&gt;parceiro logístico&lt;/i&gt;" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#5C6BC0;fontSize=12;verticalAlign=bottom;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="580" width="160" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="foodnow" value="&lt;i&gt;«sistema»&lt;/i&gt;&lt;br&gt;&lt;b&gt;FoodNow&lt;/b&gt;&lt;br&gt;&lt;i&gt;plataforma de delivery de alimentos&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF1EC;strokeColor=#FF6B35;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="420" y="260" width="340" height="240" as="geometry"/>
+        </mxCell>
+        <mxCell id="paypal" value="&lt;i&gt;«sistema externo»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PayPal&lt;/b&gt;&lt;br&gt;&lt;i&gt;processamento de pagamentos&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8ECFB;strokeColor=#003087;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="110" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="gmaps" value="&lt;i&gt;«sistema externo»&lt;/i&gt;&lt;br&gt;&lt;b&gt;Google Maps Platform&lt;/b&gt;&lt;br&gt;&lt;i&gt;geolocalização e rotas&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F0FE;strokeColor=#1A73E8;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="900" y="560" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge0" value="Consulta restaurantes, realiza&lt;br&gt;pedidos e acompanha entregas&lt;br&gt;(HTTPS/REST)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#607D8B;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="cliente" target="foodnow">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge1" value="Administra cardápio&lt;br&gt;e pedidos (HTTPS/REST)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#607D8B;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="restaurante" target="foodnow">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge2" value="Consulta e atualiza&lt;br&gt;entregas (HTTPS/REST)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#607D8B;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="entregador" target="foodnow">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge3" value="Processa pagamentos&lt;br&gt;(REST API)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#003087;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="foodnow" target="paypal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge4" value="Consulta geolocalização&lt;br&gt;e rotas (REST API)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#1A73E8;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="foodnow" target="gmaps">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
