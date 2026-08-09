@@ -1,0 +1,120 @@
+<mxfile host="app.diagrams.net" pages="2">
+  <diagram name="Página-1" id="fmbpvXqnSFcKjwz_2H6Q">
+    <mxGraphModel dx="1264" dy="564" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="S3jQuMqHlTu62Qxzzsh2" name="Página-2">
+    <mxGraphModel dx="1202" dy="664" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-19" parent="1" style="text;html=1;fontSize=16;fontStyle=1;align=left;" value="FoodNow — Diagrama de Nível de Subsistema" vertex="1">
+          <mxGeometry height="30" width="600" x="1030.2353228400734" y="658.4705595128678" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-20" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Aplicativo do Cliente&#xa;[Flutter / Dart]" vertex="1">
+          <mxGeometry height="60" width="200" x="1030.2353228400734" y="708.4705595128678" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-22" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Aplicativo do Entregador&#xa;[Flutter / Dart]" vertex="1">
+          <mxGeometry height="60" width="200" x="1550.2353228400734" y="708.4705595128678" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-23" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#333333;verticalAlign=top;fontStyle=1;fontSize=13;" value="Backend / API [Java / Spring Boot]" vertex="1">
+          <mxGeometry height="170" width="720" x="1039.9953228400734" y="890.0005595128678" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-24" parent="WtoYzTrto1SWwgBJmPUn-23" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Usuários e Autenticação&#xa;(cadastro, login, JWT)" vertex="1">
+          <mxGeometry height="90" width="190" x="30" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-25" parent="WtoYzTrto1SWwgBJmPUn-23" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Pedidos&#xa;(criação, consulta, atualização)" vertex="1">
+          <mxGeometry height="90" width="190" x="270" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-26" parent="WtoYzTrto1SWwgBJmPUn-23" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Entregas&#xa;(gerenciamento e localização)" vertex="1">
+          <mxGeometry height="90" width="190" x="510" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-31" parent="1" style="text;html=1;fontSize=11;fontStyle=2;align=left;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;whiteSpace=wrap;" value="Comunicação cliente-backend: REST / HTTP(S) / JSON&#xa;Autenticação: JWT (Bearer Token)" vertex="1">
+          <mxGeometry height="60" width="240" x="1810.2353228400734" y="708.4705595128678" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-32" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="WtoYzTrto1SWwgBJmPUn-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-33" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="WtoYzTrto1SWwgBJmPUn-23">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1390.2353228400734" y="768.4705595128678" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-34" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" target="WtoYzTrto1SWwgBJmPUn-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-35" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1110" y="1370.0005595128678" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-36" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1405" y="1120" />
+              <mxPoint x="1200" y="1120" />
+              <mxPoint x="1200" y="1410" />
+            </Array>
+            <mxPoint x="1179.9953228400736" y="1410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-37" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1310" y="1370.0005595128678" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-38" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1515.0588235294117" y="1370.0005595128678" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-39" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1645" y="1140" />
+              <mxPoint x="1230" y="1140" />
+              <mxPoint x="1230" y="1410" />
+            </Array>
+            <mxPoint x="1179.9953228400736" y="1410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-40" edge="1" parent="1" source="WtoYzTrto1SWwgBJmPUn-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;dashed=1;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1720" y="1370.0005595128678" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-41" parent="1" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://icons.diagrams.net/assets/developer/1/Typescript.svg" value="" vertex="1">
+          <mxGeometry height="71.53" width="71.53" x="1354.47" y="696.94" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-42" parent="1" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#C925D1;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=12;fontStyle=0;aspect=fixed;pointerEvents=1;shape=mxgraph.aws4.rds_postgresql_instance;" value="" vertex="1">
+          <mxGeometry height="110" width="110" x="1070" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-44" parent="1" style="image;sketch=0;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/mscae/Cache_Redis_Product.svg;" value="" vertex="1">
+          <mxGeometry height="110" width="130.95" x="1250" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-45" parent="1" style="dashed=0;outlineConnect=0;html=1;align=center;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;shape=mxgraph.webicons.paypal;gradientColor=#DFDEDE" value="" vertex="1">
+          <mxGeometry height="102.4" width="102.4" x="1460" y="1370" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-46" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Redis" vertex="1">
+          <mxGeometry height="30" width="60" x="1285.47" y="1480" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-48" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="30" width="60" x="1095" y="1480" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-49" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="PayPal" vertex="1">
+          <mxGeometry height="30" width="60" x="1481.2" y="1480" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-50" parent="1" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://icons.diagrams.net/icon-cache1/Flatified-2115/map-546.png" value="" vertex="1">
+          <mxGeometry height="128" width="128" x="1650" y="1357.2" as="geometry" />
+        </mxCell>
+        <mxCell id="WtoYzTrto1SWwgBJmPUn-51" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Google Maps API" vertex="1">
+          <mxGeometry height="30" width="60" x="1684" y="1480" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
