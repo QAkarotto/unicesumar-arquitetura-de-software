@@ -1,0 +1,164 @@
+<mxfile host="Electron" agent="Mozilla/5.0" pages="3">
+  <diagram id="system" name="01 - Nível de Sistema">
+    <mxGraphModel dx="710" dy="465" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="foodnow" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=16;" value="&lt;b&gt;FoodNow&lt;/b&gt;&lt;br&gt;Plataforma de Delivery&lt;br&gt;&lt;div style=&#39;font-size:11px&#39;&gt;Flutter/Dart • React/TypeScript • Java/Spring Boot&lt;/div&gt;" vertex="1">
+          <mxGeometry height="170" width="420" x="590" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="cliente" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="👤&lt;br&gt;&lt;b&gt;Cliente&lt;/b&gt;&lt;br&gt;&lt;div style=&#39;font-size:11px&#39;&gt;Aplicativo Flutter / Dart&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="190" x="90" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="restaurante" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="🍽️&lt;br&gt;&lt;b&gt;Restaurante&lt;/b&gt;&lt;br&gt;&lt;div style=&#39;font-size:11px&#39;&gt;Portal React / TypeScript&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="190" x="90" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="entregador" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;" value="🛵&lt;br&gt;&lt;b&gt;Entregador&lt;/b&gt;&lt;br&gt;&lt;div style=&#39;font-size:11px&#39;&gt;Aplicativo Flutter / Dart&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="190" x="90" y="540" as="geometry" />
+        </mxCell>
+        <mxCell id="paypal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="💳&lt;br&gt;&lt;b&gt;PayPal&lt;/b&gt;&lt;br&gt;&lt;div style=&#39;font-size:11px&#39;&gt;API de pagamentos&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="210" x="1210" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="maps" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="📍&lt;br&gt;&lt;b&gt;Google Maps Platform&lt;/b&gt;&lt;br&gt;&lt;div style=&#39;font-size:11px&#39;&gt;API de mapas e localização&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="210" x="1210" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="cliente" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" target="foodnow" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="restaurante" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" target="foodnow" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="entregador" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" target="foodnow" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="foodnow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" target="paypal" value="API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="foodnow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;" target="maps" value="API">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="subsystem" name="02 - Nível de Subsistema">
+    <mxGraphModel dx="1030" dy="674" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="capp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;" value="📱&lt;br&gt;&lt;b&gt;Cliente&lt;/b&gt;&lt;br&gt;Flutter / Dart" vertex="1">
+          <mxGeometry height="90" width="190" x="70" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="rapp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;" value="🌐&lt;br&gt;&lt;b&gt;Restaurante&lt;/b&gt;&lt;br&gt;React / TypeScript" vertex="1">
+          <mxGeometry height="90" width="190" x="70" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="dapp" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;" value="🛵&lt;br&gt;&lt;b&gt;Entregador&lt;/b&gt;&lt;br&gt;Flutter / Dart" vertex="1">
+          <mxGeometry height="90" width="190" x="70" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="backend" parent="1" style="swimlane;html=1;rounded=1;horizontal=1;startSize=35;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=15;" value="&lt;b&gt;BACKEND — Java / Spring Boot&lt;/b&gt;" vertex="1">
+          <mxGeometry height="520" width="700" x="340" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="auth" parent="backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="🔐&lt;br&gt;&lt;b&gt;Usuários e Autenticação&lt;/b&gt;&lt;br&gt;JWT" vertex="1">
+          <mxGeometry height="90" width="190" x="30" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="orders" parent="backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="📦&lt;br&gt;&lt;b&gt;Pedidos&lt;/b&gt;&lt;br&gt;Java / Spring Boot" vertex="1">
+          <mxGeometry height="90" width="190" x="250" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="delivery" parent="backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="🛵&lt;br&gt;&lt;b&gt;Entregas&lt;/b&gt;&lt;br&gt;Java / Spring Boot" vertex="1">
+          <mxGeometry height="90" width="190" x="470" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="db" parent="backend" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="🗄️&lt;br&gt;&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;Banco de Dados" vertex="1">
+          <mxGeometry height="100" width="190" x="120" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="redis" parent="backend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="⚡&lt;br&gt;&lt;b&gt;Redis&lt;/b&gt;&lt;br&gt;Cache" vertex="1">
+          <mxGeometry height="100" width="190" x="390" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="s4" edge="1" parent="backend" source="orders" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="db" value="leitura/escrita">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s5" edge="1" parent="backend" source="orders" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="redis" value="cache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s8" edge="1" parent="backend" source="delivery" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="db" value="dados">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="paypal2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="💳&lt;br&gt;&lt;b&gt;PayPal&lt;/b&gt;&lt;br&gt;API de pagamentos" vertex="1">
+          <mxGeometry height="100" width="220" x="1190" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="maps2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="📍&lt;br&gt;&lt;b&gt;Google Maps Platform&lt;/b&gt;&lt;br&gt;API de localização" vertex="1">
+          <mxGeometry height="100" width="220" x="1190" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="s1" edge="1" parent="1" source="capp" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="backend" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s2" edge="1" parent="1" source="rapp" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="backend" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" edge="1" parent="1" source="dapp" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="backend" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s6" edge="1" parent="1" source="orders" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="paypal2" value="pagamento">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s7" edge="1" parent="1" source="delivery" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="maps2" value="geolocalização">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="component" name="03 - Nível de Componente - Pedidos">
+    <mxGraphModel dx="1373" dy="899" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;fontSize=20;fontStyle=1;" value="&lt;b&gt;Subsistema PEDIDOS — Java / Spring Boot&lt;/b&gt;" vertex="1">
+          <mxGeometry height="40" width="500" x="540" y="35" as="geometry" />
+        </mxCell>
+        <mxCell id="client3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;" value="📱&lt;br&gt;&lt;b&gt;Aplicativo Cliente&lt;/b&gt;&lt;br&gt;Flutter / Dart" vertex="1">
+          <mxGeometry height="100" width="190" x="60" y="300" as="geometry" />
+        </mxCell>
+        <mxCell id="controller" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="🎛️&lt;br&gt;&lt;b&gt;OrdersController&lt;/b&gt;&lt;br&gt;Spring Boot / REST" vertex="1">
+          <mxGeometry height="110" width="210" x="350" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="service" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="⚙️&lt;br&gt;&lt;b&gt;OrderService&lt;/b&gt;&lt;br&gt;Java / Spring" vertex="1">
+          <mxGeometry height="110" width="210" x="650" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="validator" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="✓&lt;br&gt;&lt;b&gt;OrderValidator&lt;/b&gt;&lt;br&gt;Java" vertex="1">
+          <mxGeometry height="100" width="210" x="650" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="repository" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="🗄️&lt;br&gt;&lt;b&gt;OrderRepository&lt;/b&gt;&lt;br&gt;Spring Data JPA" vertex="1">
+          <mxGeometry height="110" width="210" x="950" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="db3" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="🗄️&lt;br&gt;&lt;b&gt;PostgreSQL&lt;/b&gt;" vertex="1">
+          <mxGeometry height="110" width="190" x="1210" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="paypal3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="💳&lt;br&gt;&lt;b&gt;PayPal API&lt;/b&gt;&lt;br&gt;Pagamento externo" vertex="1">
+          <mxGeometry height="100" width="210" x="950" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="redis3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="⚡&lt;br&gt;&lt;b&gt;Redis&lt;/b&gt;&lt;br&gt;Cache" vertex="1">
+          <mxGeometry height="100" width="190" x="1210" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="c1" edge="1" parent="1" source="client3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="controller" value="REST / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c2" edge="1" parent="1" source="controller" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="service" value="chamada de serviço">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c3" edge="1" parent="1" source="service" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="validator" value="validação">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c4" edge="1" parent="1" source="service" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="repository" value="persistência">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c5" edge="1" parent="1" source="repository" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="db3" value="SQL / JPA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c6" edge="1" parent="1" source="service" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="paypal3" value="pagamento">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c7" edge="1" parent="1" source="service" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;" target="redis3" value="cache">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
