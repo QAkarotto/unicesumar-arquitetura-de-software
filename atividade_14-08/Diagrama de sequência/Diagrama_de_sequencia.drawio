@@ -1,0 +1,98 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="8pZiAwWyf3sA2fuGgp2k">
+    <mxGraphModel dx="1261" dy="530" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-1" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#FFFFFF,#FF0000);" value="" vertex="1">
+          <mxGeometry height="340" width="30" x="130" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-3" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};participant=umlActor;size=60;" value="" vertex="1">
+          <mxGeometry height="90" width="30" x="130" y="50" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-10" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#FFFFFF,#33FF33);" value="" vertex="1">
+          <mxGeometry height="60" width="30" x="315" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-11" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};dashed=1;" value="FrontEnd" vertex="1">
+          <mxGeometry height="70" width="100" x="280" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-12" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#FFFFFF,#0000FF);" value="" vertex="1">
+          <mxGeometry height="140" width="30" x="495" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-13" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};dashed=1;" value="BackEnd" vertex="1">
+          <mxGeometry height="210" width="100" x="460" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-14" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#FFFFFF,#7F00FF);" value="" vertex="1">
+          <mxGeometry height="70" width="30" x="681" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-15" parent="1" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;dropTarget=0;collapsible=0;recursiveResize=0;outlineConnect=0;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};dashed=1;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="220" width="100" x="646" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-16" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" target="Zm94lqvcCf7o8q9gE0Am-10" value="Clica em procurar&amp;nbsp;&lt;div&gt;restaurantes por perto&lt;/div&gt;">
+          <mxGeometry relative="1" width="80" x="0.0053" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="160" y="170" as="sourcePoint" />
+            <mxPoint x="350" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-17" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;exitX=0.833;exitY=0.231;exitDx=0;exitDy=0;exitPerimeter=0;" value="Faz requisição&lt;br&gt;GET /api/restaurants&lt;br&gt;com a Geolocalização">
+          <mxGeometry relative="1" width="80" x="-0.0401" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="461.01" y="290" />
+            </Array>
+            <mxPoint x="338" y="290.55999999999995" as="sourcePoint" />
+            <mxPoint x="488.01" y="290.5" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-19" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=block;curved=0;rounded=0;dashed=1;" value="Consulta os restaurantes&amp;nbsp;&lt;div&gt;proximos da localização&lt;/div&gt;">
+          <mxGeometry relative="1" width="80" x="0.0596" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="525" y="305" as="sourcePoint" />
+            <mxPoint x="680" y="305" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-21" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=none;curved=0;rounded=0;dashed=1;endFill=0;startArrow=classic;startFill=1;entryX=0;entryY=1;entryDx=0;entryDy=-5;entryPerimeter=0;" value="Retorna dados">
+          <mxGeometry relative="1" width="80" x="0.0596" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="560" y="355" />
+            </Array>
+            <mxPoint x="525" y="355" as="sourcePoint" />
+            <mxPoint x="681" y="355" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-22" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=none;curved=0;rounded=0;dashed=1;endFill=0;startArrow=classic;startFill=1;" value="Retorna 200 ok +&amp;nbsp;&lt;div&gt;dados JSON&lt;/div&gt;">
+          <mxGeometry relative="1" width="80" x="0.0596" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="464" y="400" />
+            </Array>
+            <mxPoint x="339" y="400" as="sourcePoint" />
+            <mxPoint x="489" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-24" edge="1" parent="1" style="html=1;verticalAlign=bottom;endArrow=none;curved=0;rounded=0;dashed=1;endFill=0;startArrow=classic;startFill=1;" value="Exibe os restaurantes&amp;nbsp;&lt;br&gt;encontrados">
+          <mxGeometry relative="1" width="80" x="0.0053" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="160" y="430" as="sourcePoint" />
+            <mxPoint x="315" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-26" edge="1" parent="1" style="html=1;align=left;spacingLeft=2;endArrow=block;rounded=0;edgeStyle=orthogonalEdgeStyle;curved=0;rounded=0;dashed=1;" target="Zm94lqvcCf7o8q9gE0Am-27" value="Captura localização&lt;br&gt;do dispositivo">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="170" />
+              <mxPoint x="380" y="230" />
+            </Array>
+            <mxPoint x="350" y="170" as="sourcePoint" />
+            <mxPoint x="350" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Zm94lqvcCf7o8q9gE0Am-27" parent="1" style="html=1;points=[[0,0,0,0,5],[0,1,0,0,-5],[1,0,0,0,5],[1,1,0,0,-5]];perimeter=orthogonalPerimeter;outlineConnect=0;targetShapes=umlLifeline;portConstraint=eastwest;newEdgeStyle={&quot;curved&quot;:0,&quot;rounded&quot;:0};fillColor=light-dark(#FFFFFF,#33FF33);" value="" vertex="1">
+          <mxGeometry height="220" width="30" x="315" y="220" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
