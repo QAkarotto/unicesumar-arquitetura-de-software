@@ -1,0 +1,98 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="04 - Diagrama de Sequencia" id="04_-_Diagrama_de_Sequencia">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageWidth="1400" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="life_usuario" value="&lt;b&gt;Usuário&lt;/b&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dashed=1;strokeColor=#546E7A;fillColor=#ECEFF1;align=center;verticalAlign=top;fontSize=13;fontStyle=1;spacingTop=6;size=90;" vertex="1" parent="1">
+          <mxGeometry x="30.0" y="55" width="220" height="885" as="geometry"/>
+        </mxCell>
+        <mxCell id="life_frontend" value="&lt;b&gt;Frontend&lt;/b&gt;&lt;br&gt;&lt;i&gt;React / TypeScript&lt;/i&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dashed=1;strokeColor=#087EA4;fillColor=#E0F7FA;align=center;verticalAlign=top;fontSize=13;fontStyle=1;spacingTop=6;size=90;" vertex="1" parent="1">
+          <mxGeometry x="370.0" y="55" width="220" height="885" as="geometry"/>
+        </mxCell>
+        <mxCell id="life_backend" value="&lt;b&gt;Backend / API&lt;/b&gt;&lt;br&gt;&lt;i&gt;Java / Spring Boot&lt;/i&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dashed=1;strokeColor=#6DB33F;fillColor=#F1F8E9;align=center;verticalAlign=top;fontSize=13;fontStyle=1;spacingTop=6;size=90;" vertex="1" parent="1">
+          <mxGeometry x="710.0" y="55" width="220" height="885" as="geometry"/>
+        </mxCell>
+        <mxCell id="life_db" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;i&gt;banco de dados&lt;/i&gt;" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=0;dashed=1;strokeColor=#336791;fillColor=#E3EAF2;align=center;verticalAlign=top;fontSize=13;fontStyle=1;spacingTop=6;size=90;" vertex="1" parent="1">
+          <mxGeometry x="1030.0" y="55" width="220" height="885" as="geometry"/>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg0" value="1. Abre o app e permite acesso à localização&lt;br&gt;Frontend captura latitude/longitude do dispositivo" style="html=1;fontSize=10;strokeColor=#37474F;endArrow=block;rounded=0;exitX=1;exitY=0.164;exitDx=0;exitDy=0;entryX=0;entryY=0.164;entryDx=0;entryDy=0;" edge="1" parent="1" source="life_usuario" target="life_frontend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg1" value="2. GET /api/restaurants?latitude=-25.095&amp;longitude=-50.161&lt;br&gt;Accept: application/json" style="html=1;fontSize=10;strokeColor=#37474F;endArrow=block;rounded=0;exitX=1;exitY=0.243;exitDx=0;exitDy=0;entryX=0;entryY=0.243;entryDx=0;entryDy=0;" edge="1" parent="1" source="life_frontend" target="life_backend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg2" value="3. Consulta restaurantes próximos&lt;br&gt;SELECT ... (Spring Data JPA / SQL)" style="html=1;fontSize=10;strokeColor=#37474F;endArrow=block;rounded=0;exitX=1;exitY=0.322;exitDx=0;exitDy=0;entryX=0;entryY=0.322;entryDx=0;entryDy=0;" edge="1" parent="1" source="life_backend" target="life_db">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg3" value="4. Retorna os registros encontrados" style="html=1;fontSize=10;strokeColor=#336791;endArrow=block;rounded=0;exitX=0;exitY=0.401;exitDx=0;exitDy=0;entryX=1;entryY=0.401;entryDx=0;entryDy=0;" edge="1" parent="1" source="life_db" target="life_backend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg4" value="5. Monta o corpo da resposta&lt;br&gt;(mapeia entidades para DTO/JSON)" style="html=1;fontSize=10;strokeColor=#37474F;curved=1;endArrow=block;exitX=1;exitY=0.48;exitDx=0;exitDy=0;entryX=1;entryY=0.519;entryDy=0;rounded=0;" edge="1" parent="1" source="life_backend" target="life_backend">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="910" y="497" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg5" value="6. 200 OK  —  Content-Type: application/json&lt;br&gt;{&quot;restaurants&quot;:[{&quot;id&quot;:1,&quot;name&quot;:&quot;Restaurante A&quot;,&quot;distanceKm&quot;:1.2}, ...]}" style="html=1;fontSize=10;strokeColor=#37474F;endArrow=block;rounded=0;exitX=0;exitY=0.616;exitDx=0;exitDy=0;entryX=1;entryY=0.616;entryDx=0;entryDy=0;" edge="1" parent="1" source="life_backend" target="life_frontend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg6" value="7. Interpreta o JSON recebido&lt;br&gt;(parse e mapeia para o estado da UI)" style="html=1;fontSize=10;strokeColor=#37474F;curved=1;endArrow=block;exitX=1;exitY=0.706;exitDx=0;exitDy=0;entryX=1;entryY=0.745;entryDy=0;rounded=0;" edge="1" parent="1" source="life_frontend" target="life_frontend">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="570" y="697" as="targetPoint"/></mxGeometry>
+        </mxCell>
+        <mxCell id="seq_04_-_Diagrama_de_Sequencia_msg7" value="8. Exibe a lista de restaurantes na interface&lt;br&gt;(nome e distância de cada restaurante)" style="html=1;fontSize=10;strokeColor=#37474F;endArrow=block;rounded=0;exitX=0;exitY=0.842;exitDx=0;exitDy=0;entryX=1;entryY=0.842;entryDx=0;entryDy=0;" edge="1" parent="1" source="life_frontend" target="life_usuario">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="05 - Arquitetura Inadequada" id="05_-_Arquitetura_Inadequada">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="frontend" value="&lt;b&gt;Frontend&lt;/b&gt;&lt;br&gt;&lt;i&gt;React / TypeScript&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#087EA4;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="80" y="240" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="postgres" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;i&gt;banco de dados&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E3EAF2;strokeColor=#336791;fontSize=12;verticalAlign=bottom;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="560" y="420" width="260" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="paypal" value="&lt;i&gt;«sistema externo»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PayPal&lt;/b&gt;&lt;br&gt;&lt;i&gt;PayPal API&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8ECFB;strokeColor=#003087;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="80" width="260" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="05_-_Arquitetura_Inadequada_edge0" value="[X] INADEQUADO&lt;br&gt;acesso direto" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#D32F2F;strokeWidth=3;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="frontend" target="paypal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="05_-_Arquitetura_Inadequada_edge1" value="[X] INADEQUADO&lt;br&gt;acesso direto ao banco" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#D32F2F;strokeWidth=3;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="frontend" target="postgres">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="06 - Arquitetura Corrigida" id="06_-_Arquitetura_Corrigida">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="frontend" value="&lt;b&gt;Frontend&lt;/b&gt;&lt;br&gt;&lt;i&gt;React / TypeScript&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F7FA;strokeColor=#087EA4;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="260" width="220" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="backend" value="&lt;b&gt;Backend / API&lt;/b&gt;&lt;br&gt;&lt;i&gt;Java / Spring Boot&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#6DB33F;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="420" y="260" width="240" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="postgres" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&lt;br&gt;&lt;i&gt;banco de dados&lt;/i&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#E3EAF2;strokeColor=#336791;fontSize=12;verticalAlign=bottom;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="800" y="440" width="260" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="paypal" value="&lt;i&gt;«sistema externo»&lt;/i&gt;&lt;br&gt;&lt;b&gt;PayPal&lt;/b&gt;&lt;br&gt;&lt;i&gt;PayPal API&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8ECFB;strokeColor=#003087;fontSize=12;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="800" y="80" width="260" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="06_-_Arquitetura_Corrigida_edge0" value="REST / HTTPS / JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#2E7D32;strokeWidth=2;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="frontend" target="backend">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="06_-_Arquitetura_Corrigida_edge1" value="acesso a dados" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#336791;strokeWidth=2;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="backend" target="postgres">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="06_-_Arquitetura_Corrigida_edge2" value="integração externa&lt;br&gt;REST API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;strokeColor=#003087;strokeWidth=2;exitX=1;entryX=0;jettySize=auto;" edge="1" parent="1" source="backend" target="paypal">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
