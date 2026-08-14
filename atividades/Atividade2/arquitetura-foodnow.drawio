@@ -1,0 +1,263 @@
+<mxfile host="app.diagrams.net" agent="drawio" pages="2">
+  <diagram id="1---Diagrama-de-sequencia" name="1 - Diagrama de sequencia">
+    <mxGraphModel dx="1162" dy="634" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="n1" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=17;fontStyle=1;fontColor=#8B1A1A;" value="&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(139, 26, 26), rgb(255, 174, 174));&quot;&gt;FoodNow&lt;/span&gt;" vertex="1">
+          <mxGeometry height="46" width="620" x="60" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#1F4E5F;strokeWidth=2;fontSize=12;fontStyle=1;fontColor=#1F4E5F;" value="Usu&amp;#225;rio" vertex="1">
+          <mxGeometry height="62" width="34" x="103" y="78" as="geometry" />
+        </mxCell>
+        <mxCell id="n3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C0392B;strokeColor=none;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" value="Frontend" vertex="1">
+          <mxGeometry height="34" width="150" x="285" y="112" as="geometry" />
+        </mxCell>
+        <mxCell id="n4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7A9A3C;strokeColor=none;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" value="Servidor (API)" vertex="1">
+          <mxGeometry height="34" width="150" x="555" y="112" as="geometry" />
+        </mxCell>
+        <mxCell id="n5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E67E22;strokeColor=none;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" value="Banco de Dados" vertex="1">
+          <mxGeometry height="34" width="150" x="825" y="112" as="geometry" />
+        </mxCell>
+        <mxCell id="n6" edge="1" parent="1" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;strokeWidth=2;strokeColor=#1F4E5F;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="140" as="sourcePoint" />
+            <mxPoint x="120" y="930" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n7" edge="1" parent="1" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;strokeWidth=2;strokeColor=#C0392B;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="360" y="146" as="sourcePoint" />
+            <mxPoint x="360" y="930" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n8" edge="1" parent="1" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;strokeWidth=2;strokeColor=#7A9A3C;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="630" y="146" as="sourcePoint" />
+            <mxPoint x="630" y="930" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n9" edge="1" parent="1" style="endArrow=none;dashed=1;dashPattern=6 6;html=1;strokeWidth=2;strokeColor=#E67E22;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="900" y="146" as="sourcePoint" />
+            <mxPoint x="900" y="930" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1F4E5F;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="687" width="16" x="112" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="n11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C0392B;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="670" width="16" x="352" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="n12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7A9A3C;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="230" width="16" x="622" y="282" as="geometry" />
+        </mxCell>
+        <mxCell id="n13" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7A9A3C;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="122" width="16" x="622" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="n14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E67E22;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="52" width="16" x="892" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="n15" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E67E22;strokeColor=none;" value="" vertex="1">
+          <mxGeometry height="53" width="16" x="892" y="725" as="geometry" />
+        </mxCell>
+        <mxCell id="n16" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=0;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="1. clicar em&lt;br&gt;BuscarRestaurantes()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="128" y="190" as="sourcePoint" />
+            <mxPoint x="352" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n17" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeWidth=1.5;strokeColor=#C0392B;fontSize=11;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;spacingLeft=8;" value="2. capturarLatitude&lt;br&gt;ELongitude()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="72" as="offset" />
+            <Array as="points">
+              <mxPoint x="430" y="222" />
+              <mxPoint x="430" y="258" />
+            </Array>
+            <mxPoint x="368" y="222" as="sourcePoint" />
+            <mxPoint x="368" y="258" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n18" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=0;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="3. GET /api/restaurants&lt;br&gt;(latitude, longitude)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="368" y="292" as="sourcePoint" />
+            <mxPoint x="622" y="292" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n19" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeWidth=1.5;strokeColor=#7A9A3C;fontSize=11;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;spacingLeft=8;" value="4. validar&lt;br&gt;Parametros()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="72" as="offset" />
+            <Array as="points">
+              <mxPoint x="700" y="322" />
+              <mxPoint x="700" y="356" />
+            </Array>
+            <mxPoint x="638" y="322" as="sourcePoint" />
+            <mxPoint x="638" y="356" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n20" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=0;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="5. buscarRestaurantes&lt;br&gt;Proximos()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="638" y="390" as="sourcePoint" />
+            <mxPoint x="892" y="390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n21" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=1;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="6. devolverRegistros()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="892" y="428" as="sourcePoint" />
+            <mxPoint x="638" y="428" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n22" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeWidth=1.5;strokeColor=#7A9A3C;fontSize=11;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;spacingLeft=8;" value="7. montarResposta&lt;br&gt;EmJSON()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="72" as="offset" />
+            <Array as="points">
+              <mxPoint x="700" y="452" />
+              <mxPoint x="700" y="486" />
+            </Array>
+            <mxPoint x="638" y="452" as="sourcePoint" />
+            <mxPoint x="638" y="486" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n23" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=1;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="8. 200 OK&lt;br&gt;{ restaurants: [ ... ] }">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="622" y="520" as="sourcePoint" />
+            <mxPoint x="368" y="520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n24" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;rounded=0;edgeStyle=orthogonalEdgeStyle;strokeWidth=1.5;strokeColor=#C0392B;fontSize=11;align=left;verticalAlign=middle;labelBackgroundColor=#FFFFFF;spacingLeft=8;" value="9. interpretarJSON()&lt;br&gt;atualizarEstado()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="72" as="offset" />
+            <Array as="points">
+              <mxPoint x="430" y="548" />
+              <mxPoint x="430" y="582" />
+            </Array>
+            <mxPoint x="368" y="548" as="sourcePoint" />
+            <mxPoint x="368" y="582" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n25" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=1;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="10. exibirLista&lt;br&gt;DeRestaurantes()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="352" y="616" as="sourcePoint" />
+            <mxPoint x="128" y="616" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n26" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=0;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="11. selecionar&lt;br&gt;Restaurante(1)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="128" y="668" as="sourcePoint" />
+            <mxPoint x="352" y="668" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n27" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=0;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="12. GET /api/restaurants/1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="368" y="706" as="sourcePoint" />
+            <mxPoint x="622" y="706" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n28" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=0;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="13. buscarRestaurante&lt;br&gt;PorId(1)">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="638" y="740" as="sourcePoint" />
+            <mxPoint x="892" y="740" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n29" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=1;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="14. devolverRegistro()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="892" y="775" as="sourcePoint" />
+            <mxPoint x="638" y="775" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n30" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=1;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="15. 200 OK&lt;br&gt;{ id, name, address, rating }">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="622" y="808" as="sourcePoint" />
+            <mxPoint x="368" y="808" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n31" edge="1" parent="1" style="endArrow=block;endFill=1;html=1;strokeWidth=1.5;strokeColor=#000000;dashed=1;dashPattern=6 4;fontSize=11;align=center;verticalAlign=bottom;labelBackgroundColor=#FFFFFF;" value="16. exibirDetalhes&lt;br&gt;DoRestaurante()">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="352" y="850" as="sourcePoint" />
+            <mxPoint x="128" y="850" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="LDRKEeZLKC6l5ufselMD-5" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/3840px-React-icon.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=index&amp;utm_content=thumbnail;" value="" vertex="1">
+          <mxGeometry height="34" width="38.18" x="313.82" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="LDRKEeZLKC6l5ufselMD-6" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTORwzeZE9nF8t0F2Jqkji8IMTx8ghkSZGX-zehgXLOaw&amp;s=10;" value="" vertex="1">
+          <mxGeometry height="34" width="34" x="371" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="LDRKEeZLKC6l5ufselMD-8" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://images.icon-icons.com/2415/PNG/512/java_original_wordmark_logo_icon_146459.png;" value="" vertex="1">
+          <mxGeometry height="52" width="52" x="570" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="LDRKEeZLKC6l5ufselMD-9" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/spring-boot-icon.png;" value="" vertex="1">
+          <mxGeometry height="46" width="46" x="634" y="63" as="geometry" />
+        </mxCell>
+        <mxCell id="LDRKEeZLKC6l5ufselMD-10" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/960px-Postgresql_elephant.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=index&amp;utm_content=thumbnail;" value="" vertex="1">
+          <mxGeometry height="53.65" width="52" x="874" y="58.35000000000002" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="3---Arquitetura-corrigida" name="2 - Arquitetura corrigida">
+    <mxGraphModel dx="1235" dy="674" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="n45" parent="1" style="text;html=1;whiteSpace=wrap;align=left;verticalAlign=middle;fontSize=17;fontStyle=1;fontColor=#4F7A1F;" value="Arquitetura corrigida" vertex="1">
+          <mxGeometry height="46" width="1000" x="60" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="n46" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1F4E5F;strokeColor=none;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" value="Usu&amp;#225;rio" vertex="1">
+          <mxGeometry height="70" width="160" x="60" y="250" as="geometry" />
+        </mxCell>
+        <mxCell id="n47" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#C0392B;strokeColor=none;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" value="Frontend" vertex="1">
+          <mxGeometry height="90" width="190" x="300" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="n48" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#7A9A3C;strokeColor=none;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" value="Servidor (API)" vertex="1">
+          <mxGeometry height="110" width="210" x="580" y="230" as="geometry" />
+        </mxCell>
+        <mxCell id="n49" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E67E22;strokeColor=none;fontColor=#FFFFFF;fontSize=12;fontStyle=1;" value="Banco de Dados&lt;span style=&quot;white-space: pre;&quot;&gt;&#x9;&lt;/span&gt;" vertex="1">
+          <mxGeometry height="70" width="190" x="880" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="n50" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E8B71A;strokeColor=none;fontColor=#4A3B00;fontSize=12;fontStyle=1;" value="PayPal&lt;br&gt;&lt;font style=&#39;font-size:10px&#39;&gt;integra&amp;#231;&amp;#227;o externa&lt;/font&gt;" vertex="1">
+          <mxGeometry height="70" width="190" x="880" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="n51" edge="1" parent="1" source="n46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;dashed=0;strokeColor=#000000;fontSize=11;labelBackgroundColor=#FFFFFF;" target="n47" value="usa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n52" edge="1" parent="1" source="n47" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;dashed=0;strokeColor=#7A9A3C;fontSize=11;labelBackgroundColor=#FFFFFF;" target="n48" value="REST / HTTPS / JSON&lt;br&gt;GET /api/restaurants">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n53" edge="1" parent="1" source="n48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;dashed=0;strokeColor=#E67E22;fontSize=11;labelBackgroundColor=#FFFFFF;" target="n49" value="SQL via JPA / JDBC">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n54" edge="1" parent="1" source="n48" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;endFill=1;strokeWidth=2;dashed=0;strokeColor=#B58B00;fontSize=11;labelBackgroundColor=#FFFFFF;" target="n50" value="chamada autenticada&lt;br&gt;chave guardada no servidor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n55" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#BDBDBD;fontSize=10;dashed=1;" value="n&amp;#227;o conhece o&lt;br&gt;esquema do banco" vertex="1">
+          <mxGeometry height="46" width="190" x="300" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="n56" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#F3F8EC;strokeColor=#7A9A3C;align=left;verticalAlign=top;spacing=10;fontSize=11;" value="&lt;b&gt;O que muda:&lt;/b&gt;&lt;br&gt;&lt;br&gt;O frontend passa a conversar com um único ponto: a API.&amp;nbsp;&lt;div&gt;Envia latitude e longitude, recebe JSON e cuida apenas de apresentar o resultado. Não sabe qual banco existe do outro lado, nem quais tabelas foram consultadas.&lt;br&gt;&lt;br&gt;O servidor fica responsável por autenticar a requisição, validar os parâmetros, aplicar as regras de negócio, consultar o PostgreSQL em rede interna e acionar a PayPal com credenciais que nunca saem do servidor. Se o esquema do banco mudar ou o gateway de pagamento for substituído, o contrato da API permanece o mesmo e o frontend não precisa ser alterado.&lt;/div&gt;" vertex="1">
+          <mxGeometry height="127" width="1010" x="60" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="s-T_Gdg6A_Q95sW1gdfp-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFF4F2;strokeColor=#B85450;align=left;verticalAlign=top;spacing=10;fontSize=11;" value="&lt;b&gt;Por que a outra organização é inadequada:&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;1. Credenciais expostas.&lt;/b&gt; O frontend roda na máquina do usuário. Usuário e senha do banco, assim como a chave da PayPal, ficariam visíveis no código-fonte, no tráfego de rede ou nas ferramentas de desenvolvedor do navegador.&lt;br&gt;&lt;br&gt;&lt;b&gt;2. Banco exposto na internet.&lt;/b&gt; Para o navegador alcançar o PostgreSQL, o banco precisaria aceitar conexões públicas, ampliando muito a superfície de ataque.&lt;br&gt;&lt;br&gt;&lt;b&gt;3. Validação sem confiabilidade.&lt;/b&gt; Qualquer regra escrita no cliente pode ser alterada pelo usuário. Valores de pedido, descontos e permissões deixariam de ser confiáveis.&lt;br&gt;&lt;br&gt;&lt;b&gt;4. Acoplamento ao esquema do banco.&lt;/b&gt; A interface passaria a depender de tabelas e colunas; renomear uma coluna quebraria a aplicação." vertex="1">
+          <mxGeometry height="166" width="1010" x="60" y="640" as="geometry" />
+        </mxCell>
+        <mxCell id="ZAGNCX0thj8dwDwXs1hA-1" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/React-icon.svg/3840px-React-icon.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=index&amp;utm_content=thumbnail;" value="" vertex="1">
+          <mxGeometry height="34" width="38.18" x="349.41" y="196" as="geometry" />
+        </mxCell>
+        <mxCell id="ZAGNCX0thj8dwDwXs1hA-2" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTORwzeZE9nF8t0F2Jqkji8IMTx8ghkSZGX-zehgXLOaw&amp;s=10;" value="" vertex="1">
+          <mxGeometry height="34" width="34" x="406.59000000000003" y="196" as="geometry" />
+        </mxCell>
+        <mxCell id="krQjo8xv9rrBPBDW7_g5-1" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://images.icon-icons.com/2415/PNG/512/java_original_wordmark_logo_icon_146459.png;" value="" vertex="1">
+          <mxGeometry height="52" width="52" x="630" y="178" as="geometry" />
+        </mxCell>
+        <mxCell id="krQjo8xv9rrBPBDW7_g5-2" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/spring-boot-icon.png;" value="" vertex="1">
+          <mxGeometry height="46" width="46" x="694" y="181" as="geometry" />
+        </mxCell>
+        <mxCell id="LjDUH4jhTghba_60DX6--1" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Postgresql_elephant.svg/960px-Postgresql_elephant.svg.png?utm_source=commons.wikimedia.org&amp;utm_campaign=index&amp;utm_content=thumbnail;" value="" vertex="1">
+          <mxGeometry height="53.65" width="52" x="949" y="76" as="geometry" />
+        </mxCell>
+        <mxCell id="LjDUH4jhTghba_60DX6--2" parent="1" style="shape=image;imageAspect=0;aspect=fixed;verticalLabelPosition=bottom;verticalAlign=top;image=https://pngimg.com/uploads/paypal/paypal_PNG22.png;" value="" vertex="1">
+          <mxGeometry height="51.3" width="52" x="949" y="436" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
