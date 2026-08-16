@@ -2,6 +2,7 @@
 - Otavio Alves Brisky
 - Felipe de Oliveira Guimarães
 
+## Atividade 2: 
 ## Decisão Arquitetural
 
 <p align="justify">
@@ -16,3 +17,17 @@ No Nível de Subsistema, a estrutura interna da FoodNow é detalhada, apresentan
 Por fim, o Nível de Componente aprofunda o subsistema de Pedidos, demonstrando a comunicação entre o Controller, Serviço de Pedidos, Validador, Repositório e componente de integração com o PayPal, além das conexões com PostgreSQL.
 A utilização dos três níveis permite compreender a arquitetura desde uma visão mais ampla até sua organização interna. Dessa forma, os diagramas mantêm coerência entre si e demonstram como os elementos apresentados no nível de sistema são detalhados progressivamente nos níveis de subsistema e componente.
 </p>
+
+## Atividade 3:
+## Qual é a principal diferença entre as responsabilidades do frontend e do backend?
+
+O frontend é responsável pela apresentação dos dados e pela interação com o usuário, enquanto o backend é responsável pelo processamento das informações, aplicação das regras de negócio, segurança, consultas e persistência dos dados no banco de dados.
+
+## Por que o frontend não deve acessar diretamente o banco de dados?
+
+O frontend não deve acessar diretamente o banco de dados por questões de segurança e controle. Essa prática faria com que as regras de negócio e as validações do backend fossem ignoradas, tornando a aplicação mais vulnerável e dificultando o controle sobre o acesso e a manipulação dos dados.
+
+## Qual é o papel da API na comunicação entre frontend e backend?
+
+A API atua como intermediária na comunicação entre o frontend e o backend. Ela recebe as solicitações realizadas pelo frontend, encaminha essas requisições para o backend, que aplica as regras de negócio e realiza os processamentos necessários, e posteriormente retorna a resposta para o frontend, normalmente utilizando dados no formato JSON.
+
