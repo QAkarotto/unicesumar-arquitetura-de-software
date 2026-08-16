@@ -1,0 +1,49 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="ulF3oLQbMeaXqcURoez6">
+    <mxGraphModel dx="808" dy="447" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="V_x_imu7k-0RXNMFSONo-3" edge="1" parent="1" source="V_x_imu7k-0RXNMFSONo-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="V_x_imu7k-0RXNMFSONo-2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-8" connectable="0" parent="V_x_imu7k-0RXNMFSONo-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="HTTPS" vertex="1">
+          <mxGeometry relative="1" x="0.1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="FRONTEND&lt;br&gt;Web/Mobile" vertex="1">
+          <mxGeometry height="60" width="120" x="200" y="370" as="geometry" />
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-5" edge="1" parent="1" source="V_x_imu7k-0RXNMFSONo-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="V_x_imu7k-0RXNMFSONo-4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-9" connectable="0" parent="V_x_imu7k-0RXNMFSONo-5" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="SQL" vertex="1">
+          <mxGeometry relative="1" x="-0.018" y="-1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-2" parent="1" style="whiteSpace=wrap;html=1;rounded=0;" value="BACKEND&lt;br&gt;REST API&lt;br&gt;&lt;br&gt;Regras de negócio aplicadas" vertex="1">
+          <mxGeometry height="130" width="120" x="400" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-4" parent="1" style="whiteSpace=wrap;html=1;rounded=0;" value="POSTGRESQL" vertex="1">
+          <mxGeometry height="60" width="120" x="600" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-6" parent="1" style="whiteSpace=wrap;html=1;rounded=0;" value="PAYPAL" vertex="1">
+          <mxGeometry height="60" width="120" x="600" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-7" edge="1" parent="1" source="V_x_imu7k-0RXNMFSONo-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="V_x_imu7k-0RXNMFSONo-6" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="550" y="520" as="sourcePoint" />
+            <mxPoint x="630" y="460" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="V_x_imu7k-0RXNMFSONo-10" connectable="0" parent="V_x_imu7k-0RXNMFSONo-7" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="HTTPS/API" vertex="1">
+          <mxGeometry relative="1" x="0.1976" y="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

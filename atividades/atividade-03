@@ -1,0 +1,28 @@
+* Qual é a principal diferença entre as responsabilidades do frontend e do backend?
+O frontend é responsável por coletar e exibir as informações, já o backend é responsável por receber, processar as informações e executar a lógica, retornando as respostas para o front
+
+* Por que o frontend não deve acessar diretamente o banco de dados?
+O frontend pode expor informações sensíveis ao tentar consultar diretamente o banco, o backend permite executar regras de negócios, validações e autenticação
+
+* Qual é o papel da API na comunicação entre frontend e backend?
+A API funciona como uma interface de comunicação entre front e Back, enviando os dados necessários do front para o Back e retornando as consultas com os resultados
+
+Capturar a localização do dispositivo — Frontend
+Enviar latitude e longitude para a API — Frontend
+Receber a requisição de consulta — Backend
+Consultar os restaurantes no banco de dados — Backend
+Montar a resposta da API — Backend
+Retornar os dados em JSON — Backend
+Receber a resposta JSON — Frontend
+Interpretar os dados recebidos — Frontend
+Exibir os restaurantes na interface — Frontend
+
+* Arquitetura inadequada
+Considere a seguinte solução:
+
+- Frontend → PostgreSQL
+- Frontend → PayPal
+
+Explique por que essa organização é inadequada e represente no draw.io umaversão corrigida, na qual o frontend se comunica com o backend e o backendé responsável pelo acesso aos dados e pelas integrações externas.
+Resposta: A Arquitetura é inadequada pois dessa forma o Frontend tem acesso aos dados sensíveis do Banco de Dados. Dessa forma, o sistema fica vulnerável e exposto. Dessa forma temos problemas como credenciais expostas, possibilidade de usuários tentarem acessar o banco diretamente, maior vulnerabilidade a ataques. 
+Com a integração do backend entre o front e o banco de dados e Paypal, o sistema ficaria muito mais seguro e confiável, pois o backend trás regras de negócio com ele.
