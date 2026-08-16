@@ -1,0 +1,23 @@
+# Atividade criação de Diagramas para o FoodFlow
+
+## Alunos
+
+- Thauany Favarin Mainardes
+
+## Identificação das responsabilidades
+
+- Capturar a localização do dispositivo - FrontEnd
+- Enviar latitude e longitude para a API - FrontEnd
+- Receber a requisição de consulta - BackEnd
+- Consultar os restaurantes no banco de dados - Backend
+- Montar a resposta da API - Backend
+- Retornar os dados em JSON - BackEnd
+- Receber a resposta JSON - FrontEnd
+- Interpretar os dados recebidos - FrontEnd
+- Exibir os restaurantes na interface - FrontEnd
+
+## Arquitetura inadequada
+
+- O problema da arquitetura inadequada é que ela pode expor credenciais e informações sensiveis, pois permite acessao sem as regras do backend. 
+- A arquitetura correta seria: Front -> BackEnd / API -> PostgreSQL e Front -> BackEnd / API -> PayPal
+
