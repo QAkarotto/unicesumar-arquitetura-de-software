@@ -1,0 +1,171 @@
+<mxfile host="app.diagrams.net" modified="2026-08-16T12:00:00.000Z" agent="Claude" version="24.7.0" type="device">
+  <diagram name="Diagrama de Sequencia - FoodNow" id="seq-foodnow-1">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Participante: Usuario -->
+        <mxCell id="2" value="Usu&#225;rio" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Participante: Frontend -->
+        <mxCell id="3" value="Frontend&lt;br&gt;React + TypeScript" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="300" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Participante: Backend -->
+        <mxCell id="4" value="API / Backend&lt;br&gt;Java + Spring Boot" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="560" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Participante: PostgreSQL -->
+        <mxCell id="5" value="Banco de Dados&lt;br&gt;PostgreSQL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="820" y="40" width="160" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Lifelines (linhas de vida verticais tracejadas) -->
+        <mxCell id="6" style="endArrow=none;dashed=1;html=0;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="90" as="sourcePoint" />
+            <mxPoint x="120" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7" style="endArrow=none;dashed=1;html=0;strokeColor=#82b366;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="90" as="sourcePoint" />
+            <mxPoint x="380" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="8" style="endArrow=none;dashed=1;html=0;strokeColor=#d79b00;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="90" as="sourcePoint" />
+            <mxPoint x="640" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="9" style="endArrow=none;dashed=1;html=0;strokeColor=#b85450;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="900" y="90" as="sourcePoint" />
+            <mxPoint x="900" y="780" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 1: Usuario -> Frontend -->
+        <mxCell id="10" value="1. Solicita restaurantes pr&#243;ximos" style="endArrow=block;html=0;fontSize=11;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="120" y="110" as="sourcePoint" />
+            <mxPoint x="380" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 2: Frontend -> Frontend (self) -->
+        <mxCell id="11" value="2. Captura latitude e longitude do dispositivo" style="endArrow=block;html=0;fontSize=11;edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="150" as="sourcePoint" />
+            <mxPoint x="380" y="180" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="470" y="150" />
+              <mxPoint x="470" y="180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 3: Frontend -> Backend -->
+        <mxCell id="12" value="3. GET /api/restaurants?latitude=-25.095&amp;longitude=-50.161" style="endArrow=block;html=0;fontSize=11;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="210" as="sourcePoint" />
+            <mxPoint x="640" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Item 4: Header da requisicao -->
+        <mxCell id="13" value="Header: Accept: application/json" style="text;html=1;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="440" y="222" width="260" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Mensagem 5: Backend -> Backend (self) -->
+        <mxCell id="14" value="5. Recebe e processa a requisi&#231;&#227;o" style="endArrow=block;html=0;fontSize=11;edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="270" as="sourcePoint" />
+            <mxPoint x="640" y="300" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="730" y="270" />
+              <mxPoint x="730" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 6: Backend -> PostgreSQL -->
+        <mxCell id="15" value="6. Consulta restaurantes pr&#243;ximos" style="endArrow=block;html=0;fontSize=11;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="330" as="sourcePoint" />
+            <mxPoint x="900" y="330" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 7: PostgreSQL -> Backend (retorno, tracejado) -->
+        <mxCell id="16" value="7. Retorna dados dos restaurantes" style="endArrow=block;html=0;fontSize=11;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="900" y="370" as="sourcePoint" />
+            <mxPoint x="640" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 8: Backend -> Backend (self) -->
+        <mxCell id="17" value="8. Monta resposta JSON" style="endArrow=block;html=0;fontSize=11;edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="410" as="sourcePoint" />
+            <mxPoint x="640" y="440" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="730" y="410" />
+              <mxPoint x="730" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 9: Backend -> Frontend (retorno, tracejado) -->
+        <mxCell id="18" value="9. HTTP 200 OK" style="endArrow=block;html=0;fontSize=11;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="470" as="sourcePoint" />
+            <mxPoint x="380" y="470" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 10: Backend -> Frontend (retorno, tracejado) -->
+        <mxCell id="19" value="10. Content-Type: application/json" style="endArrow=block;html=0;fontSize=11;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="640" y="500" as="sourcePoint" />
+            <mxPoint x="380" y="500" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Item 11: Nota com exemplo de corpo JSON da resposta -->
+        <mxCell id="20" value="11. Exemplo de resposta:&lt;br&gt;{&lt;br&gt;&#160;&#160;&quot;restaurants&quot;: [&lt;br&gt;&#160;&#160;&#160;&#160;{&lt;br&gt;&#160;&#160;&#160;&#160;&#160;&#160;&quot;id&quot;: 1,&lt;br&gt;&#160;&#160;&#160;&#160;&#160;&#160;&quot;name&quot;: &quot;Restaurante A&quot;,&lt;br&gt;&#160;&#160;&#160;&#160;&#160;&#160;&quot;distanceKm&quot;: 1.2&lt;br&gt;&#160;&#160;&#160;&#160;}&lt;br&gt;&#160;&#160;]&lt;br&gt;}" style="shape=note;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fontFamily=Courier New;fontSize=10;fillColor=#fff2cc;strokeColor=#d6b656;spacingLeft=8;spacingTop=4;size=14;" vertex="1" parent="1">
+          <mxGeometry x="460" y="530" width="280" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Mensagem 12: Frontend -> Frontend (self) -->
+        <mxCell id="21" value="12. Interpreta os dados JSON" style="endArrow=block;html=0;fontSize=11;edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="690" as="sourcePoint" />
+            <mxPoint x="380" y="720" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="470" y="690" />
+              <mxPoint x="470" y="720" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Mensagem 13: Frontend -> Usuario (retorno, tracejado) -->
+        <mxCell id="22" value="13. Exibe restaurantes na interface" style="endArrow=block;html=0;fontSize=11;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="380" y="750" as="sourcePoint" />
+            <mxPoint x="120" y="750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

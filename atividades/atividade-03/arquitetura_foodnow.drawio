@@ -1,0 +1,66 @@
+<mxfile host="app.diagrams.net" modified="2026-08-16T12:00:00.000Z" agent="Claude" version="24.7.0" type="device">
+  <diagram name="Arquitetura Corrigida - FoodNow" id="arch-foodnow-1">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="900" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Usuario (ator UML) -->
+        <mxCell id="2" value="Usu&#225;rio" style="shape=umlActor;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;verticalAlign=top;html=1;outlineConnect=0;fontStyle=1;fontSize=13;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="405" y="30" width="30" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Frontend -->
+        <mxCell id="3" value="Frontend&lt;br&gt;React + TypeScript" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="320" y="150" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Backend -->
+        <mxCell id="4" value="Backend&lt;br&gt;Java + Spring Boot" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="320" y="290" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- PostgreSQL (cilindro) -->
+        <mxCell id="5" value="PostgreSQL" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="140" y="450" width="140" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- PayPal / API Externa (nuvem) -->
+        <mxCell id="6" value="PayPal&lt;br&gt;(API Externa)" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="560" y="450" width="180" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Usuario -> Frontend -->
+        <mxCell id="7" value="Intera&#231;&#227;o com a aplica&#231;&#227;o" style="endArrow=block;html=0;fontSize=11;strokeColor=#000000;" edge="1" parent="1" source="2" target="3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Frontend -> Backend -->
+        <mxCell id="8" value="HTTPS / REST / JSON" style="endArrow=block;html=0;fontSize=11;strokeColor=#000000;exitX=0.35;exitY=1;exitDx=0;exitDy=0;entryX=0.35;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="3" target="4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Backend -> Frontend (resposta) -->
+        <mxCell id="9" value="Resposta JSON" style="endArrow=block;html=0;fontSize=11;dashed=1;strokeColor=#000000;exitX=0.65;exitY=0;exitDx=0;exitDy=0;entryX=0.65;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="4" target="3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Backend <-> PostgreSQL -->
+        <mxCell id="10" value="SQL / JDBC" style="startArrow=block;endArrow=block;html=0;fontSize=11;strokeColor=#000000;" edge="1" parent="1" source="4" target="5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Backend <-> PayPal -->
+        <mxCell id="11" value="HTTPS / API Externa" style="startArrow=block;endArrow=block;html=0;fontSize=11;strokeColor=#000000;" edge="1" parent="1" source="4" target="6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Nota de restricao -->
+        <mxCell id="12" value="Proibido: Frontend &#8594; PostgreSQL e Frontend &#8594; PayPal.&lt;br&gt;Toda comunica&#231;&#227;o passa obrigatoriamente pelo Backend." style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontStyle=2;fontColor=#B85450;" vertex="1" parent="1">
+          <mxGeometry x="230" y="600" width="440" height="40" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
