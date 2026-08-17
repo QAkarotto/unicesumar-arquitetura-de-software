@@ -1,0 +1,22 @@
+Qual é a principal diferença entre as responsabilidades do frontend e do backend?
+R: O frontend é responsável pela interação com o usuário: captura de dados de
+entrada, exibição da interface e apresentação dos resultados recebidos.
+O backend é responsável pela lógica de negócio, pelo acesso e manipulação
+dos dados e pela integração com serviços externos, expondo tudo isso através 
+de uma API.
+
+Por que o frontend não deve acessar diretamente o banco de dados?
+R: Porque isso expõe credenciais e a estrutura do banco no lado do cliente,
+criando uma falha grave de segurança, onde qualquer usuário poderia inspecionar
+o código e obter acesso direto aos dados.
+Além disso, isso quebra a separação de responsabilidades, dificulta a
+validação e o controle de regras de negócio, impede o reuso da lógica por
+outros clientes e torna a manutenção e a escalabilidade muito mais difíceis, 
+já que qualquer mudança no banco impactaria diretamente o frontend.
+
+Qual é o papel da API na comunicação entre frontend e backend?
+R: A API atua como uma camada intermediária padronizada: recebe as
+requisições do frontend, aplica as regras de negócio, acessa o banco de
+dados ou serviços externos e, dessa forma, retorna os dados em um formato definido.
+Ela isola o frontend dos detalhes internos do backend, garante segurança 
+e permite que múltiplos clientes consumam os mesmos dados de forma consistente.
