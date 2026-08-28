@@ -1,0 +1,58 @@
+<mxfile host="app.diagrams.net" modified="2026-08-09T00:00:00.000Z" agent="GitHub Copilot" version="24.7.17">
+  <diagram id="foodnow-system" name="Nivel de Sistema">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1920" pageHeight="1080" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="foodnowBoundary" value="FoodNow\nPlataforma de Delivery" style="rounded=0;whiteSpace=wrap;html=1;strokeWidth=2;strokeColor=#0b3d91;fillColor=#e8f0fe;fontStyle=1;fontSize=16;" vertex="1" parent="1">
+          <mxGeometry x="620" y="230" width="700" height="420" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cliente" value="Cliente\n(App do Cliente)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="130" y="300" width="210" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="restaurante" value="Restaurante\n(Portal do Restaurante)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="130" y="460" width="210" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="entregador" value="Entregador\n(App do Entregador)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="130" y="620" width="210" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="paypal" value="PayPal\n(Sistema Externo)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1490" y="360" width="230" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="maps" value="Google Maps Platform\n(Sistema Externo)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1490" y="520" width="230" height="100" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="consulta restaurantes, faz pedidos, acompanha entregas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="cliente" target="foodnowBoundary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" value="administra cardapio e pedidos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="restaurante" target="foodnowBoundary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e3" value="consulta e atualiza entregas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;" edge="1" parent="1" source="entregador" target="foodnowBoundary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e4" value="pagamentos\nREST/HTTPS/JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="foodnowBoundary" target="paypal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" value="mapas e localizacao\nREST/HTTPS/JSON" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="foodnowBoundary" target="maps">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="noteTech" value="Tecnologias por aplicacao serao detalhadas no nivel de subsistema." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="660" y="120" width="420" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
