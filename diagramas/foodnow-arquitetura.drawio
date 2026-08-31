@@ -1,0 +1,144 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Sequencia" id="seq1">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="actorUser" value="Usuário" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="actorFrontend" value="Frontend&#10;(React / TypeScript)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="250" y="40" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="actorBackend" value="Backend / API&#10;(Java / Spring Boot)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="460" y="40" width="140" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="actorDb" value="Banco de Dados&#10;(PostgreSQL)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="670" y="40" width="140" height="40" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lifeUser" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="110" y="80" as="sourcePoint"/>
+            <mxPoint x="110" y="650" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lifeFrontend" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="80" as="sourcePoint"/>
+            <mxPoint x="320" y="650" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lifeBackend" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="530" y="80" as="sourcePoint"/>
+            <mxPoint x="530" y="650" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lifeDb" style="endArrow=none;dashed=1;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="740" y="80" as="sourcePoint"/>
+            <mxPoint x="740" y="650" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m1" value="1. Solicita restaurantes próximos" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="110" y="130" as="sourcePoint"/>
+            <mxPoint x="320" y="130" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m2" value="2. GET /api/restaurants?latitude=..&amp;longitude=.. (HTTPS / JSON)" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="180" as="sourcePoint"/>
+            <mxPoint x="530" y="180" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m3" value="3. Consulta SQL: restaurantes próximos" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="530" y="230" as="sourcePoint"/>
+            <mxPoint x="740" y="230" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m4" value="4. Retorna linhas da tabela" style="endArrow=block;html=1;fontSize=11;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="740" y="280" as="sourcePoint"/>
+            <mxPoint x="530" y="280" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="m5" value="5. 200 OK + JSON { restaurants: [...] }" style="endArrow=block;html=1;fontSize=11;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="530" y="330" as="sourcePoint"/>
+            <mxPoint x="320" y="330" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="note1" value="Frontend interpreta o JSON&#10;e atualiza o estado da UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="360" y="355" width="170" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="m6" value="6. Exibe lista de restaurantes na tela" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="320" y="420" as="sourcePoint"/>
+            <mxPoint x="110" y="420" as="targetPoint"/>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram name="Arquitetura Inadequada" id="arq_ruim">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="f1" value="Frontend&#10;(React / TypeScript)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="db1" value="Banco de Dados&#10;(PostgreSQL)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="140" y="220" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="pp1" value="PayPal&#10;(API externa)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="540" y="220" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e1" value="acesso direto ao BD" style="endArrow=block;html=1;strokeColor=#FF0000;fontColor=#FF0000;fontSize=11;" edge="1" parent="1" source="f1" target="db1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" value="integração direta" style="endArrow=block;html=1;strokeColor=#FF0000;fontColor=#FF0000;fontSize=11;" edge="1" parent="1" source="f1" target="pp1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="note2" value="Problema: credenciais de banco e chaves de API expostas no cliente;&#10;sem camada de validação/regra de negócio; alto acoplamento e risco de segurança." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="180" y="320" width="480" height="60" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram name="Arquitetura Corrigida" id="arq_boa">
+    <mxGraphModel dx="800" dy="600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="500" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="f2" value="Frontend&#10;(React / TypeScript)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="be2" value="Backend / API&#10;(Java / Spring Boot)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="340" y="150" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="db2" value="Banco de Dados&#10;(PostgreSQL)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="140" y="270" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="pp2" value="PayPal&#10;(API externa)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="540" y="270" width="160" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" value="REST / HTTPS / JSON" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="f2" target="be2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" value="acesso a dados" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="be2" target="db2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" value="integração externa" style="endArrow=block;html=1;fontSize=11;" edge="1" parent="1" source="be2" target="pp2">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
