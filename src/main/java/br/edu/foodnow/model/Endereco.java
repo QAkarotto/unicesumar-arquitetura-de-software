@@ -6,6 +6,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Entity
 public class Endereco {
     @Id
@@ -46,4 +49,37 @@ public class Endereco {
     public boolean isPrincipal() { return principal; }
     public void setPrincipal(boolean principal) { this.principal = principal; }
     public Localizacao getLocalizacao() { return localizacao; }
+
+    public double calcularDistanciaAte(Endereco destino) {
+        double latitudeKm = (localizacao.getLatitude() - destino.localizacao.getLatitude()) * 110.57;
+        double longitudeKm = (localizacao.getLongitude() - destino.localizacao.getLongitude()) * 96.48;
+        return Math.sqrt(latitudeKm * latitudeKm + longitudeKm * longitudeKm);
+    }
+
+    public int estimarMinutosAte(Endereco destino) {
+        return 8 + (int) Math.ceil(calcularDistanciaAte(destino) * 4.0);
+    }
+
+    public String classificarZonaDeEntrega() {
+        if ("Centro".equalsIgnoreCase(bairro)) {
+            return "CENTRAL";
+        }
+        if ("Ponta Grossa".equalsIgnoreCase(cidade)) {
+            return "URBANA";
+        }
+        return "EXTERNA";
+    }
+
+    public boolean pertenceARegiaoDo(Endereco outro) {
+        String prefixoCep = cep == null || cep.length() < 3 ? "" : cep.substring(0, 3);
+        String prefixoOutro = outro.cep == null || outro.cep.length() < 3 ? "" : outro.cep.substring(0, 3);
+        return cidade.equalsIgnoreCase(outro.cidade) && prefixoCep.equals(prefixoOutro);
+    }
+
+    public BigDecimal calcularTaxaLocalAte(Endereco destino) {
+        double distancia = calcularDistanciaAte(destino);
+        double adicionalRegiao = pertenceARegiaoDo(destino) ? 0.0 : 3.50;
+        return BigDecimal.valueOf(3.75 + distancia * 1.45 + adicionalRegiao)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
 }

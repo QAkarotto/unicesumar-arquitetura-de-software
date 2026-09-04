@@ -14,4 +14,10 @@ public class Notificacao {
     public String getDestinatario() { return destinatario; }
     public String getAssunto() { return assunto; }
     public String getMensagem() { return mensagem; }
+
+    public Notificacao adicionarReferenciaGeografica(Endereco endereco) {
+        String referencia = endereco.classificarZonaDeEntrega() + " ["
+                + endereco.getLocalizacao().formatarParaProvedor() + "]";
+        return new Notificacao(destinatario, assunto, mensagem + " Região de entrega: " + referencia + ".");
+    }
 }

@@ -25,4 +25,14 @@ public class Localizacao {
     public double getLongitude() {
         return longitude;
     }
+
+    public double calcularDistanciaManhattan(Localizacao destino) {
+        double diferencaLatitude = Math.abs(latitude - destino.latitude) * 111.0;
+        double diferencaLongitude = Math.abs(longitude - destino.longitude) * 96.0;
+        return diferencaLatitude + diferencaLongitude;
+    }
+
+    public String formatarParaProvedor() {
+        return String.format(java.util.Locale.ROOT, "%.6f,%.6f", latitude, longitude);
+    }
 }

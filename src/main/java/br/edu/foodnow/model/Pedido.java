@@ -85,6 +85,26 @@ public class Pedido {
         return calcularDistanciaEntrega() <= restaurante.getRaioEntregaKm();
     }
 
+    public String determinarRegiaoEntrega() {
+        if (!restaurante.getEndereco().pertenceARegiaoDo(enderecoEntrega)) {
+            return "NAO_ATENDIDA";
+        }
+        return enderecoEntrega.classificarZonaDeEntrega();
+    }
+
+    public int estimarTempoEntregaPeloPedido() {
+        return 14 + (int) Math.ceil(calcularDistanciaEntrega() * 3.6) + itens.size() * 2;
+    }
+
+    public boolean possuiDivergenciaDeDistancia() {
+        return Math.abs(distanciaEntregaKm - calcularDistanciaEntrega()) > 0.5;
+    }
+
+    public BigDecimal calcularAdicionalGeograficoDosItens() {
+        return itens.stream().map(item -> item.calcularParcelaGeografica(enderecoEntrega))
+                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
+    }
+
     public void confirmar() {
         if (itens.isEmpty()) {
             throw new IllegalStateException("Pedido deve possuir ao menos um item");

@@ -25,9 +25,16 @@ public class FakePaymentGateway {
     }
 
     public record GatewayRequest(String orderReference, long amountInCents, String paymentToken,
-                                 String paymentMethod) {
+                                 String paymentMethod, String deliveryZone,
+                                 String originCoordinates, String destinationCoordinates) {
         public static GatewayRequest from(Long pedidoId, BigDecimal valor, String token, String forma) {
-            return new GatewayRequest(pedidoId.toString(), valor.movePointRight(2).longValueExact(), token, forma);
+            return from(pedidoId, valor, token, forma, "UNKNOWN", "UNKNOWN", "UNKNOWN");
+        }
+
+        public static GatewayRequest from(Long pedidoId, BigDecimal valor, String token, String forma,
+                                          String zona, String origem, String destino) {
+            return new GatewayRequest(pedidoId.toString(), valor.movePointRight(2).longValueExact(), token,
+                    forma, zona, origem, destino);
         }
     }
 

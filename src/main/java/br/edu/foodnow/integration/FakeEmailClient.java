@@ -14,6 +14,10 @@ public class FakeEmailClient {
         enviadas.add(new Notificacao(destinatario, assunto, mensagem));
     }
 
+    public void enviar(Notificacao notificacao) {
+        enviadas.add(notificacao);
+    }
+
     public List<Notificacao> getEnviadas() {
         return List.copyOf(enviadas);
     }

@@ -1,6 +1,7 @@
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
+import br.edu.foodnow.integration.FakeCourierClient;
 import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.Entrega;
 import br.edu.foodnow.model.Pedido;
@@ -16,21 +17,35 @@ public class EntregaService {
     private final PedidoRepository pedidoRepository;
     private final FakeMapsClient mapsClient;
     private final FakeEmailClient emailClient;
+    private final FakeCourierClient courierClient;
 
     public EntregaService(EntregaRepository entregaRepository, PedidoRepository pedidoRepository,
-                          FakeMapsClient mapsClient, FakeEmailClient emailClient) {
+                          FakeMapsClient mapsClient, FakeEmailClient emailClient,
+                          FakeCourierClient courierClient) {
         this.entregaRepository = entregaRepository;
         this.pedidoRepository = pedidoRepository;
         this.mapsClient = mapsClient;
         this.emailClient = emailClient;
+        this.courierClient = courierClient;
     }
 
     public Entrega criarPara(Pedido pedido) {
         FakeMapsClient.RouteResult rota = mapsClient.calcularRota(
                 pedido.getRestaurante().getEndereco().getLocalizacao(),
                 pedido.getEnderecoEntrega().getLocalizacao());
-        Entrega entrega = new Entrega(pedido, pedido.getEnderecoEntrega(),
-                rota.distanceKm(), rota.durationMinutes());
+        double distanciaEndereco = pedido.getRestaurante().getEndereco()
+                .calcularDistanciaAte(pedido.getEnderecoEntrega());
+        double distanciaPedido = pedido.calcularDistanciaEntrega();
+        double distanciaEscolhida = Math.max(rota.distanceKm(), Math.max(distanciaEndereco, distanciaPedido));
+        String zona = "EXPANDIDA".equals(rota.deliveryZone())
+                ? rota.deliveryZone() : pedido.getEnderecoEntrega().classificarZonaDeEntrega();
+        FakeCourierClient.CourierRequest requisicao = new FakeCourierClient.CourierRequest(pedido.getId(),
+                distanciaEscolhida, zona, pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
+        FakeCourierClient.CourierDispatch despacho = courierClient.solicitarEntregador(requisicao);
+        int tempo = Math.max(rota.durationMinutes(), pedido.estimarTempoEntregaPeloPedido())
+                + despacho.pickupEtaMinutes();
+        Entrega entrega = new Entrega(pedido, pedido.getEnderecoEntrega(), distanciaEscolhida, tempo,
+                zona, despacho.courierCode(), despacho.providerStatus());
         return entregaRepository.save(entrega);
     }
 

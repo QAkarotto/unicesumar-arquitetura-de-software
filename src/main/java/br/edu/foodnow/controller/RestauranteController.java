@@ -33,6 +33,13 @@ public class RestauranteController {
         return ApiDtos.RestauranteResponse.from(restauranteService.consultar(id));
     }
 
+    @PostMapping("/{id}/simular-entrega")
+    public ApiDtos.SimulacaoRestauranteResponse simularEntrega(@PathVariable Long id,
+            @Valid @RequestBody ApiDtos.SimulacaoEntregaRequest request) {
+        return ApiDtos.SimulacaoRestauranteResponse.from(
+                restauranteService.simularEntrega(id, request.destino().toModel()));
+    }
+
     @PostMapping("/{id}/produtos")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiDtos.ProdutoResponse cadastrarProduto(@PathVariable Long id,

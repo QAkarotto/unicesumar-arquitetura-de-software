@@ -13,6 +13,8 @@ import br.edu.foodnow.model.Restaurante;
 import br.edu.foodnow.model.StatusEntrega;
 import br.edu.foodnow.model.StatusPagamento;
 import br.edu.foodnow.model.StatusPedido;
+import br.edu.foodnow.service.ClienteService;
+import br.edu.foodnow.service.RestauranteService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
@@ -56,6 +58,17 @@ public final class ApiDtos {
         }
     }
 
+    public record AtendimentoClienteResponse(boolean atendido, double distanciaClienteKm,
+                                              double distanciaEnderecoKm, double distanciaProvedorKm,
+                                              String zonaProvedor, BigDecimal taxaCliente,
+                                              int tempoEstimadoMinutos) {
+        public static AtendimentoClienteResponse from(ClienteService.AtendimentoCliente resultado) {
+            return new AtendimentoClienteResponse(resultado.atendido(), resultado.distanciaClienteKm(),
+                    resultado.distanciaEnderecoKm(), resultado.distanciaProvedorKm(), resultado.zonaProvedor(),
+                    resultado.taxaCliente(), resultado.tempoEstimadoMinutos());
+        }
+    }
+
     public record RestauranteRequest(@NotBlank String nome, @DecimalMin("0.1") double raioEntregaKm,
                                      @NotNull @Valid EnderecoRequest endereco) {
     }
@@ -64,6 +77,21 @@ public final class ApiDtos {
         public static RestauranteResponse from(Restaurante restaurante) {
             return new RestauranteResponse(restaurante.getId(), restaurante.getNome(),
                     restaurante.getRaioEntregaKm(), EnderecoResponse.from(restaurante.getEndereco()));
+        }
+    }
+
+    public record SimulacaoEntregaRequest(@NotNull @Valid EnderecoRequest destino) {
+    }
+
+    public record SimulacaoRestauranteResponse(double distanciaRestauranteKm, double distanciaEnderecosKm,
+                                               double distanciaProvedorKm, String regiaoRestaurante,
+                                               String zonaProvedor, BigDecimal taxaRestaurante,
+                                               BigDecimal taxaEndereco, int tempoEstimadoMinutos) {
+        public static SimulacaoRestauranteResponse from(RestauranteService.SimulacaoRestaurante resultado) {
+            return new SimulacaoRestauranteResponse(resultado.distanciaRestauranteKm(),
+                    resultado.distanciaEnderecosKm(), resultado.distanciaProvedorKm(),
+                    resultado.regiaoRestaurante(), resultado.zonaProvedor(), resultado.taxaRestaurante(),
+                    resultado.taxaEndereco(), resultado.tempoEstimadoMinutos());
         }
     }
 
@@ -115,19 +143,26 @@ public final class ApiDtos {
     }
 
     public record PagamentoResponse(Long id, Long pedidoId, FormaPagamento forma, StatusPagamento status,
-                                    BigDecimal valor, String codigoExterno, String mensagemProvedor) {
+                                    BigDecimal valor, String codigoExterno, String mensagemProvedor,
+                                    String regiaoEntrega, double distanciaValidadaKm,
+                                    boolean riscoGeografico) {
         public static PagamentoResponse from(Pagamento pagamento) {
             return new PagamentoResponse(pagamento.getId(), pagamento.getPedido().getId(), pagamento.getForma(),
                     pagamento.getStatus(), pagamento.getValor(), pagamento.getCodigoExterno(),
-                    pagamento.getMensagemProvedor());
+                    pagamento.getMensagemProvedor(), pagamento.getRegiaoEntrega(),
+                    pagamento.getDistanciaValidadaKm(), pagamento.possuiRiscoGeografico());
         }
     }
 
     public record EntregaResponse(Long id, Long pedidoId, Long enderecoId, double distanciaKm,
-                                  int tempoEstimadoMinutos, StatusEntrega status) {
+                                  int tempoEstimadoMinutos, StatusEntrega status, String zonaEntrega,
+                                  String codigoEntregadorExterno, String statusDespachoExterno,
+                                  BigDecimal custoOperacional) {
         public static EntregaResponse from(Entrega entrega) {
             return new EntregaResponse(entrega.getId(), entrega.getPedido().getId(), entrega.getEndereco().getId(),
-                    entrega.getDistanciaKm(), entrega.getTempoEstimadoMinutos(), entrega.getStatus());
+                    entrega.getDistanciaKm(), entrega.getTempoEstimadoMinutos(), entrega.getStatus(),
+                    entrega.getZonaEntrega(), entrega.getCodigoEntregadorExterno(),
+                    entrega.getStatusDespachoExterno(), entrega.calcularCustoOperacional());
         }
     }
 

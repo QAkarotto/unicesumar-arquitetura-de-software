@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Entity
 public class Cliente {
@@ -63,6 +65,20 @@ public class Cliente {
 
     public boolean estaDentroDaAreaDeEntrega(Restaurante restaurante) {
         return calcularDistanciaAte(restaurante) <= restaurante.getRaioEntregaKm();
+    }
+
+    public BigDecimal calcularTaxaEntregaDoRestaurante(Restaurante restaurante) {
+        double distancia = calcularDistanciaAte(restaurante);
+        return BigDecimal.valueOf(3.90 + distancia * 1.10)
+                .setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public int estimarTempoAte(Restaurante restaurante) {
+        return 10 + (int) Math.ceil(calcularDistanciaAte(restaurante) * 4.2);
+    }
+
+    public String identificarRegiaoPrincipal() {
+        return enderecoPrincipal().classificarZonaDeEntrega();
     }
 
     public Long getId() { return id; }

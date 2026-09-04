@@ -41,6 +41,23 @@ public class Restaurante {
 
     public double buscarLatitude() { return endereco.getLocalizacao().getLatitude(); }
     public double buscarLongitude() { return endereco.getLocalizacao().getLongitude(); }
+    public boolean atendeEndereco(Endereco destino) {
+        return calcularDistanciaAte(destino) <= raioEntregaKm
+                && endereco.pertenceARegiaoDo(destino);
+    }
+
+    public String classificarRegiaoDeEntrega(Endereco destino) {
+        double distancia = calcularDistanciaAte(destino);
+        if (!endereco.pertenceARegiaoDo(destino)) {
+            return "FORA_DA_REGIAO";
+        }
+        return distancia <= raioEntregaKm / 2 ? "PROXIMA" : "LIMITE";
+    }
+
+    public int estimarTempoEntrega(Endereco destino) {
+        return 12 + (int) Math.ceil(endereco.calcularDistanciaAte(destino) * 3.8);
+    }
+
     public Long getId() { return id; }
     public String getNome() { return nome; }
     public double getRaioEntregaKm() { return raioEntregaKm; }

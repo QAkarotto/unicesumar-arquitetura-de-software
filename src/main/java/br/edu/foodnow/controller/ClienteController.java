@@ -33,6 +33,13 @@ public class ClienteController {
         return ApiDtos.ClienteResponse.from(clienteService.consultar(id));
     }
 
+    @GetMapping("/{clienteId}/atendimento/{restauranteId}")
+    public ApiDtos.AtendimentoClienteResponse simularAtendimento(@PathVariable Long clienteId,
+                                                                  @PathVariable Long restauranteId) {
+        return ApiDtos.AtendimentoClienteResponse.from(
+                clienteService.simularAtendimento(clienteId, restauranteId));
+    }
+
     @PostMapping("/{id}/enderecos")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiDtos.ClienteResponse adicionarEndereco(@PathVariable Long id,
