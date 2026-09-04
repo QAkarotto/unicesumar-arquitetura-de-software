@@ -28,6 +28,19 @@ class FoodNowFlowIT extends ApiTestSupport {
                 .body("nome", equalTo("Cliente API"));
         given().get("/restaurantes/{id}", cenario.restauranteId()).then().statusCode(200)
                 .body("nome", equalTo("Cantina FoodNow"));
+        given().get("/clientes/{clienteId}/atendimento/{restauranteId}",
+                        cenario.clienteId(), cenario.restauranteId()).then().statusCode(200)
+                .body("atendido", equalTo(true))
+                .body("distanciaClienteKm", greaterThan(0.0F))
+                .body("distanciaEnderecoKm", greaterThan(0.0F))
+                .body("distanciaProvedorKm", greaterThan(0.0F));
+        given().contentType(ContentType.JSON)
+                .body(Map.of("destino", endereco("Rua para Simulação", -25.096, -50.161)))
+                .post("/restaurantes/{id}/simular-entrega", cenario.restauranteId())
+                .then().statusCode(200)
+                .body("distanciaRestauranteKm", greaterThan(0.0F))
+                .body("distanciaEnderecosKm", greaterThan(0.0F))
+                .body("distanciaProvedorKm", greaterThan(0.0F));
         given().get("/produtos/{id}", cenario.produtoId()).then().statusCode(200)
                 .body("disponivel", equalTo(true));
         given().contentType(ContentType.JSON).body(Map.of("disponivel", false))
@@ -58,6 +71,8 @@ class FoodNowFlowIT extends ApiTestSupport {
                 .body(Map.of("pedidoId", pedidoId, "forma", "PIX", "token", "TOKEN_APROVADO"))
                 .post("/pagamentos").then().statusCode(201)
                 .body("status", equalTo("APROVADO"))
+                .body("regiaoEntrega", equalTo("CENTRAL"))
+                .body("riscoGeografico", equalTo(false))
                 .extract().jsonPath().getLong("id");
         given().get("/pagamentos/{id}", pagamentoId).then().statusCode(200)
                 .body("pedidoId", equalTo((int) pedidoId));
@@ -67,6 +82,8 @@ class FoodNowFlowIT extends ApiTestSupport {
         long entregaId = given().get("/entregas/pedido/{pedidoId}", pedidoId).then().statusCode(200)
                 .body("status", equalTo("AGUARDANDO_ENTREGADOR"))
                 .body("distanciaKm", greaterThan(0.0F))
+                .body("zonaEntrega", equalTo("CENTRAL"))
+                .body("statusDespachoExterno", equalTo("DRIVER_ASSIGNED"))
                 .extract().jsonPath().getLong("id");
         given().get("/entregas/{id}", entregaId).then().statusCode(200)
                 .body("pedidoId", equalTo((int) pedidoId));

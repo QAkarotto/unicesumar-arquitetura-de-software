@@ -24,6 +24,8 @@ class LocalizacaoEntregaTest {
         Localizacao origem = new Localizacao(-25.100, -50.150);
         Localizacao destino = new Localizacao(-25.095, -50.160);
         assertThat(DistanciaUtil.calcularKm(origem, destino)).isBetween(1.0, 1.3);
+        assertThat(origem.calcularDistanciaManhattan(destino)).isBetween(1.4, 1.6);
+        assertThat(origem.formatarParaProvedor()).isEqualTo("-25.100000,-50.150000");
     }
 
     @Test
@@ -43,6 +45,12 @@ class LocalizacaoEntregaTest {
         assertThat(cliente.estaDentroDaAreaDeEntrega(restaurante)).isTrue();
         assertThat(restaurante.calcularDistanciaAte(clienteEndereco)).isPositive();
         assertThat(restaurante.calcularTaxaEntrega(clienteEndereco)).isGreaterThan(BigDecimal.valueOf(4));
+        assertThat(cliente.calcularTaxaEntregaDoRestaurante(restaurante)).isGreaterThan(BigDecimal.valueOf(3.9));
+        assertThat(cliente.estimarTempoAte(restaurante)).isGreaterThan(10);
+        assertThat(cliente.identificarRegiaoPrincipal()).isEqualTo("CENTRAL");
+        assertThat(restaurante.atendeEndereco(clienteEndereco)).isTrue();
+        assertThat(restaurante.classificarRegiaoDeEntrega(clienteEndereco)).isEqualTo("PROXIMA");
+        assertThat(restaurante.estimarTempoEntrega(clienteEndereco)).isGreaterThan(12);
         assertThat(restaurante.buscarLatitude()).isEqualTo(-25.100);
         assertThat(restaurante.buscarLongitude()).isEqualTo(-50.150);
     }
@@ -78,6 +86,27 @@ class LocalizacaoEntregaTest {
         assertThat(entrega.getStatus()).isEqualTo(StatusEntrega.EM_ROTA);
         assertThat(entrega.getDistanciaKm()).isEqualTo(1.3);
         assertThat(entrega.getTempoEstimadoMinutos()).isEqualTo(18);
+        assertThat(entrega.calcularDistanciaPeloEndereco()).isPositive();
+        assertThat(entrega.calcularCustoOperacional()).isGreaterThan(BigDecimal.valueOf(2.5));
+        assertThat(entrega.getZonaEntrega()).isEqualTo("CENTRAL");
+        assertThat(entrega.getStatusDespachoExterno()).isEqualTo("NOT_REQUESTED");
+    }
+
+    @Test
+    void enderecoDevePossuirSuasPropriasRegrasDeRegiaoDistanciaTaxaETempo() {
+        Endereco origem = endereco(-25.100, -50.150);
+        Endereco destino = new Endereco("Rua Bairro", "20", "Uvaranas", "Ponta Grossa", "84030-000",
+                new Localizacao(-25.110, -50.180));
+        Endereco externo = new Endereco("Rua Externa", "2", "Bairro", "Castro", "84160-000",
+                new Localizacao(-24.790, -50.010));
+
+        assertThat(origem.calcularDistanciaAte(destino)).isPositive();
+        assertThat(origem.estimarMinutosAte(destino)).isGreaterThan(8);
+        assertThat(destino.classificarZonaDeEntrega()).isEqualTo("URBANA");
+        assertThat(externo.classificarZonaDeEntrega()).isEqualTo("EXTERNA");
+        assertThat(origem.pertenceARegiaoDo(destino)).isTrue();
+        assertThat(origem.pertenceARegiaoDo(externo)).isFalse();
+        assertThat(origem.calcularTaxaLocalAte(externo)).isGreaterThan(origem.calcularTaxaLocalAte(destino));
     }
 
     private Endereco endereco(double latitude, double longitude) {

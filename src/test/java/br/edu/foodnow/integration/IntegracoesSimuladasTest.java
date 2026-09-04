@@ -42,6 +42,7 @@ class IntegracoesSimuladasTest {
         var resultado = gateway.processarPagamento(request);
 
         assertThat(request.amountInCents()).isEqualTo(4230);
+        assertThat(request.deliveryZone()).isEqualTo("UNKNOWN");
         assertThat(resultado.providerStatus()).isEqualTo("AUTHORIZED");
         assertThat(gateway.consultarPagamento(resultado.transactionCode())).isEqualTo(resultado);
     }
@@ -66,6 +67,30 @@ class IntegracoesSimuladasTest {
         });
         client.limpar();
         assertThat(client.getEnviadas()).isEmpty();
+    }
+
+    @Test
+    void entregadoresDevemSerDespachadosComEstruturaDoProvedor() {
+        FakeCourierClient client = new FakeCourierClient();
+        var atribuido = client.solicitarEntregador(new FakeCourierClient.CourierRequest(
+                12L, 3.0, "CENTRAL", "-25.1,-50.1"));
+        var indisponivel = client.solicitarEntregador(new FakeCourierClient.CourierRequest(
+                13L, 45.0, "EXTERNA", "-24.0,-49.0"));
+
+        assertThat(atribuido.providerStatus()).isEqualTo("DRIVER_ASSIGNED");
+        assertThat(atribuido.courierCode()).isEqualTo("COURIER-12");
+        assertThat(atribuido.pickupEtaMinutes()).isEqualTo(4);
+        assertThat(indisponivel.providerStatus()).isEqualTo("NO_COURIER_AVAILABLE");
+        assertThat(indisponivel.courierCode()).isNull();
+    }
+
+    @Test
+    void notificacaoPodeMisturarFormatacaoERegraGeografica() {
+        var notificacao = new br.edu.foodnow.model.Notificacao("a@b.test", "Entrega", "Saiu")
+                .adicionarReferenciaGeografica(enderecoCom(new Localizacao(-25.1, -50.15)));
+        FakeEmailClient client = new FakeEmailClient();
+        client.enviar(notificacao);
+        assertThat(client.getEnviadas().getFirst().getMensagem()).contains("CENTRAL", "-25.100000,-50.150000");
     }
 
     private Endereco enderecoCom(Localizacao localizacao) {

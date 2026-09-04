@@ -19,6 +19,9 @@ class PedidoTest {
         assertThat(cenario.pedido().getTaxaEntrega()).isEqualByComparingTo("8.34");
         assertThat(cenario.pedido().getValorTotal()).isEqualByComparingTo("58.34");
         assertThat(cenario.pedido().getItens()).hasSize(1);
+        assertThat(cenario.produto().podeSerEntregueEm(cenario.endereco())).isTrue();
+        assertThat(cenario.produto().calcularAdicionalRegional(cenario.endereco())).isZero();
+        assertThat(cenario.pedido().getItens().getFirst().calcularParcelaGeografica(cenario.endereco())).isZero();
     }
 
     @Test
@@ -83,10 +86,29 @@ class PedidoTest {
         assertThat(cenario.pedido().calcularDistanciaEntrega()).isPositive().isLessThan(5);
         assertThat(cenario.pedido().calcularTaxaEntregaPorDistancia()).isGreaterThan(new BigDecimal("5.00"));
         assertThat(cenario.pedido().verificarEnderecoAtendido()).isTrue();
+        assertThat(cenario.pedido().determinarRegiaoEntrega()).isEqualTo("CENTRAL");
+        assertThat(cenario.pedido().estimarTempoEntregaPeloPedido()).isGreaterThan(14);
+        cenario.pedido().definirEntrega(20, new BigDecimal("10.00"));
+        assertThat(cenario.pedido().possuiDivergenciaDeDistancia()).isTrue();
+        assertThat(cenario.pedido().calcularAdicionalGeograficoDosItens()).isZero();
 
         Restaurante restrito = restauranteEm(-25.10, -50.15, 0.1);
         Pedido foraDaArea = new Pedido(cenario.cliente(), restrito, cenario.endereco());
         assertThat(foraDaArea.verificarEnderecoAtendido()).isFalse();
+    }
+
+    @Test
+    void pagamentoTambemDeveClassificarRiscoDeLocalizacao() {
+        Cenario cenario = cenarioPadrao();
+        Pagamento seguro = new Pagamento(cenario.pedido(), FormaPagamento.PIX, StatusPagamento.APROVADO,
+                BigDecimal.TEN, "P-1", "ok", "CENTRAL", 2.0);
+        Pagamento arriscado = new Pagamento(cenario.pedido(), FormaPagamento.CARTAO_CREDITO,
+                StatusPagamento.REJEITADO, BigDecimal.TEN, "P-2", "rejeitado", "EXTERNA", 20.0);
+
+        assertThat(seguro.possuiRiscoGeografico()).isFalse();
+        assertThat(arriscado.possuiRiscoGeografico()).isTrue();
+        assertThat(arriscado.getRegiaoEntrega()).isEqualTo("EXTERNA");
+        assertThat(arriscado.getDistanciaValidadaKm()).isEqualTo(20.0);
     }
 
     private Cenario cenarioPadrao() {
