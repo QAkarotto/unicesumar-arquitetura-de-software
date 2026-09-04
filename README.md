@@ -2,7 +2,7 @@
 
 FoodNow é uma aplicação monolítica de delivery usada em atividades práticas da disciplina de Arquitetura de Software. A API permite cadastrar clientes, endereços, restaurantes e produtos, criar e confirmar pedidos, processar pagamentos e acompanhar entregas.
 
-O projeto funciona inteiramente offline: mapas, pagamentos e e-mails são simulados localmente e o banco H2 é criado em memória.
+O projeto funciona inteiramente offline: mapas, pagamentos, despacho de entregadores e e-mails são simulados localmente, e o banco H2 é criado em memória.
 
 ## Requisitos
 
@@ -39,10 +39,12 @@ O relatório HTML do JaCoCo é gerado em `target/site/jacoco/index.html`. O buil
 |---|---|---|
 | `POST` | `/clientes` | Cadastrar cliente |
 | `GET` | `/clientes/{id}` | Consultar cliente |
+| `GET` | `/clientes/{clienteId}/atendimento/{restauranteId}` | Simular atendimento ao cliente |
 | `POST` | `/clientes/{id}/enderecos` | Cadastrar endereço |
 | `PUT` | `/clientes/{clienteId}/enderecos/{enderecoId}/principal` | Definir endereço principal |
 | `POST` | `/restaurantes` | Cadastrar restaurante |
 | `GET` | `/restaurantes/{id}` | Consultar restaurante |
+| `POST` | `/restaurantes/{id}/simular-entrega` | Simular distância, região, taxa e tempo |
 | `POST` | `/restaurantes/{id}/produtos` | Cadastrar produto |
 | `GET` | `/produtos/{id}` | Consultar produto |
 | `PATCH` | `/produtos/{id}/disponibilidade` | Alterar disponibilidade |
