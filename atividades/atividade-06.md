@@ -2,206 +2,87 @@
 
 ## Objetivo
 
-Analisar e refatorar uma parte coerente das responsabilidades relacionadas a
-**localização, área de atendimento, cálculo de distância, taxa e entrega** no
-projeto FoodNow.
-
-A refatoração deverá reduzir o acoplamento e melhorar a coesão sem alterar o
+Analisar e refatorar responsabilidades relacionadas a localização e entrega no
+FoodNow, reduzindo o acoplamento e melhorando a coesão sem alterar o
 comportamento observável da aplicação.
 
 ## Contexto
 
-O FoodNow funciona, possui testes automatizados e está organizado em camadas
-técnicas. Entretanto, regras e dados relacionados à localização participam de
-várias funcionalidades, como cadastro, catálogo, pedido, pagamento,
-notificação e entrega.
+O projeto possui regras de distância, região, área de atendimento, taxa e tempo
+de entrega distribuídas entre entidades, services, utilitários e integrações.
+Também existem cálculos diferentes para conceitos semelhantes.
 
-O sistema também possui mais de uma maneira de:
+Considere o seguinte requisito futuro:
 
-- calcular ou validar uma distância;
-- definir uma região ou zona de entrega;
-- verificar se um endereço é atendido;
-- formar uma taxa ou custo relacionado à entrega;
-- estimar o tempo de entrega;
-- consumir dados de uma integração simulada.
+> A taxa de entrega deverá considerar a distância do trajeto, a região, o
+> horário e outras condições operacionais.
 
-Algumas dessas diferenças fazem parte do comportamento atual da aplicação e
-podem aparecer nas respostas da API. Portanto, refatorar não significa
-simplesmente substituir todos os resultados por uma única fórmula.
-
-## Cenário de mudança arquitetural
-
-Considere o seguinte requisito **futuro**:
-
-> O FoodNow passará a utilizar uma nova estratégia para localização e taxa de
-> entrega. A taxa deverá considerar a distância do trajeto, a região de
-> entrega, o horário e outras condições operacionais.
-
-Esse requisito é um instrumento para analisar o impacto de mudança antes e
-depois da refatoração.
-
-**Não implemente a nova regra de rota, região e horário nesta atividade.** A
-implementação atual e seus resultados devem ser preservados. O objetivo é
-preparar melhor a estrutura para que uma mudança desse tipo fique mais
-localizada no futuro.
+Esse requisito deve ser utilizado apenas para analisar o impacto de mudanças.
+**Não implemente a nova regra nesta atividade.** Os resultados atuais devem ser
+preservados.
 
 ## Atividade
 
-### 1. Reconhecimento do problema
+1. Identifique pelo menos **8 pontos do código** relacionados a localização,
+   distância, região, atendimento, taxa ou tempo de entrega. O levantamento
+   deve abranger ao menos quatro tipos de componentes: domínio, services,
+   utilitários, integrações, API ou persistência.
 
-Identifique pelo menos **8 pontos do código** que possuam responsabilidades ou
-dependências relacionadas a localização, distância, região, área atendida,
-taxa ou tempo de entrega.
+2. Para cada ponto, informe:
+   - classe e método;
+   - responsabilidade encontrada;
+   - dependências envolvidas;
+   - problema arquitetural;
+   - impacto provável de uma mudança.
 
-O levantamento deverá abranger pelo menos **quatro tipos de componentes** entre:
+3. Represente as principais dependências do fluxo:
 
-- entidades ou objetos do domínio;
-- services;
-- utilitários;
-- integrações simuladas;
-- controllers ou DTOs;
-- persistência.
+   ```text
+   criar pedido -> confirmar -> pagar -> criar/consultar entrega
+   ```
 
-Para cada ponto, registre:
+4. Proponha uma nova distribuição de responsabilidades e implemente uma
+   refatoração que inclua a criação do pedido e pelo menos um fluxo relacionado,
+   como pagamento, notificação ou entrega.
 
-| Responsabilidade encontrada | Local atual | Dependências envolvidas | Problema arquitetural | Possível impacto de mudança |
-|---|---|---|---|---|
-| Exemplo identificado pelo grupo | Classe e método | Elementos dos quais depende | Coesão, acoplamento, duplicação etc. | Classes ou fluxos afetados |
+5. A refatoração deve demonstrar:
+   - redução das responsabilidades de pelo menos uma classe;
+   - concentração de pelo menos três regras ou cálculos dispersos;
+   - redução da dependência direta de uma integração geográfica concreta;
+   - um limite claro para a futura regra de rota, região e horário.
 
-O grupo também deverá representar, por diagrama simples ou lista encadeada, as
-dependências percorridas pelo fluxo principal:
+6. Compare a estrutura antes e depois da refatoração, indicando os componentes
+   afetados pelo requisito futuro, as dependências reduzidas e os trade-offs da
+   solução.
 
-```text
-criar pedido -> confirmar -> pagar -> criar/consultar entrega
-```
+Não é necessário corrigir todos os problemas do projeto. Os problemas mantidos
+fora do escopo devem ser registrados e justificados.
 
-Não basta listar nomes de classes. A análise deve explicar por que a
-responsabilidade está mal distribuída ou por que a dependência dificulta uma
-mudança.
+## Preservação de comportamento
 
-### 2. Caracterização do comportamento atual
+Para as mesmas entradas, devem permanecer inalterados:
 
-Antes da refatoração:
+- endpoints, métodos HTTP, códigos de status e campos JSON;
+- regras de aceitação e rejeição de pedidos;
+- valores de subtotal, taxa, total, distância e tempo;
+- regiões, zonas, riscos e dados de despacho;
+- transições de status de pedido, pagamento e entrega;
+- notificações enviadas.
 
-1. execute `mvn clean verify`;
-2. registre o resultado e a cobertura inicial;
-3. identifique quais testes protegem o trecho escolhido;
-4. crie testes de caracterização quando o comportamento relevante ainda não
-   estiver suficientemente protegido.
+Resultados distintos expostos em campos diferentes da API também fazem parte
+do comportamento atual e devem ser preservados.
 
-Os testes de caracterização devem verificar resultados e mudanças de estado,
-sem fixar ordem de chamadas ou a organização interna das classes.
+## Testes e restrições
 
-### 3. Proposta arquitetural
-
-Proponha uma distribuição mais clara das responsabilidades encontradas. A
-proposta deverá indicar:
-
-- qual será o limite da refatoração;
-- quais responsabilidades terão um proprietário mais claro;
-- como os dados da integração simulada serão tratados;
-- quais dependências deixarão de existir ou mudarão de direção;
-- quais problemas identificados permanecerão fora do escopo;
-- quais trade-offs foram aceitos.
-
-Não existe uma única organização correta. A solução pode manter camadas
-técnicas, adotar organização por funcionalidade ou combinar as duas
-abordagens, desde que a decisão seja justificada.
-
-### 4. Refatoração
-
-Refatore uma **fatia vertical coerente** que inclua obrigatoriamente o cálculo
-usado na criação do pedido e pelo menos um fluxo relacionado, como simulação de
-entrega, pagamento, notificação ou criação da entrega.
-
-A solução deverá demonstrar, de forma verificável:
-
-- redução de responsabilidades de pelo menos uma classe excessivamente
-  carregada;
-- eliminação ou centralização de pelo menos três regras ou cálculos que estavam
-  distribuídos;
-- redução de dependência direta de algum componente da fatia escolhida em uma
-  implementação concreta de integração geográfica;
-- existência de um ponto claro para introduzir futuramente dados de rota,
-  região e horário;
-- manutenção dos resultados atuais para as mesmas entradas.
-
-Não é necessário corrigir todos os problemas arquiteturais do FoodNow. Os
-problemas que permanecerem deverão ser indicados explicitamente na entrega.
-
-### 5. Análise de impacto
-
-Compare o cenário futuro de rota, região e horário antes e depois da
-refatoração.
-
-Apresente:
-
-- componentes que seriam afetados antes;
-- componentes que seriam afetados depois;
-- dependências removidas ou invertidas;
-- responsabilidades que passaram a possuir um limite mais claro;
-- limitações e novos trade-offs da solução.
-
-Uma redução apenas na quantidade de arquivos modificados não é suficiente. A
-comparação deve explicar por que o novo limite reduz o acoplamento ou melhora a
-coesão.
-
-## Comportamento que deve ser preservado
-
-Para as mesmas requisições e dados de entrada, preserve:
-
-- paths, métodos HTTP, códigos de status e campos JSON de todos os endpoints;
-- criação e consulta de clientes, restaurantes e produtos;
-- resultados dos endpoints de simulação de atendimento e entrega;
-- aceitação ou rejeição de endereços na criação do pedido;
-- subtotal, taxa, total, distância e status do pedido;
-- confirmação do pedido;
-- aprovação e rejeição de pagamento;
-- região e risco geográfico registrados no pagamento;
-- criação da entrega somente após pagamento aprovado;
-- distância, zona, estimativa, despacho e transições de status da entrega;
-- notificações atualmente enviadas em cada etapa.
-
-Quando um endpoint expõe cálculos diferentes em campos distintos, os campos e
-seus respectivos resultados continuam fazendo parte do contrato observável.
-
-## Restrições
-
-- Não altere os endpoints nem os contratos de requisição e resposta.
-- Não modifique nem remova os testes de API já existentes.
-- É permitido adicionar novos testes de API.
-- Testes unitários podem ser criados ou ajustados para acompanhar novos limites
-  internos, mas não devem perder as verificações de comportamento existentes.
-- Não reduza a cobertura por meio de exclusões adicionais no JaCoCo.
-- A cobertura mínima de **80% de linhas** deve ser mantida.
-- Não utilize serviços externos reais nem adicione dependência de internet ou
-  API keys.
-- Não transforme o projeto em microsserviços.
-- Não crie interfaces, factories ou strategies sem uma responsabilidade ou
-  variação concreta que justifique sua existência.
+- Execute `mvn clean verify` antes e depois da refatoração.
+- Não modifique nem remova os testes de API existentes.
+- Adicione testes de caracterização quando o comportamento escolhido não
+  estiver suficientemente protegido.
+- Testes unitários podem ser ajustados à nova estrutura, desde que continuem
+  protegendo o mesmo comportamento.
+- Mantenha cobertura mínima de **80% de linhas**, sem novas exclusões no JaCoCo.
+- Não utilize serviços externos reais, API keys ou microsserviços.
 - Não implemente o requisito futuro de horário.
-
-Valide a solução executando:
-
-```bash
-mvn clean verify
-```
-
-## Critérios de aceitação
-
-A atividade será considerada concluída quando:
-
-- o levantamento apresentar os pontos e tipos de componentes solicitados;
-- a proposta e o código implementado forem coerentes entre si;
-- a fatia refatorada incluir criação de pedido e outro fluxo relacionado;
-- houver evidência objetiva de redução de responsabilidade, duplicação e
-  dependência concreta;
-- o comportamento observável listado nesta atividade for preservado;
-- os testes de API originais estiverem inalterados e passando;
-- `mvn clean verify` terminar com sucesso;
-- a cobertura de linhas permanecer em pelo menos 80%;
-- a análise antes/depois utilizar o cenário de rota, região e horário;
-- os problemas deixados fora do escopo e os trade-offs forem documentados.
 
 ## Organização
 
@@ -211,17 +92,14 @@ A atividade pode ser realizada **individualmente ou em dupla**.
 
 A entrega deverá ser realizada por **Pull Request** contendo:
 
-- nomes dos integrantes;
-- tabela de problemas identificados;
-- representação do fluxo e das dependências atuais;
-- limite e decisão arquitetural adotados;
-- principais alterações realizadas;
-- testes de caracterização adicionados ou ajustados;
-- comparação antes/depois para o cenário futuro;
-- problemas que permaneceram fora do escopo;
-- trade-offs da solução;
+- integrantes;
+- problemas identificados e dependências do fluxo;
+- decisão arquitetural e escopo adotado;
+- principais alterações e testes realizados;
+- comparação antes/depois;
+- problemas não tratados e trade-offs;
 - resultado do `mvn clean verify` e cobertura obtida.
 
-O Pull Request não deve conter apenas movimentação de arquivos ou alteração de
-packages. A melhoria deverá estar refletida na distribuição das
-responsabilidades e nas dependências do código.
+O Pull Request deve apresentar mudanças efetivas na distribuição de
+responsabilidades e dependências. Apenas mover classes ou alterar packages não
+é suficiente.
