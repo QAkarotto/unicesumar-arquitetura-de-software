@@ -1,6 +1,7 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeMapsClient;
+import br.edu.foodnow.localizacao.MapaGateway;
+import br.edu.foodnow.localizacao.Rota;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.Localizacao;
 import br.edu.foodnow.model.Produto;
@@ -15,19 +16,17 @@ import java.math.BigDecimal;
 public class RestauranteService {
     private final RestauranteRepository restauranteRepository;
     private final ProdutoRepository produtoRepository;
-    private final LocalizacaoService localizacaoService;
-    private final FakeMapsClient mapsClient;
+    private final MapaGateway mapaGateway;
 
     public RestauranteService(RestauranteRepository restauranteRepository, ProdutoRepository produtoRepository,
-                              LocalizacaoService localizacaoService, FakeMapsClient mapsClient) {
+                              MapaGateway mapaGateway) {
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
-        this.localizacaoService = localizacaoService;
-        this.mapsClient = mapsClient;
+        this.mapaGateway = mapaGateway;
     }
 
     public Restaurante cadastrar(String nome, double raioEntregaKm, Endereco endereco) {
-        Localizacao coordenadas = localizacaoService.buscarCoordenadas(endereco);
+        Localizacao coordenadas = mapaGateway.geocodificar(endereco).localizacao();
         Endereco localizado = new Endereco(endereco.getLogradouro(), endereco.getNumero(), endereco.getBairro(),
                 endereco.getCidade(), endereco.getCep(), coordenadas);
         return restauranteRepository.save(new Restaurante(nome, raioEntregaKm, localizado));
@@ -61,7 +60,7 @@ public class RestauranteService {
 
     public SimulacaoRestaurante simularEntrega(Long restauranteId, Endereco destino) {
         Restaurante restaurante = consultar(restauranteId);
-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(restaurante.getEndereco().getLocalizacao(),
+        Rota rota = mapaGateway.calcularRota(restaurante.getEndereco().getLocalizacao(),
                 destino.getLocalizacao());
         double distanciaDaEntidade = restaurante.calcularDistanciaAte(destino);
         double distanciaDosEnderecos = restaurante.getEndereco().calcularDistanciaAte(destino);
@@ -69,8 +68,8 @@ public class RestauranteService {
         BigDecimal taxaDoEndereco = restaurante.getEndereco().calcularTaxaLocalAte(destino);
         int tempo = Math.max(restaurante.estimarTempoEntrega(destino), destino.estimarMinutosAte(
                 restaurante.getEndereco()));
-        return new SimulacaoRestaurante(distanciaDaEntidade, distanciaDosEnderecos, rota.distanceKm(),
-                restaurante.classificarRegiaoDeEntrega(destino), rota.deliveryZone(),
+        return new SimulacaoRestaurante(distanciaDaEntidade, distanciaDosEnderecos, rota.distanciaKm(),
+                restaurante.classificarRegiaoDeEntrega(destino), rota.regiao(),
                 taxaDoRestaurante, taxaDoEndereco, tempo);
     }
 
