@@ -1,6 +1,8 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeMapsClient;
+import br.edu.foodnow.localizacao.MapaGateway;
+import br.edu.foodnow.localizacao.PoliticaAreaAtendimento;
+import br.edu.foodnow.localizacao.Rota;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.Localizacao;
@@ -16,15 +18,15 @@ import java.math.BigDecimal;
 public class ClienteService {
     private final ClienteRepository clienteRepository;
     private final RestauranteRepository restauranteRepository;
-    private final LocalizacaoService localizacaoService;
-    private final FakeMapsClient mapsClient;
+    private final MapaGateway mapaGateway;
+    private final PoliticaAreaAtendimento politicaAreaAtendimento;
 
     public ClienteService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
-                          LocalizacaoService localizacaoService, FakeMapsClient mapsClient) {
+                          MapaGateway mapaGateway, PoliticaAreaAtendimento politicaAreaAtendimento) {
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
-        this.localizacaoService = localizacaoService;
-        this.mapsClient = mapsClient;
+        this.mapaGateway = mapaGateway;
+        this.politicaAreaAtendimento = politicaAreaAtendimento;
     }
 
     public Cliente cadastrar(String nome, String email) {
@@ -39,12 +41,7 @@ public class ClienteService {
     @Transactional
     public Cliente adicionarEndereco(Long clienteId, Endereco endereco) {
         Cliente cliente = consultar(clienteId);
-        Localizacao coordenadas = localizacaoService.buscarCoordenadas(endereco);
-        FakeMapsClient.MapCoordinates respostaDireta = mapsClient.buscarCoordenadas(endereco);
-        if ("APPROXIMATE".equals(respostaDireta.precision())) {
-            coordenadas = new Localizacao(Double.parseDouble(respostaDireta.lat()),
-                    Double.parseDouble(respostaDireta.lng()));
-        }
+        Localizacao coordenadas = mapaGateway.geocodificar(endereco).localizacao();
         Endereco enderecoNormalizado = new Endereco(endereco.getLogradouro(), endereco.getNumero(),
                 endereco.getBairro(), endereco.getCidade(), endereco.getCep(), coordenadas);
         cliente.adicionarEndereco(enderecoNormalizado);
@@ -69,15 +66,14 @@ public class ClienteService {
         Endereco destino = cliente.enderecoPrincipal();
         double distanciaDoCliente = cliente.calcularDistanciaAte(restaurante);
         double distanciaDoEndereco = destino.calcularDistanciaAte(restaurante.getEndereco());
-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(restaurante.getEndereco().getLocalizacao(),
+        Rota rota = mapaGateway.calcularRota(restaurante.getEndereco().getLocalizacao(),
                 destino.getLocalizacao());
-        boolean atendido = cliente.estaDentroDaAreaDeEntrega(restaurante)
-                && restaurante.atendeEndereco(destino)
-                && rota.distanceKm() <= restaurante.getRaioEntregaKm();
+        boolean atendido = politicaAreaAtendimento.atende(cliente, restaurante, destino,
+                rota.distanciaKm());
         BigDecimal taxa = cliente.calcularTaxaEntregaDoRestaurante(restaurante);
-        int tempo = Math.max(cliente.estimarTempoAte(restaurante), rota.durationMinutes());
+        int tempo = Math.max(cliente.estimarTempoAte(restaurante), rota.duracaoMinutos());
         return new AtendimentoCliente(atendido, distanciaDoCliente, distanciaDoEndereco,
-                rota.distanceKm(), rota.deliveryZone(), taxa, tempo);
+                rota.distanciaKm(), rota.regiao(), taxa, tempo);
     }
 
     public record AtendimentoCliente(boolean atendido, double distanciaClienteKm, double distanciaEnderecoKm,
