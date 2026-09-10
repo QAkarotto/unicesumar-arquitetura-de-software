@@ -2,3 +2,6 @@
 /.idea/
 *.iml
 *.class
+jdk21/
+maven/
+jdk26/

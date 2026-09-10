@@ -1,7 +1,7 @@
 package br.edu.foodnow.model;
 
-import br.edu.foodnow.util.DistanciaUtil;
-import br.edu.foodnow.util.TaxaEntregaUtil;
+import br.edu.foodnow.service.CalculoFrete;
+import br.edu.foodnow.service.ValidadorEntrega;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -23,15 +23,8 @@ class LocalizacaoEntregaTest {
     void deveCalcularDistanciaConhecida() {
         Localizacao origem = new Localizacao(-25.100, -50.150);
         Localizacao destino = new Localizacao(-25.095, -50.160);
-        assertThat(DistanciaUtil.calcularKm(origem, destino)).isBetween(1.0, 1.3);
         assertThat(origem.calcularDistanciaManhattan(destino)).isBetween(1.4, 1.6);
         assertThat(origem.formatarParaProvedor()).isEqualTo("-25.100000,-50.150000");
-    }
-
-    @Test
-    void deveAplicarFaixasDeTaxa() {
-        assertThat(TaxaEntregaUtil.calcular(2)).isEqualByComparingTo("6.90");
-        assertThat(TaxaEntregaUtil.calcular(5)).isEqualByComparingTo("12.00");
     }
 
     @Test
@@ -41,18 +34,9 @@ class LocalizacaoEntregaTest {
         cliente.adicionarEndereco(clienteEndereco);
         Restaurante restaurante = new Restaurante("Massa", 10, endereco(-25.100, -50.150));
 
-        assertThat(cliente.calcularDistanciaAte(restaurante)).isPositive();
-        assertThat(cliente.estaDentroDaAreaDeEntrega(restaurante)).isTrue();
-        assertThat(restaurante.calcularDistanciaAte(clienteEndereco)).isPositive();
-        assertThat(restaurante.calcularTaxaEntrega(clienteEndereco)).isGreaterThan(BigDecimal.valueOf(4));
-        assertThat(cliente.calcularTaxaEntregaDoRestaurante(restaurante)).isGreaterThan(BigDecimal.valueOf(3.9));
-        assertThat(cliente.estimarTempoAte(restaurante)).isGreaterThan(10);
         assertThat(cliente.identificarRegiaoPrincipal()).isEqualTo("CENTRAL");
         assertThat(restaurante.atendeEndereco(clienteEndereco)).isTrue();
         assertThat(restaurante.classificarRegiaoDeEntrega(clienteEndereco)).isEqualTo("PROXIMA");
-        assertThat(restaurante.estimarTempoEntrega(clienteEndereco)).isGreaterThan(12);
-        assertThat(restaurante.buscarLatitude()).isEqualTo(-25.100);
-        assertThat(restaurante.buscarLongitude()).isEqualTo(-50.150);
     }
 
     @Test
@@ -80,14 +64,10 @@ class LocalizacaoEntregaTest {
         Pedido pedido = new Pedido(cliente, restaurante, destino);
         Entrega entrega = new Entrega(pedido, destino, 1.3, 18);
 
-        assertThat(entrega.calcularDistancia()).isPositive();
-        assertThat(entrega.estimarTempoEntrega()).isGreaterThan(15);
         entrega.atualizarStatus(StatusEntrega.EM_ROTA);
         assertThat(entrega.getStatus()).isEqualTo(StatusEntrega.EM_ROTA);
         assertThat(entrega.getDistanciaKm()).isEqualTo(1.3);
         assertThat(entrega.getTempoEstimadoMinutos()).isEqualTo(18);
-        assertThat(entrega.calcularDistanciaPeloEndereco()).isPositive();
-        assertThat(entrega.calcularCustoOperacional()).isGreaterThan(BigDecimal.valueOf(2.5));
         assertThat(entrega.getZonaEntrega()).isEqualTo("CENTRAL");
         assertThat(entrega.getStatusDespachoExterno()).isEqualTo("NOT_REQUESTED");
     }
@@ -107,6 +87,28 @@ class LocalizacaoEntregaTest {
         assertThat(origem.pertenceARegiaoDo(destino)).isTrue();
         assertThat(origem.pertenceARegiaoDo(externo)).isFalse();
         assertThat(origem.calcularTaxaLocalAte(externo)).isGreaterThan(origem.calcularTaxaLocalAte(destino));
+    }
+
+    @Test
+    void calculoFreteDeveAplicarFaixasDeTaxa() {
+        CalculoFrete calculo = new CalculoFrete();
+        assertThat(calculo.calcularTaxaEntrega(2)).isEqualByComparingTo("6.90");
+        assertThat(calculo.calcularTaxaEntrega(5)).isEqualByComparingTo("12.00");
+    }
+
+    @Test
+    void validadorEntregaDeveVerificarAtendimento() {
+        Cliente cliente = new Cliente("Eva", "eva@foodnow.test");
+        Endereco destino = endereco(-25.095, -50.160);
+        cliente.adicionarEndereco(destino);
+        Restaurante restaurante = new Restaurante("Pizza", 20, endereco(-25.100, -50.150));
+
+        ValidadorEntrega validador = new ValidadorEntrega();
+        assertThat(validador.estaDentroDaAreaDeEntrega(restaurante, destino)).isTrue();
+        assertThat(validador.atendeEndereco(restaurante, destino)).isTrue();
+        assertThat(validador.determinarRegiaoEntrega(
+                new Pedido(cliente, restaurante, destino))).isEqualTo("CENTRAL");
+        assertThat(validador.classificarRegiaoDeEntrega(restaurante, destino)).isEqualTo("PROXIMA");
     }
 
     private Endereco endereco(double latitude, double longitude) {

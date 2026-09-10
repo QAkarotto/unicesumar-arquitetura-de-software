@@ -1,7 +1,6 @@
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
-import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.FormaPagamento;
@@ -13,7 +12,6 @@ import br.edu.foodnow.repository.ClienteRepository;
 import br.edu.foodnow.repository.PedidoRepository;
 import br.edu.foodnow.repository.ProdutoRepository;
 import br.edu.foodnow.repository.RestauranteRepository;
-import br.edu.foodnow.util.TaxaEntregaUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,12 +27,14 @@ public class PedidoService {
     private final LocalizacaoService localizacaoService;
     private final PagamentoService pagamentoService;
     private final FakeEmailClient emailClient;
-    private final FakeMapsClient mapsClient;
+    private final CalculoFrete calculoFrete;
+    private final ValidadorEntrega validadorEntrega;
 
     public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
                          ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
                          LocalizacaoService localizacaoService, PagamentoService pagamentoService,
-                         FakeEmailClient emailClient, FakeMapsClient mapsClient) {
+                         FakeEmailClient emailClient, CalculoFrete calculoFrete,
+                         ValidadorEntrega validadorEntrega) {
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
@@ -42,7 +42,8 @@ public class PedidoService {
         this.localizacaoService = localizacaoService;
         this.pagamentoService = pagamentoService;
         this.emailClient = emailClient;
-        this.mapsClient = mapsClient;
+        this.calculoFrete = calculoFrete;
+        this.validadorEntrega = validadorEntrega;
     }
 
     @Transactional
@@ -57,29 +58,31 @@ public class PedidoService {
                 .findFirst()
                 .orElseThrow(() -> new RegraNegocioException("Endereço não pertence ao cliente"));
 
-        double distanciaDoService = localizacaoService.calcularDistancia(restaurante.getEndereco(), endereco);
-        FakeMapsClient.RouteResult rotaConcreta = mapsClient.calcularRota(
-                restaurante.getEndereco().getLocalizacao(), endereco.getLocalizacao());
-        double distanciaDoRestaurante = restaurante.calcularDistanciaAte(endereco);
-        double distanciaDoEndereco = restaurante.getEndereco().calcularDistanciaAte(endereco);
-        double distanciaManhattan = restaurante.getEndereco().getLocalizacao()
-                .calcularDistanciaManhattan(endereco.getLocalizacao());
-        double distancia = Math.max(distanciaDoService, Math.max(rotaConcreta.distanceKm(),
-                Math.max(distanciaDoRestaurante, Math.max(distanciaDoEndereco, distanciaManhattan))));
-        if (distancia > restaurante.getRaioEntregaKm() || !cliente.estaDentroDaAreaDeEntrega(restaurante)
-                || !restaurante.atendeEndereco(endereco)) {
+        double distanciaRota = localizacaoService.calcularDistancia(restaurante.getEndereco(), endereco);
+        double distanciaService = localizacaoService.calcularDistancia(restaurante.getEndereco(), endereco);
+        double distanciaRestaurante = calculoFrete.calcularDistancia(restaurante, endereco);
+        double distanciaEndereco = calculoFrete.calcularDistancia(restaurante.getEndereco(), endereco);
+        double distanciaManhattan = endereco.getLocalizacao().calcularDistanciaManhattan(
+                restaurante.getEndereco().getLocalizacao());
+        double distancia = Math.max(distanciaService, Math.max(distanciaRota,
+                Math.max(distanciaRestaurante, Math.max(distanciaEndereco, distanciaManhattan))));
+        if (distancia > restaurante.getRaioEntregaKm() || !validadorEntrega.estaDentroDaAreaDeEntrega(restaurante, endereco)
+                || !validadorEntrega.atendeEndereco(restaurante, endereco)) {
             throw new RegraNegocioException("Endereço fora da área de entrega");
         }
 
         Pedido pedido = new Pedido(cliente, restaurante, endereco);
-        BigDecimal taxaEntrega = maiorTaxa(TaxaEntregaUtil.calcular(distancia),
-                restaurante.calcularTaxaEntrega(endereco), restaurante.getEndereco().calcularTaxaLocalAte(endereco),
-                cliente.calcularTaxaEntregaDoRestaurante(restaurante), pedido.calcularTaxaEntregaPorDistancia());
+        BigDecimal taxaEntrega = calculoFrete.calcularMaiorTaxa(
+                calculoFrete.calcularTaxaEntrega(distancia),
+                calculoFrete.calcularTaxaRestaurante(restaurante, endereco),
+                calculoFrete.calcularTaxaEndereco(restaurante.getEndereco(), endereco),
+                calculoFrete.calcularTaxaCliente(restaurante, endereco),
+                calculoFrete.calcularTaxaPedido(pedido));
         pedido.definirEntrega(distancia, taxaEntrega);
         for (ItemSolicitado item : itensSolicitados) {
             adicionarItemCarregado(pedido, item.produtoId(), item.quantidade());
         }
-        pedido.definirEntrega(distancia, taxaEntrega.add(pedido.calcularAdicionalGeograficoDosItens()));
+        pedido.definirEntrega(distancia, taxaEntrega.add(calculoFrete.calcularAdicionalGeograficoDosItens(pedido)));
         return pedidoRepository.save(pedido);
     }
 
@@ -122,25 +125,17 @@ public class PedidoService {
         } catch (IllegalStateException excecao) {
             throw new RegraNegocioException(excecao.getMessage());
         }
+        String regiao = validadorEntrega.determinarRegiaoEntrega(pedido);
+        int tempo = 14 + (int) Math.ceil(calculoFrete.calcularDistanciaPedido(pedido) * 3.6) + pedido.getItens().size() * 2;
         emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
                 "O pedido " + pedido.getId() + " foi confirmado para a região "
-                        + pedido.determinarRegiaoEntrega() + ". Estimativa interna: "
-                        + pedido.estimarTempoEntregaPeloPedido() + " minutos.");
+                        + regiao + ". Estimativa interna: "
+                        + tempo + " minutos.");
         return pedidoRepository.save(pedido);
     }
 
     public Pagamento pagar(Long pedidoId, FormaPagamento forma, String token) {
         return pagamentoService.processar(pedidoId, forma, token);
-    }
-
-    private BigDecimal maiorTaxa(BigDecimal... taxas) {
-        BigDecimal maior = BigDecimal.ZERO;
-        for (BigDecimal taxa : taxas) {
-            if (taxa.compareTo(maior) > 0) {
-                maior = taxa;
-            }
-        }
-        return maior;
     }
 
     public record ItemSolicitado(Long produtoId, int quantidade) {

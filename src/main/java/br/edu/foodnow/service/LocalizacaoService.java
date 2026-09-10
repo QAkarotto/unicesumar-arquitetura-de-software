@@ -14,15 +14,22 @@ public class LocalizacaoService {
     }
 
     public Localizacao buscarCoordenadas(Endereco endereco) {
-        FakeMapsClient.MapCoordinates resposta = mapsClient.buscarCoordenadas(endereco);
-        return new Localizacao(Double.parseDouble(resposta.lat()), Double.parseDouble(resposta.lng()));
+        FakeMapsClient.MapCoordinates resultado = mapsClient.buscarCoordenadas(endereco);
+        return new Localizacao(Double.parseDouble(resultado.lat()), Double.parseDouble(resultado.lng()));
     }
 
     public double calcularDistancia(Endereco origem, Endereco destino) {
-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).distanceKm();
+        FakeMapsClient.RouteResult resultado = mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao());
+        return resultado.distanceKm();
     }
 
     public int estimarTempoEntrega(Endereco origem, Endereco destino) {
-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).durationMinutes();
+        FakeMapsClient.RouteResult resultado = mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao());
+        return resultado.durationMinutes();
+    }
+
+    public String buscarZonaEntrega(Endereco origem, Endereco destino) {
+        FakeMapsClient.RouteResult resultado = mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao());
+        return resultado.deliveryZone();
     }
 }

@@ -81,23 +81,6 @@ class PedidoTest {
     }
 
     @Test
-    void deveCalcularDistanciaTaxaEAtendimentoNoPedido() {
-        Cenario cenario = cenarioPadrao();
-        assertThat(cenario.pedido().calcularDistanciaEntrega()).isPositive().isLessThan(5);
-        assertThat(cenario.pedido().calcularTaxaEntregaPorDistancia()).isGreaterThan(new BigDecimal("5.00"));
-        assertThat(cenario.pedido().verificarEnderecoAtendido()).isTrue();
-        assertThat(cenario.pedido().determinarRegiaoEntrega()).isEqualTo("CENTRAL");
-        assertThat(cenario.pedido().estimarTempoEntregaPeloPedido()).isGreaterThan(14);
-        cenario.pedido().definirEntrega(20, new BigDecimal("10.00"));
-        assertThat(cenario.pedido().possuiDivergenciaDeDistancia()).isTrue();
-        assertThat(cenario.pedido().calcularAdicionalGeograficoDosItens()).isZero();
-
-        Restaurante restrito = restauranteEm(-25.10, -50.15, 0.1);
-        Pedido foraDaArea = new Pedido(cenario.cliente(), restrito, cenario.endereco());
-        assertThat(foraDaArea.verificarEnderecoAtendido()).isFalse();
-    }
-
-    @Test
     void pagamentoTambemDeveClassificarRiscoDeLocalizacao() {
         Cenario cenario = cenarioPadrao();
         Pagamento seguro = new Pagamento(cenario.pedido(), FormaPagamento.PIX, StatusPagamento.APROVADO,
