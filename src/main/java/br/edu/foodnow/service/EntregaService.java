@@ -2,7 +2,6 @@ package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
 import br.edu.foodnow.integration.FakeCourierClient;
-import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.Entrega;
 import br.edu.foodnow.model.Pedido;
 import br.edu.foodnow.model.StatusEntrega;
@@ -15,34 +14,42 @@ import org.springframework.transaction.annotation.Transactional;
 public class EntregaService {
     private final EntregaRepository entregaRepository;
     private final PedidoRepository pedidoRepository;
-    private final FakeMapsClient mapsClient;
+    private final LocalizacaoService localizacaoService;
     private final FakeEmailClient emailClient;
     private final FakeCourierClient courierClient;
+    private final CalculoFrete calculoFrete;
+    private final ValidadorEntrega validadorEntrega;
 
     public EntregaService(EntregaRepository entregaRepository, PedidoRepository pedidoRepository,
-                          FakeMapsClient mapsClient, FakeEmailClient emailClient,
-                          FakeCourierClient courierClient) {
+                          LocalizacaoService localizacaoService, FakeEmailClient emailClient,
+                          FakeCourierClient courierClient, CalculoFrete calculoFrete,
+                          ValidadorEntrega validadorEntrega) {
         this.entregaRepository = entregaRepository;
         this.pedidoRepository = pedidoRepository;
-        this.mapsClient = mapsClient;
+        this.localizacaoService = localizacaoService;
         this.emailClient = emailClient;
         this.courierClient = courierClient;
+        this.calculoFrete = calculoFrete;
+        this.validadorEntrega = validadorEntrega;
     }
 
     public Entrega criarPara(Pedido pedido) {
-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(
-                pedido.getRestaurante().getEndereco().getLocalizacao(),
-                pedido.getEnderecoEntrega().getLocalizacao());
-        double distanciaEndereco = pedido.getRestaurante().getEndereco()
-                .calcularDistanciaAte(pedido.getEnderecoEntrega());
-        double distanciaPedido = pedido.calcularDistanciaEntrega();
-        double distanciaEscolhida = Math.max(rota.distanceKm(), Math.max(distanciaEndereco, distanciaPedido));
-        String zona = "EXPANDIDA".equals(rota.deliveryZone())
-                ? rota.deliveryZone() : pedido.getEnderecoEntrega().classificarZonaDeEntrega();
+        double distanciaRota = localizacaoService.calcularDistancia(
+                pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+        double distanciaEndereco = calculoFrete.calcularDistancia(pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+        double distanciaPedido = calculoFrete.calcularDistanciaPedido(pedido);
+        double distanciaEscolhida = Math.max(distanciaRota, Math.max(distanciaEndereco, distanciaPedido));
+        String zona = localizacaoService.buscarZonaEntrega(
+                pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+        if (!"EXPANDIDA".equals(zona)) {
+            zona = pedido.getEnderecoEntrega().classificarZonaDeEntrega();
+        }
         FakeCourierClient.CourierRequest requisicao = new FakeCourierClient.CourierRequest(pedido.getId(),
                 distanciaEscolhida, zona, pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
         FakeCourierClient.CourierDispatch despacho = courierClient.solicitarEntregador(requisicao);
-        int tempo = Math.max(rota.durationMinutes(), pedido.estimarTempoEntregaPeloPedido())
+        int tempo = localizacaoService.estimarTempoEntrega(
+                pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+        tempo = Math.max(tempo, 14 + (int) Math.ceil(distanciaPedido * 3.6) + pedido.getItens().size() * 2)
                 + despacho.pickupEtaMinutes();
         Entrega entrega = new Entrega(pedido, pedido.getEnderecoEntrega(), distanciaEscolhida, tempo,
                 zona, despacho.courierCode(), despacho.providerStatus());

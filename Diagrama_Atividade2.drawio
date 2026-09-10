@@ -1,0 +1,255 @@
+<mxfile host="app.diagrams.net" agent="Claude" pages="3">
+  <diagram id="nivel-sistema" name="01 - Nivel de Sistema">
+    <mxGraphModel dx="815" dy="491" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="s_titulo" parent="1" style="text;html=1;fontSize=18;fontStyle=1;align=left;" value="FoodNow - Diagrama de Contexto (Nivel de Sistema)" vertex="1">
+          <mxGeometry height="30" width="600" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s_cliente" parent="1" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Cliente" vertex="1">
+          <mxGeometry height="70" width="50" x="40" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="s_restaurante" parent="1" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Restaurante" vertex="1">
+          <mxGeometry height="70" width="50" x="40" y="360" as="geometry" />
+        </mxCell>
+        <mxCell id="s_entregador" parent="1" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Entregador" vertex="1">
+          <mxGeometry height="70" width="50" x="40" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="s_foodnow" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;verticalAlign=middle;" value="FoodNow&#xa;(Plataforma de Delivery de Alimentos)" vertex="1">
+          <mxGeometry height="150" width="260" x="320" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="s_paypal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="PayPal&#xa;[Sistema externo de pagamento]" vertex="1">
+          <mxGeometry height="80" width="220" x="720" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="s_maps" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="Google Maps Platform&#xa;[Sistema externo de localizacao]" vertex="1">
+          <mxGeometry height="80" width="220" x="720" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s1" edge="1" parent="1" source="s_cliente" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="s_foodnow" value="consulta restaurantes, faz pedidos e acompanha entregas">
+          <mxGeometry relative="1" x="-0.2688" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s2" edge="1" parent="1" source="s_restaurante" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="s_foodnow" value="administra cardapios e pedidos">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_s3" edge="1" parent="1" source="s_entregador" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="s_foodnow" value="consulta e atualiza entregas">
+          <mxGeometry relative="1" x="-0.2" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="450" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s4" edge="1" parent="1" source="s_foodnow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="s_paypal" value="processa pagamentos (REST/HTTPS)">
+          <mxGeometry relative="1" x="-0.1724" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="830" y="360" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_s5" edge="1" parent="1" source="s_foodnow" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="s_maps" value="consulta localizacao/rotas (REST/HTTPS)">
+          <mxGeometry relative="1" x="-0.1613" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="830" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="nivel-subsistema" name="02 - Nivel de Subsistema">
+    <mxGraphModel dx="815" dy="491" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ss_titulo" parent="1" style="text;html=1;fontSize=18;fontStyle=1;align=left;" value="FoodNow - Diagrama de Subsistemas" vertex="1">
+          <mxGeometry height="30" width="500" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_appcliente" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Aplicativo do Cliente&#xa;[Flutter / Dart]" vertex="1">
+          <mxGeometry height="80" width="200" x="40" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_portal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Portal do Restaurante&#xa;[React / TypeScript]" vertex="1">
+          <mxGeometry height="80" width="200" x="300" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_appentregador" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Aplicativo do Entregador&#xa;[Flutter / Dart]" vertex="1">
+          <mxGeometry height="80" width="200" x="560" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_backend_container" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=13;align=center;" value="Backend / API [Java / Spring Boot]" vertex="1">
+          <mxGeometry height="270" width="720" x="40" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_auth" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="Usuarios e Autenticacao&#xa;[JWT]" vertex="1">
+          <mxGeometry height="80" width="200" x="40" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_pedidos" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="Pedidos" vertex="1">
+          <mxGeometry height="80" width="200" x="320" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_entregas" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="Entregas" vertex="1">
+          <mxGeometry height="80" width="200" x="560" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_postgres" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;boundedLbl=1;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="90" width="140" x="200" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_redis" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;boundedLbl=1;" value="Redis&#xa;[Cache]" vertex="1">
+          <mxGeometry height="90" width="140" x="500" y="550" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_paypal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="PayPal&#xa;[API externa]" vertex="1">
+          <mxGeometry height="80" width="200" x="1220" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="ss_maps" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="Google Maps Platform&#xa;[API externa]" vertex="1">
+          <mxGeometry height="80" width="200" x="1220" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ss1" edge="1" parent="1" source="ss_appcliente" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="ss_backend_container" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ss2" edge="1" parent="1" source="ss_portal" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="ss_backend_container" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" x="-0.5" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ss3" edge="1" parent="1" source="ss_appentregador" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="ss_backend_container" value="REST / HTTPS / JSON">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ss4" edge="1" parent="1" source="ss_pedidos" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;dashed=1;" target="ss_auth" value="valida token">
+          <mxGeometry relative="1" y="-10" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ss5" edge="1" parent="1" source="ss_entregas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;dashed=1;" target="ss_auth" value="valida token">
+          <mxGeometry relative="1" y="-10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="630" y="260" />
+              <mxPoint x="170" y="260" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ss6" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" value="armazena dados">
+          <mxGeometry relative="1" x="-0.2764" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="410" y="361" />
+              <mxPoint x="410" y="410" />
+              <mxPoint x="270" y="410" />
+            </Array>
+            <mxPoint x="410" y="361" as="sourcePoint" />
+            <mxPoint x="270" y="550" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ss7" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="ss_redis" value="cache">
+          <mxGeometry relative="1" x="0.5844" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="410" y="595" />
+            </Array>
+            <mxPoint x="410" y="370" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ss8" edge="1" parent="1" source="ss_backend_container" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ss_maps" value="processa pagamento">
+          <mxGeometry relative="1" x="0.283" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="880" y="320" />
+              <mxPoint x="880" y="390" />
+            </Array>
+            <mxPoint x="410" y="360" as="sourcePoint" />
+            <mxPoint x="1330.0000000000002" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ss10" edge="1" parent="1" source="ss_entregas" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ss_paypal" value="consulta localizacao/rotas">
+          <mxGeometry relative="1" x="0.2963" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="880" y="320" />
+              <mxPoint x="880" y="240" />
+            </Array>
+            <mxPoint x="730" y="320" as="sourcePoint" />
+            <mxPoint x="1320.0000000000002" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_ss11" edge="1" parent="1" source="ss_auth" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;entryX=0.145;entryY=0;entryDx=0;entryDy=4.35;entryPerimeter=0;" target="ss_postgres" value="armazena dados">
+          <mxGeometry relative="1" x="-0.3446" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="130" y="410" />
+              <mxPoint x="220.3" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="5fXzGvZKN-wqb_K4a0Wd-2" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;entryX=0.855;entryY=0;entryDx=0;entryDy=4.35;entryPerimeter=0;" target="ss_postgres" value="armazena dados">
+          <mxGeometry relative="1" x="0.0289" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="649.83" y="460" />
+              <mxPoint x="320" y="460" />
+            </Array>
+            <mxPoint x="649.8" y="360" as="sourcePoint" />
+            <mxPoint x="350.00000000000006" y="554.3499999999999" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="nivel-componente" name="03 - Nivel de Componente (Pedidos)">
+    <mxGraphModel dx="815" dy="491" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c_titulo" parent="1" style="text;html=1;fontSize=18;fontStyle=1;align=left;" value="FoodNow - Subsistema Pedidos (Nivel de Componente)" vertex="1">
+          <mxGeometry height="30" width="600" x="40" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="c_controller" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Controller de Pedidos&#xa;[Spring REST Controller]" vertex="1">
+          <mxGeometry height="80" width="220" x="40" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="c_servico" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Servico de Pedidos&#xa;[Spring Service]" vertex="1">
+          <mxGeometry height="80" width="220" x="360" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="c_validador" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Validador de Pedido&#xa;[Spring Component]" vertex="1">
+          <mxGeometry height="80" width="220" x="360" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="c_repositorio" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Repositorio de Pedidos&#xa;[Spring Data JPA]" vertex="1">
+          <mxGeometry height="80" width="220" x="680" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="c_paypalint" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="Integracao com PayPal&#xa;[PayPal SDK / REST Client]" vertex="1">
+          <mxGeometry height="80" width="220" x="680" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="c_postgres" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;boundedLbl=1;" value="PostgreSQL" vertex="1">
+          <mxGeometry height="90" width="160" x="1050" y="75" as="geometry" />
+        </mxCell>
+        <mxCell id="c_paypal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="PayPal&#xa;[API externa]" vertex="1">
+          <mxGeometry height="80" width="160" x="1050" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="e_c1" edge="1" parent="1" source="c_controller" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="c_servico" value="chama">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_c2" edge="1" parent="1" source="c_servico" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="c_validador" value="valida">
+          <mxGeometry relative="1" x="0.2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c3" edge="1" parent="1" source="c_servico" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="c_repositorio" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_c4" edge="1" parent="1" source="c_servico" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="c_paypalint" value="processa pagamento">
+          <mxGeometry relative="1" x="0.0003" as="geometry">
+            <mxPoint x="-1" as="offset" />
+            <Array as="points">
+              <mxPoint x="469.94" y="200" />
+              <mxPoint x="789.94" y="200" />
+            </Array>
+            <mxPoint x="589.9999999999998" y="150" as="sourcePoint" />
+            <mxPoint x="799.9411764705881" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_c5" edge="1" parent="1" source="c_repositorio" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="c_postgres" value="JDBC / JPA">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_c6" edge="1" parent="1" source="c_paypalint" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=10;" target="c_paypal" value="REST / HTTPS">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
