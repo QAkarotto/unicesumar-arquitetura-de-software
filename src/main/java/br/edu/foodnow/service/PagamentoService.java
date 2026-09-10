@@ -1,7 +1,6 @@
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakePaymentGateway;
-import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.FormaPagamento;
 import br.edu.foodnow.model.Pagamento;
 import br.edu.foodnow.model.Pedido;
@@ -19,17 +18,17 @@ public class PagamentoService {
     private final FakePaymentGateway paymentGateway;
     private final NotificacaoService notificacaoService;
     private final EntregaService entregaService;
-    private final FakeMapsClient mapsClient;
+    private final LocalizacaoService localizacaoService;
 
     public PagamentoService(PedidoRepository pedidoRepository, PagamentoRepository pagamentoRepository,
                             FakePaymentGateway paymentGateway, NotificacaoService notificacaoService,
-                            EntregaService entregaService, FakeMapsClient mapsClient) {
+                            EntregaService entregaService, LocalizacaoService localizacaoService) {
         this.pedidoRepository = pedidoRepository;
         this.pagamentoRepository = pagamentoRepository;
         this.paymentGateway = paymentGateway;
         this.notificacaoService = notificacaoService;
         this.entregaService = entregaService;
-        this.mapsClient = mapsClient;
+        this.localizacaoService = localizacaoService;
     }
 
     @Transactional
@@ -40,14 +39,12 @@ public class PagamentoService {
             throw new RegraNegocioException("Pedido precisa estar confirmado para pagamento");
         }
 
-        FakeMapsClient.RouteResult rotaPagamento = mapsClient.calcularRota(
-                pedido.getRestaurante().getEndereco().getLocalizacao(),
-                pedido.getEnderecoEntrega().getLocalizacao());
+        LocalizacaoService.RotaEntrega rotaPagamento = localizacaoService.avaliarRota(
+                pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
         String regiao = pedido.determinarRegiaoEntrega();
         FakePaymentGateway.GatewayRequest requisicao = FakePaymentGateway.GatewayRequest.from(
                 pedido.getId(), pedido.getValorTotal(), token, forma.name(), regiao,
-                pedido.getRestaurante().getEndereco().getLocalizacao().formatarParaProvedor(),
-                pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
+                rotaPagamento.origemFormatada(), rotaPagamento.destinoFormatada());
         FakePaymentGateway.GatewayResult resposta = paymentGateway.processarPagamento(requisicao);
         StatusPagamento status = "AUTHORIZED".equals(resposta.providerStatus())
                 ? StatusPagamento.APROVADO : StatusPagamento.REJEITADO;
@@ -56,7 +53,7 @@ public class PagamentoService {
         pedidoRepository.save(pedido);
         Pagamento pagamento = pagamentoRepository.save(new Pagamento(pedido, forma, status,
                 pedido.getValorTotal(), resposta.transactionCode(), resposta.providerMessage(),
-                regiao, rotaPagamento.distanceKm()));
+                regiao, rotaPagamento.distanciaKm()));
         notificacaoService.notificarPagamento(pedido, status);
         if (status == StatusPagamento.APROVADO) {
             entregaService.criarPara(pedido);
