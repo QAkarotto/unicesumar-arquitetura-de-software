@@ -1,28 +1,46 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.Localizacao;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LocalizacaoService {
-    private final FakeMapsClient mapsClient;
 
-    public LocalizacaoService(FakeMapsClient mapsClient) {
-        this.mapsClient = mapsClient;
+    private final DistanceProvider distanceProvider;
+
+    public LocalizacaoService(DistanceProvider distanceProvider) {
+        this.distanceProvider = distanceProvider;
     }
 
     public Localizacao buscarCoordenadas(Endereco endereco) {
-        FakeMapsClient.MapCoordinates resposta = mapsClient.buscarCoordenadas(endereco);
-        return new Localizacao(Double.parseDouble(resposta.lat()), Double.parseDouble(resposta.lng()));
+        DistanceProvider.MapCoordinates resposta =
+                distanceProvider.buscarCoordenadas(endereco);
+
+        return new Localizacao(
+                Double.parseDouble(resposta.lat()),
+                Double.parseDouble(resposta.lng())
+        );
     }
 
-    public double calcularDistancia(Endereco origem, Endereco destino) {
-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).distanceKm();
+    public DistanceProvider.Route calcularRota(
+            Endereco origem,
+            Endereco destino) {
+
+        return distanceProvider.calcularRota(origem, destino);
     }
 
-    public int estimarTempoEntrega(Endereco origem, Endereco destino) {
-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).durationMinutes();
+    public double calcularDistancia(
+            Endereco origem,
+            Endereco destino) {
+
+        return calcularRota(origem, destino).distanceKm();
+    }
+
+    public int estimarTempoEntrega(
+            Endereco origem,
+            Endereco destino) {
+
+        return calcularRota(origem, destino).durationMinutes();
     }
 }
