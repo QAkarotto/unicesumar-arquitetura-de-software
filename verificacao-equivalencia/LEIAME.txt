@@ -1,0 +1,10 @@
+Verificacao de equivalencia (versao original x refatorada) usada na Atividade 06.
+Nao usa Maven nem Spring: compila model/util/integration/geo/entrega/service com stubs de anotacoes.
+
+Ajuste as variaveis O (src/main/java/br/edu/foodnow do ORIGINAL) e W (do REFATORADO):
+  O=/caminho/original/src/main/java/br/edu/foodnow ; W=/caminho/refatorado/src/main/java/br/edu/foodnow
+  S=stubs
+  javac -d out_orig $(find $S -name '*.java') $(find $O/model $O/util $O/integration -name '*.java') common/Harness.java origflow/Flow.java
+  javac -d out_new  $(find $S -name '*.java') $(find $W/model $W/util $W/integration $W/geo $W/entrega -name '*.java') common/Harness.java newflow/Flow.java
+  java -cp out_orig Harness 20000 > a.txt ; java -cp out_new Harness 20000 > b.txt ; cmp a.txt b.txt && echo IDENTICO
+(services com repositorios em memoria: pasta svc/, mesma ideia, usando rstubs para JpaRepository.)

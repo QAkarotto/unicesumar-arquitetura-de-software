@@ -1,0 +1,1400 @@
+diff -ruN a/src/main/java/br/edu/foodnow/entrega/AvaliacaoGeografica.java b/src/main/java/br/edu/foodnow/entrega/AvaliacaoGeografica.java
+--- a/src/main/java/br/edu/foodnow/entrega/AvaliacaoGeografica.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/entrega/AvaliacaoGeografica.java	2026-09-30 03:26:09.621373180 +0000
+@@ -0,0 +1,12 @@
++package br.edu.foodnow.entrega;
++
++import br.edu.foodnow.geo.Rota;
++
++/**
++ * Avaliação geográfica de um pedido já criado, usada no pagamento e nas notificações.
++ *
++ * @param rota   rota restaurante -> endereço de entrega
++ * @param regiao região de entrega (CENTRAL, URBANA, EXTERNA ou NAO_ATENDIDA)
++ */
++public record AvaliacaoGeografica(Rota rota, String regiao) {
++}
+diff -ruN a/src/main/java/br/edu/foodnow/entrega/CotacaoEntrega.java b/src/main/java/br/edu/foodnow/entrega/CotacaoEntrega.java
+--- a/src/main/java/br/edu/foodnow/entrega/CotacaoEntrega.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/entrega/CotacaoEntrega.java	2026-09-30 03:26:09.621356503 +0000
+@@ -0,0 +1,17 @@
++package br.edu.foodnow.entrega;
++
++import java.math.BigDecimal;
++
++/**
++ * Resultado da cotação de entrega feita na criação do pedido.
++ *
++ * @param distanciaKm distância efetiva considerada (gravada no pedido)
++ * @param atendido    se o endereço está dentro da área de atendimento
++ * @param taxaBase    taxa de entrega antes do adicional dos itens (zero quando não atendido)
++ */
++public record CotacaoEntrega(double distanciaKm, boolean atendido, BigDecimal taxaBase) {
++
++    public static CotacaoEntrega foraDaArea(double distanciaKm) {
++        return new CotacaoEntrega(distanciaKm, false, BigDecimal.ZERO);
++    }
++}
+diff -ruN a/src/main/java/br/edu/foodnow/entrega/PlanoEntrega.java b/src/main/java/br/edu/foodnow/entrega/PlanoEntrega.java
+--- a/src/main/java/br/edu/foodnow/entrega/PlanoEntrega.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/entrega/PlanoEntrega.java	2026-09-30 03:26:09.621389400 +0000
+@@ -0,0 +1,16 @@
++package br.edu.foodnow.entrega;
++
++/**
++ * Plano de despacho de uma entrega: o que a {@link PoliticaEntrega} decide antes de
++ * chamar o serviço de entregadores.
++ *
++ * @param distanciaKm      distância enviada ao entregador e gravada na entrega
++ * @param zona             zona de despacho
++ * @param tempoBaseMinutos tempo estimado sem o tempo de coleta do entregador
++ */
++public record PlanoEntrega(double distanciaKm, String zona, int tempoBaseMinutos) {
++
++    public int tempoTotalMinutos(int esperaColetaMinutos) {
++        return tempoBaseMinutos + esperaColetaMinutos;
++    }
++}
+diff -ruN a/src/main/java/br/edu/foodnow/entrega/PoliticaEntrega.java b/src/main/java/br/edu/foodnow/entrega/PoliticaEntrega.java
+--- a/src/main/java/br/edu/foodnow/entrega/PoliticaEntrega.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/entrega/PoliticaEntrega.java	2026-09-30 03:26:09.621405935 +0000
+@@ -0,0 +1,34 @@
++package br.edu.foodnow.entrega;
++
++import br.edu.foodnow.model.Pedido;
++
++import java.math.BigDecimal;
++
++/**
++ * Limite arquitetural das regras de distância, região, atendimento, taxa e tempo de entrega.
++ * <p>
++ * Pedido, pagamento, notificação e entrega consultam esta interface em vez de cada um
++ * calcular (ou escolher entre) as suas próprias medidas. A futura regra de taxa por rota,
++ * região e horário deve ser uma nova implementação desta interface (ou uma evolução de
++ * {@link PoliticaEntregaPadrao}); os services não precisam mudar.
++ */
++public interface PoliticaEntrega {
++
++    /** Decide distância efetiva, atendimento e taxa base para um pedido a ser criado. */
++    CotacaoEntrega cotar(SolicitacaoCotacao solicitacao);
++
++    /** Taxa final = taxa base da cotação + adicional geográfico dos itens do pedido. */
++    BigDecimal taxaFinal(CotacaoEntrega cotacao, Pedido pedido);
++
++    /** Rota e região de um pedido existente. */
++    AvaliacaoGeografica avaliar(Pedido pedido);
++
++    /** Região de entrega do pedido (CENTRAL, URBANA, EXTERNA ou NAO_ATENDIDA). */
++    String regiaoDeEntrega(Pedido pedido);
++
++    /** Estimativa de tempo usada na confirmação do pedido, em minutos. */
++    int estimarTempoInterno(Pedido pedido);
++
++    /** Distância, zona e tempo-base do despacho de um pedido pago. */
++    PlanoEntrega planejarEntrega(Pedido pedido);
++}
+diff -ruN a/src/main/java/br/edu/foodnow/entrega/PoliticaEntregaPadrao.java b/src/main/java/br/edu/foodnow/entrega/PoliticaEntregaPadrao.java
+--- a/src/main/java/br/edu/foodnow/entrega/PoliticaEntregaPadrao.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/entrega/PoliticaEntregaPadrao.java	2026-09-30 03:26:09.621422461 +0000
+@@ -0,0 +1,147 @@
++package br.edu.foodnow.entrega;
++
++import br.edu.foodnow.geo.ProvedorGeografico;
++import br.edu.foodnow.geo.Rota;
++import br.edu.foodnow.model.Cliente;
++import br.edu.foodnow.model.Endereco;
++import br.edu.foodnow.model.Pedido;
++import br.edu.foodnow.model.Produto;
++import br.edu.foodnow.model.Restaurante;
++import br.edu.foodnow.util.TaxaEntregaUtil;
++import org.springframework.stereotype.Component;
++
++import java.math.BigDecimal;
++import java.math.RoundingMode;
++
++/**
++ * Implementação atual (equivalente ao comportamento anterior à refatoração) das regras de
++ * entrega. Concentra o que antes estava espalhado em {@code PedidoService},
++ * {@code EntregaService}, {@code PagamentoService}, {@code NotificacaoService},
++ * {@code Pedido}, {@code Produto} e {@code ItemPedido}.
++ * <p>
++ * Depende apenas da porta {@link ProvedorGeografico}, nunca de um cliente de mapas concreto.
++ */
++@Component
++public class PoliticaEntregaPadrao implements PoliticaEntrega {
++    private static final String ZONA_EXPANDIDA = "EXPANDIDA";
++    private static final String ZONA_CENTRAL = "CENTRAL";
++    private static final String REGIAO_NAO_ATENDIDA = "NAO_ATENDIDA";
++
++    private final ProvedorGeografico provedorGeografico;
++
++    public PoliticaEntregaPadrao(ProvedorGeografico provedorGeografico) {
++        this.provedorGeografico = provedorGeografico;
++    }
++
++    @Override
++    public CotacaoEntrega cotar(SolicitacaoCotacao solicitacao) {
++        Cliente cliente = solicitacao.cliente();
++        Restaurante restaurante = solicitacao.restaurante();
++        Endereco destino = solicitacao.destino();
++
++        Rota rota = provedorGeografico.calcularRota(restaurante.getEndereco().getLocalizacao(),
++                destino.getLocalizacao());
++        double distancia = distanciaEfetiva(restaurante, destino, rota);
++        boolean atendido = distancia <= restaurante.getRaioEntregaKm()
++                && cliente.estaDentroDaAreaDeEntrega(restaurante)
++                && restaurante.atendeEndereco(destino);
++        if (!atendido) {
++            return CotacaoEntrega.foraDaArea(distancia);
++        }
++        return new CotacaoEntrega(distancia, true, maiorTaxa(
++                TaxaEntregaUtil.calcular(distancia),
++                restaurante.calcularTaxaEntrega(destino),
++                restaurante.getEndereco().calcularTaxaLocalAte(destino),
++                cliente.calcularTaxaEntregaDoRestaurante(restaurante),
++                taxaPorDistanciaPlana(restaurante, destino)));
++    }
++
++    @Override
++    public BigDecimal taxaFinal(CotacaoEntrega cotacao, Pedido pedido) {
++        return cotacao.taxaBase().add(adicionalGeograficoDosItens(pedido));
++    }
++
++    @Override
++    public AvaliacaoGeografica avaliar(Pedido pedido) {
++        return new AvaliacaoGeografica(rotaDoPedido(pedido), regiaoDeEntrega(pedido));
++    }
++
++    @Override
++    public String regiaoDeEntrega(Pedido pedido) {
++        Endereco destino = pedido.getEnderecoEntrega();
++        if (!pedido.getRestaurante().getEndereco().pertenceARegiaoDo(destino)) {
++            return REGIAO_NAO_ATENDIDA;
++        }
++        return destino.classificarZonaDeEntrega();
++    }
++
++    @Override
++    public int estimarTempoInterno(Pedido pedido) {
++        double distancia = distanciaPlana(pedido.getRestaurante(), pedido.getEnderecoEntrega());
++        return 14 + (int) Math.ceil(distancia * 3.6) + pedido.getItens().size() * 2;
++    }
++
++    @Override
++    public PlanoEntrega planejarEntrega(Pedido pedido) {
++        Restaurante restaurante = pedido.getRestaurante();
++        Endereco destino = pedido.getEnderecoEntrega();
++        Rota rota = rotaDoPedido(pedido);
++
++        double distanciaDoEndereco = restaurante.getEndereco().calcularDistanciaAte(destino);
++        double distancia = Math.max(rota.distanciaKm(),
++                Math.max(distanciaDoEndereco, distanciaPlana(restaurante, destino)));
++        String zona = ZONA_EXPANDIDA.equals(rota.zona()) ? rota.zona() : destino.classificarZonaDeEntrega();
++        int tempoBase = Math.max(rota.duracaoMinutos(), estimarTempoInterno(pedido));
++        return new PlanoEntrega(distancia, zona, tempoBase);
++    }
++
++    private Rota rotaDoPedido(Pedido pedido) {
++        return provedorGeografico.calcularRota(pedido.getRestaurante().getEndereco().getLocalizacao(),
++                pedido.getEnderecoEntrega().getLocalizacao());
++    }
++
++    /** Maior entre a rota do provedor e as três medidas locais (haversine, plana por endereço, Manhattan). */
++    private double distanciaEfetiva(Restaurante restaurante, Endereco destino, Rota rota) {
++        double haversine = restaurante.calcularDistanciaAte(destino);
++        double planaPorEndereco = restaurante.getEndereco().calcularDistanciaAte(destino);
++        double manhattan = restaurante.getEndereco().getLocalizacao()
++                .calcularDistanciaManhattan(destino.getLocalizacao());
++        return Math.max(rota.distanciaKm(), Math.max(haversine, Math.max(planaPorEndereco, manhattan)));
++    }
++
++    /** Aproximação plana (111 km por grau) que o pedido usava para taxa e tempo. */
++    private double distanciaPlana(Restaurante restaurante, Endereco destino) {
++        double diferencaLatitude = restaurante.buscarLatitude() - destino.getLocalizacao().getLatitude();
++        double diferencaLongitude = restaurante.buscarLongitude() - destino.getLocalizacao().getLongitude();
++        return Math.sqrt(diferencaLatitude * diferencaLatitude + diferencaLongitude * diferencaLongitude) * 111.0;
++    }
++
++    private BigDecimal taxaPorDistanciaPlana(Restaurante restaurante, Endereco destino) {
++        return BigDecimal.valueOf(5.00 + distanciaPlana(restaurante, destino) * 1.25)
++                .setScale(2, RoundingMode.HALF_UP);
++    }
++
++    private BigDecimal adicionalGeograficoDosItens(Pedido pedido) {
++        Endereco destino = pedido.getEnderecoEntrega();
++        return pedido.getItens().stream()
++                .map(item -> adicionalRegional(item.getProduto(), destino)
++                        .multiply(BigDecimal.valueOf(item.getQuantidade())))
++                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
++    }
++
++    private BigDecimal adicionalRegional(Produto produto, Endereco destino) {
++        double distancia = produto.getRestaurante().getEndereco().calcularDistanciaAte(destino);
++        double adicional = ZONA_CENTRAL.equals(destino.classificarZonaDeEntrega()) ? 0.0 : distancia * 0.08;
++        return BigDecimal.valueOf(adicional).setScale(2, RoundingMode.HALF_UP);
++    }
++
++    private BigDecimal maiorTaxa(BigDecimal... taxas) {
++        BigDecimal maior = BigDecimal.ZERO;
++        for (BigDecimal taxa : taxas) {
++            if (taxa.compareTo(maior) > 0) {
++                maior = taxa;
++            }
++        }
++        return maior;
++    }
++}
+diff -ruN a/src/main/java/br/edu/foodnow/entrega/SolicitacaoCotacao.java b/src/main/java/br/edu/foodnow/entrega/SolicitacaoCotacao.java
+--- a/src/main/java/br/edu/foodnow/entrega/SolicitacaoCotacao.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/entrega/SolicitacaoCotacao.java	2026-09-30 03:26:09.621337189 +0000
+@@ -0,0 +1,13 @@
++package br.edu.foodnow.entrega;
++
++import br.edu.foodnow.model.Cliente;
++import br.edu.foodnow.model.Endereco;
++import br.edu.foodnow.model.Restaurante;
++
++/**
++ * Entrada da cotação de entrega. É o ponto de extensão para os dados que a futura regra
++ * (horário, condições operacionais) vai precisar: novos campos entram aqui, sem alterar
++ * a assinatura de quem chama a {@link PoliticaEntrega}.
++ */
++public record SolicitacaoCotacao(Cliente cliente, Restaurante restaurante, Endereco destino) {
++}
+diff -ruN a/src/main/java/br/edu/foodnow/geo/CoordenadasResolvidas.java b/src/main/java/br/edu/foodnow/geo/CoordenadasResolvidas.java
+--- a/src/main/java/br/edu/foodnow/geo/CoordenadasResolvidas.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/geo/CoordenadasResolvidas.java	2026-09-30 03:26:09.621279962 +0000
+@@ -0,0 +1,12 @@
++package br.edu.foodnow.geo;
++
++import br.edu.foodnow.model.Localizacao;
++
++/**
++ * Coordenadas obtidas para um endereço.
++ *
++ * @param localizacao coordenadas geográficas
++ * @param aproximada  {@code true} quando o provedor precisou estimar as coordenadas
++ */
++public record CoordenadasResolvidas(Localizacao localizacao, boolean aproximada) {
++}
+diff -ruN a/src/main/java/br/edu/foodnow/geo/ProvedorGeografico.java b/src/main/java/br/edu/foodnow/geo/ProvedorGeografico.java
+--- a/src/main/java/br/edu/foodnow/geo/ProvedorGeografico.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/geo/ProvedorGeografico.java	2026-09-30 03:26:09.621296925 +0000
+@@ -0,0 +1,17 @@
++package br.edu.foodnow.geo;
++
++import br.edu.foodnow.model.Endereco;
++import br.edu.foodnow.model.Localizacao;
++
++/**
++ * Porta de saída para qualquer serviço geográfico (mapas, geocoding, rotas).
++ * <p>
++ * A aplicação depende somente desta interface; o provedor concreto
++ * (hoje {@code FakeMapsClient}) fica isolado em um adapter no pacote {@code integration}.
++ */
++public interface ProvedorGeografico {
++
++    CoordenadasResolvidas buscarCoordenadas(Endereco endereco);
++
++    Rota calcularRota(Localizacao origem, Localizacao destino);
++}
+diff -ruN a/src/main/java/br/edu/foodnow/geo/Rota.java b/src/main/java/br/edu/foodnow/geo/Rota.java
+--- a/src/main/java/br/edu/foodnow/geo/Rota.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/geo/Rota.java	2026-09-30 03:26:09.621257907 +0000
+@@ -0,0 +1,12 @@
++package br.edu.foodnow.geo;
++
++/**
++ * Resultado de uma consulta de rota, expresso no vocabulário do domínio FoodNow
++ * (e não no vocabulário de um provedor de mapas específico).
++ *
++ * @param distanciaKm     distância do trajeto, em km
++ * @param duracaoMinutos  duração estimada do trajeto, em minutos
++ * @param zona            zona de entrega informada pelo provedor (ex.: CENTRAL, EXPANDIDA)
++ */
++public record Rota(double distanciaKm, int duracaoMinutos, String zona) {
++}
+diff -ruN a/src/main/java/br/edu/foodnow/integration/MapsProvedorGeografico.java b/src/main/java/br/edu/foodnow/integration/MapsProvedorGeografico.java
+--- a/src/main/java/br/edu/foodnow/integration/MapsProvedorGeografico.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/main/java/br/edu/foodnow/integration/MapsProvedorGeografico.java	2026-09-30 03:26:09.619977072 +0000
+@@ -0,0 +1,38 @@
++package br.edu.foodnow.integration;
++
++import br.edu.foodnow.geo.CoordenadasResolvidas;
++import br.edu.foodnow.geo.ProvedorGeografico;
++import br.edu.foodnow.geo.Rota;
++import br.edu.foodnow.model.Endereco;
++import br.edu.foodnow.model.Localizacao;
++import org.springframework.stereotype.Component;
++
++/**
++ * Adapter que traduz o contrato do {@link FakeMapsClient} (strings, records do provedor)
++ * para a porta {@link ProvedorGeografico}. É o único ponto da aplicação que conhece o
++ * {@code FakeMapsClient}.
++ */
++@Component
++public class MapsProvedorGeografico implements ProvedorGeografico {
++    private static final String PRECISAO_APROXIMADA = "APPROXIMATE";
++
++    private final FakeMapsClient mapsClient;
++
++    public MapsProvedorGeografico(FakeMapsClient mapsClient) {
++        this.mapsClient = mapsClient;
++    }
++
++    @Override
++    public CoordenadasResolvidas buscarCoordenadas(Endereco endereco) {
++        FakeMapsClient.MapCoordinates resposta = mapsClient.buscarCoordenadas(endereco);
++        Localizacao localizacao = new Localizacao(Double.parseDouble(resposta.lat()),
++                Double.parseDouble(resposta.lng()));
++        return new CoordenadasResolvidas(localizacao, PRECISAO_APROXIMADA.equals(resposta.precision()));
++    }
++
++    @Override
++    public Rota calcularRota(Localizacao origem, Localizacao destino) {
++        FakeMapsClient.RouteResult resposta = mapsClient.calcularRota(origem, destino);
++        return new Rota(resposta.distanceKm(), resposta.durationMinutes(), resposta.deliveryZone());
++    }
++}
+diff -ruN a/src/main/java/br/edu/foodnow/model/ItemPedido.java b/src/main/java/br/edu/foodnow/model/ItemPedido.java
+--- a/src/main/java/br/edu/foodnow/model/ItemPedido.java	2026-09-30 03:26:09.615068667 +0000
++++ b/src/main/java/br/edu/foodnow/model/ItemPedido.java	2026-09-30 03:26:09.620389126 +0000
+@@ -34,10 +34,6 @@
+         return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+     }
+ 
+-    public BigDecimal calcularParcelaGeografica(Endereco destino) {
+-        return produto.calcularAdicionalRegional(destino).multiply(BigDecimal.valueOf(quantidade));
+-    }
+-
+     public Long getId() { return id; }
+     public Produto getProduto() { return produto; }
+     public int getQuantidade() { return quantidade; }
+diff -ruN a/src/main/java/br/edu/foodnow/model/Pedido.java b/src/main/java/br/edu/foodnow/model/Pedido.java
+--- a/src/main/java/br/edu/foodnow/model/Pedido.java	2026-09-30 03:26:09.615275620 +0000
++++ b/src/main/java/br/edu/foodnow/model/Pedido.java	2026-09-30 03:26:09.620529674 +0000
+@@ -70,41 +70,6 @@
+         valorTotal = subtotal.add(taxaEntrega).setScale(2, RoundingMode.HALF_UP);
+     }
+ 
+-    public double calcularDistanciaEntrega() {
+-        double diferencaLatitude = restaurante.buscarLatitude() - enderecoEntrega.getLocalizacao().getLatitude();
+-        double diferencaLongitude = restaurante.buscarLongitude() - enderecoEntrega.getLocalizacao().getLongitude();
+-        return Math.sqrt(diferencaLatitude * diferencaLatitude + diferencaLongitude * diferencaLongitude) * 111.0;
+-    }
+-
+-    public BigDecimal calcularTaxaEntregaPorDistancia() {
+-        return BigDecimal.valueOf(5.00 + calcularDistanciaEntrega() * 1.25)
+-                .setScale(2, RoundingMode.HALF_UP);
+-    }
+-
+-    public boolean verificarEnderecoAtendido() {
+-        return calcularDistanciaEntrega() <= restaurante.getRaioEntregaKm();
+-    }
+-
+-    public String determinarRegiaoEntrega() {
+-        if (!restaurante.getEndereco().pertenceARegiaoDo(enderecoEntrega)) {
+-            return "NAO_ATENDIDA";
+-        }
+-        return enderecoEntrega.classificarZonaDeEntrega();
+-    }
+-
+-    public int estimarTempoEntregaPeloPedido() {
+-        return 14 + (int) Math.ceil(calcularDistanciaEntrega() * 3.6) + itens.size() * 2;
+-    }
+-
+-    public boolean possuiDivergenciaDeDistancia() {
+-        return Math.abs(distanciaEntregaKm - calcularDistanciaEntrega()) > 0.5;
+-    }
+-
+-    public BigDecimal calcularAdicionalGeograficoDosItens() {
+-        return itens.stream().map(item -> item.calcularParcelaGeografica(enderecoEntrega))
+-                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
+-    }
+-
+     public void confirmar() {
+         if (itens.isEmpty()) {
+             throw new IllegalStateException("Pedido deve possuir ao menos um item");
+diff -ruN a/src/main/java/br/edu/foodnow/model/Produto.java b/src/main/java/br/edu/foodnow/model/Produto.java
+--- a/src/main/java/br/edu/foodnow/model/Produto.java	2026-09-30 03:26:09.615309311 +0000
++++ b/src/main/java/br/edu/foodnow/model/Produto.java	2026-09-30 03:26:09.620544970 +0000
+@@ -7,7 +7,6 @@
+ import jakarta.persistence.ManyToOne;
+ 
+ import java.math.BigDecimal;
+-import java.math.RoundingMode;
+ 
+ @Entity
+ public class Produto {
+@@ -36,12 +35,6 @@
+         return disponivel && restaurante.atendeEndereco(destino);
+     }
+ 
+-    public BigDecimal calcularAdicionalRegional(Endereco destino) {
+-        double distancia = restaurante.getEndereco().calcularDistanciaAte(destino);
+-        double adicional = "CENTRAL".equals(destino.classificarZonaDeEntrega()) ? 0.0 : distancia * 0.08;
+-        return BigDecimal.valueOf(adicional).setScale(2, RoundingMode.HALF_UP);
+-    }
+-
+     public Long getId() { return id; }
+     public String getNome() { return nome; }
+     public BigDecimal getPreco() { return preco; }
+diff -ruN a/src/main/java/br/edu/foodnow/service/ClienteService.java b/src/main/java/br/edu/foodnow/service/ClienteService.java
+--- a/src/main/java/br/edu/foodnow/service/ClienteService.java	2026-09-30 03:26:09.615781042 +0000
++++ b/src/main/java/br/edu/foodnow/service/ClienteService.java	2026-09-30 03:26:09.620872999 +0000
+@@ -1,6 +1,7 @@
+ package br.edu.foodnow.service;
+ 
+-import br.edu.foodnow.integration.FakeMapsClient;
++import br.edu.foodnow.geo.ProvedorGeografico;
++import br.edu.foodnow.geo.Rota;
+ import br.edu.foodnow.model.Cliente;
+ import br.edu.foodnow.model.Endereco;
+ import br.edu.foodnow.model.Localizacao;
+@@ -17,14 +18,14 @@
+     private final ClienteRepository clienteRepository;
+     private final RestauranteRepository restauranteRepository;
+     private final LocalizacaoService localizacaoService;
+-    private final FakeMapsClient mapsClient;
++    private final ProvedorGeografico provedorGeografico;
+ 
+     public ClienteService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
+-                          LocalizacaoService localizacaoService, FakeMapsClient mapsClient) {
++                          LocalizacaoService localizacaoService, ProvedorGeografico provedorGeografico) {
+         this.clienteRepository = clienteRepository;
+         this.restauranteRepository = restauranteRepository;
+         this.localizacaoService = localizacaoService;
+-        this.mapsClient = mapsClient;
++        this.provedorGeografico = provedorGeografico;
+     }
+ 
+     public Cliente cadastrar(String nome, String email) {
+@@ -40,11 +41,6 @@
+     public Cliente adicionarEndereco(Long clienteId, Endereco endereco) {
+         Cliente cliente = consultar(clienteId);
+         Localizacao coordenadas = localizacaoService.buscarCoordenadas(endereco);
+-        FakeMapsClient.MapCoordinates respostaDireta = mapsClient.buscarCoordenadas(endereco);
+-        if ("APPROXIMATE".equals(respostaDireta.precision())) {
+-            coordenadas = new Localizacao(Double.parseDouble(respostaDireta.lat()),
+-                    Double.parseDouble(respostaDireta.lng()));
+-        }
+         Endereco enderecoNormalizado = new Endereco(endereco.getLogradouro(), endereco.getNumero(),
+                 endereco.getBairro(), endereco.getCidade(), endereco.getCep(), coordenadas);
+         cliente.adicionarEndereco(enderecoNormalizado);
+@@ -69,15 +65,15 @@
+         Endereco destino = cliente.enderecoPrincipal();
+         double distanciaDoCliente = cliente.calcularDistanciaAte(restaurante);
+         double distanciaDoEndereco = destino.calcularDistanciaAte(restaurante.getEndereco());
+-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(restaurante.getEndereco().getLocalizacao(),
++        Rota rota = provedorGeografico.calcularRota(restaurante.getEndereco().getLocalizacao(),
+                 destino.getLocalizacao());
+         boolean atendido = cliente.estaDentroDaAreaDeEntrega(restaurante)
+                 && restaurante.atendeEndereco(destino)
+-                && rota.distanceKm() <= restaurante.getRaioEntregaKm();
++                && rota.distanciaKm() <= restaurante.getRaioEntregaKm();
+         BigDecimal taxa = cliente.calcularTaxaEntregaDoRestaurante(restaurante);
+-        int tempo = Math.max(cliente.estimarTempoAte(restaurante), rota.durationMinutes());
++        int tempo = Math.max(cliente.estimarTempoAte(restaurante), rota.duracaoMinutos());
+         return new AtendimentoCliente(atendido, distanciaDoCliente, distanciaDoEndereco,
+-                rota.distanceKm(), rota.deliveryZone(), taxa, tempo);
++                rota.distanciaKm(), rota.zona(), taxa, tempo);
+     }
+ 
+     public record AtendimentoCliente(boolean atendido, double distanciaClienteKm, double distanciaEnderecoKm,
+diff -ruN a/src/main/java/br/edu/foodnow/service/EntregaService.java b/src/main/java/br/edu/foodnow/service/EntregaService.java
+--- a/src/main/java/br/edu/foodnow/service/EntregaService.java	2026-09-30 03:26:09.615871221 +0000
++++ b/src/main/java/br/edu/foodnow/service/EntregaService.java	2026-09-30 03:26:09.620908934 +0000
+@@ -1,8 +1,8 @@
+ package br.edu.foodnow.service;
+ 
+-import br.edu.foodnow.integration.FakeEmailClient;
++import br.edu.foodnow.entrega.PlanoEntrega;
++import br.edu.foodnow.entrega.PoliticaEntrega;
+ import br.edu.foodnow.integration.FakeCourierClient;
+-import br.edu.foodnow.integration.FakeMapsClient;
+ import br.edu.foodnow.model.Entrega;
+ import br.edu.foodnow.model.Pedido;
+ import br.edu.foodnow.model.StatusEntrega;
+@@ -15,37 +15,28 @@
+ public class EntregaService {
+     private final EntregaRepository entregaRepository;
+     private final PedidoRepository pedidoRepository;
+-    private final FakeMapsClient mapsClient;
+-    private final FakeEmailClient emailClient;
++    private final NotificacaoService notificacaoService;
+     private final FakeCourierClient courierClient;
++    private final PoliticaEntrega politicaEntrega;
+ 
+     public EntregaService(EntregaRepository entregaRepository, PedidoRepository pedidoRepository,
+-                          FakeMapsClient mapsClient, FakeEmailClient emailClient,
+-                          FakeCourierClient courierClient) {
++                          NotificacaoService notificacaoService, FakeCourierClient courierClient,
++                          PoliticaEntrega politicaEntrega) {
+         this.entregaRepository = entregaRepository;
+         this.pedidoRepository = pedidoRepository;
+-        this.mapsClient = mapsClient;
+-        this.emailClient = emailClient;
++        this.notificacaoService = notificacaoService;
+         this.courierClient = courierClient;
++        this.politicaEntrega = politicaEntrega;
+     }
+ 
+     public Entrega criarPara(Pedido pedido) {
+-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(
+-                pedido.getRestaurante().getEndereco().getLocalizacao(),
+-                pedido.getEnderecoEntrega().getLocalizacao());
+-        double distanciaEndereco = pedido.getRestaurante().getEndereco()
+-                .calcularDistanciaAte(pedido.getEnderecoEntrega());
+-        double distanciaPedido = pedido.calcularDistanciaEntrega();
+-        double distanciaEscolhida = Math.max(rota.distanceKm(), Math.max(distanciaEndereco, distanciaPedido));
+-        String zona = "EXPANDIDA".equals(rota.deliveryZone())
+-                ? rota.deliveryZone() : pedido.getEnderecoEntrega().classificarZonaDeEntrega();
++        PlanoEntrega plano = politicaEntrega.planejarEntrega(pedido);
+         FakeCourierClient.CourierRequest requisicao = new FakeCourierClient.CourierRequest(pedido.getId(),
+-                distanciaEscolhida, zona, pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
++                plano.distanciaKm(), plano.zona(), pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
+         FakeCourierClient.CourierDispatch despacho = courierClient.solicitarEntregador(requisicao);
+-        int tempo = Math.max(rota.durationMinutes(), pedido.estimarTempoEntregaPeloPedido())
+-                + despacho.pickupEtaMinutes();
+-        Entrega entrega = new Entrega(pedido, pedido.getEnderecoEntrega(), distanciaEscolhida, tempo,
+-                zona, despacho.courierCode(), despacho.providerStatus());
++        Entrega entrega = new Entrega(pedido, pedido.getEnderecoEntrega(), plano.distanciaKm(),
++                plano.tempoTotalMinutos(despacho.pickupEtaMinutes()),
++                plano.zona(), despacho.courierCode(), despacho.providerStatus());
+         return entregaRepository.save(entrega);
+     }
+ 
+@@ -66,8 +57,7 @@
+         entrega.atualizarStatus(novoStatus);
+         if (novoStatus == StatusEntrega.EM_ROTA) {
+             pedido.iniciarEntrega();
+-            emailClient.enviar(pedido.getCliente().getEmail(), "Entrega iniciada",
+-                    "O pedido " + pedido.getId() + " saiu para entrega.");
++            notificacaoService.notificarEntregaIniciada(pedido);
+         } else if (novoStatus == StatusEntrega.ENTREGUE) {
+             pedido.concluirEntrega();
+         }
+diff -ruN a/src/main/java/br/edu/foodnow/service/LocalizacaoService.java b/src/main/java/br/edu/foodnow/service/LocalizacaoService.java
+--- a/src/main/java/br/edu/foodnow/service/LocalizacaoService.java	2026-09-30 03:26:09.615898665 +0000
++++ b/src/main/java/br/edu/foodnow/service/LocalizacaoService.java	2026-09-30 03:26:09.620942704 +0000
+@@ -1,28 +1,19 @@
+ package br.edu.foodnow.service;
+ 
+-import br.edu.foodnow.integration.FakeMapsClient;
++import br.edu.foodnow.geo.ProvedorGeografico;
+ import br.edu.foodnow.model.Endereco;
+ import br.edu.foodnow.model.Localizacao;
+ import org.springframework.stereotype.Service;
+ 
+ @Service
+ public class LocalizacaoService {
+-    private final FakeMapsClient mapsClient;
++    private final ProvedorGeografico provedorGeografico;
+ 
+-    public LocalizacaoService(FakeMapsClient mapsClient) {
+-        this.mapsClient = mapsClient;
++    public LocalizacaoService(ProvedorGeografico provedorGeografico) {
++        this.provedorGeografico = provedorGeografico;
+     }
+ 
+     public Localizacao buscarCoordenadas(Endereco endereco) {
+-        FakeMapsClient.MapCoordinates resposta = mapsClient.buscarCoordenadas(endereco);
+-        return new Localizacao(Double.parseDouble(resposta.lat()), Double.parseDouble(resposta.lng()));
+-    }
+-
+-    public double calcularDistancia(Endereco origem, Endereco destino) {
+-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).distanceKm();
+-    }
+-
+-    public int estimarTempoEntrega(Endereco origem, Endereco destino) {
+-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).durationMinutes();
++        return provedorGeografico.buscarCoordenadas(endereco).localizacao();
+     }
+ }
+diff -ruN a/src/main/java/br/edu/foodnow/service/NotificacaoService.java b/src/main/java/br/edu/foodnow/service/NotificacaoService.java
+--- a/src/main/java/br/edu/foodnow/service/NotificacaoService.java	2026-09-30 03:26:09.615920913 +0000
++++ b/src/main/java/br/edu/foodnow/service/NotificacaoService.java	2026-09-30 03:26:09.620960237 +0000
+@@ -1,7 +1,8 @@
+ package br.edu.foodnow.service;
+ 
++import br.edu.foodnow.entrega.PoliticaEntrega;
++import br.edu.foodnow.geo.Rota;
+ import br.edu.foodnow.integration.FakeEmailClient;
+-import br.edu.foodnow.integration.FakeMapsClient;
+ import br.edu.foodnow.model.Notificacao;
+ import br.edu.foodnow.model.Pedido;
+ import br.edu.foodnow.model.StatusPagamento;
+@@ -10,29 +11,38 @@
+ @Service
+ public class NotificacaoService {
+     private final FakeEmailClient emailClient;
+-    private final FakeMapsClient mapsClient;
++    private final PoliticaEntrega politicaEntrega;
+ 
+-    public NotificacaoService(FakeEmailClient emailClient, FakeMapsClient mapsClient) {
++    public NotificacaoService(FakeEmailClient emailClient, PoliticaEntrega politicaEntrega) {
+         this.emailClient = emailClient;
+-        this.mapsClient = mapsClient;
++        this.politicaEntrega = politicaEntrega;
+     }
+ 
+-    public void notificarPagamento(Pedido pedido, StatusPagamento status) {
+-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(
+-                pedido.getRestaurante().getEndereco().getLocalizacao(),
+-                pedido.getEnderecoEntrega().getLocalizacao());
++    public void notificarConfirmacao(Pedido pedido) {
++        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
++                "O pedido " + pedido.getId() + " foi confirmado para a região "
++                        + politicaEntrega.regiaoDeEntrega(pedido) + ". Estimativa interna: "
++                        + politicaEntrega.estimarTempoInterno(pedido) + " minutos.");
++    }
++
++    public void notificarPagamento(Pedido pedido, StatusPagamento status, Rota rota) {
+         if (status == StatusPagamento.APROVADO) {
+             Notificacao notificacao = new Notificacao(pedido.getCliente().getEmail(), "Pagamento aprovado",
+                     "O pagamento do pedido " + pedido.getId() + " foi aprovado. Rota estimada pelo e-mail: "
+-                            + rota.durationMinutes() + " minutos.")
++                            + rota.duracaoMinutos() + " minutos.")
+                     .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
+             emailClient.enviar(notificacao);
+         } else {
+             Notificacao notificacao = new Notificacao(pedido.getCliente().getEmail(), "Pagamento rejeitado",
+                     "O pagamento do pedido " + pedido.getId() + " foi rejeitado na zona "
+-                            + rota.deliveryZone() + ".")
++                            + rota.zona() + ".")
+                     .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
+             emailClient.enviar(notificacao);
+         }
+     }
++
++    public void notificarEntregaIniciada(Pedido pedido) {
++        emailClient.enviar(pedido.getCliente().getEmail(), "Entrega iniciada",
++                "O pedido " + pedido.getId() + " saiu para entrega.");
++    }
+ }
+diff -ruN a/src/main/java/br/edu/foodnow/service/PagamentoService.java b/src/main/java/br/edu/foodnow/service/PagamentoService.java
+--- a/src/main/java/br/edu/foodnow/service/PagamentoService.java	2026-09-30 03:26:09.615949292 +0000
++++ b/src/main/java/br/edu/foodnow/service/PagamentoService.java	2026-09-30 03:26:09.620975732 +0000
+@@ -1,7 +1,8 @@
+ package br.edu.foodnow.service;
+ 
++import br.edu.foodnow.entrega.AvaliacaoGeografica;
++import br.edu.foodnow.entrega.PoliticaEntrega;
+ import br.edu.foodnow.integration.FakePaymentGateway;
+-import br.edu.foodnow.integration.FakeMapsClient;
+ import br.edu.foodnow.model.FormaPagamento;
+ import br.edu.foodnow.model.Pagamento;
+ import br.edu.foodnow.model.Pedido;
+@@ -19,17 +20,17 @@
+     private final FakePaymentGateway paymentGateway;
+     private final NotificacaoService notificacaoService;
+     private final EntregaService entregaService;
+-    private final FakeMapsClient mapsClient;
++    private final PoliticaEntrega politicaEntrega;
+ 
+     public PagamentoService(PedidoRepository pedidoRepository, PagamentoRepository pagamentoRepository,
+                             FakePaymentGateway paymentGateway, NotificacaoService notificacaoService,
+-                            EntregaService entregaService, FakeMapsClient mapsClient) {
++                            EntregaService entregaService, PoliticaEntrega politicaEntrega) {
+         this.pedidoRepository = pedidoRepository;
+         this.pagamentoRepository = pagamentoRepository;
+         this.paymentGateway = paymentGateway;
+         this.notificacaoService = notificacaoService;
+         this.entregaService = entregaService;
+-        this.mapsClient = mapsClient;
++        this.politicaEntrega = politicaEntrega;
+     }
+ 
+     @Transactional
+@@ -40,12 +41,9 @@
+             throw new RegraNegocioException("Pedido precisa estar confirmado para pagamento");
+         }
+ 
+-        FakeMapsClient.RouteResult rotaPagamento = mapsClient.calcularRota(
+-                pedido.getRestaurante().getEndereco().getLocalizacao(),
+-                pedido.getEnderecoEntrega().getLocalizacao());
+-        String regiao = pedido.determinarRegiaoEntrega();
++        AvaliacaoGeografica avaliacao = politicaEntrega.avaliar(pedido);
+         FakePaymentGateway.GatewayRequest requisicao = FakePaymentGateway.GatewayRequest.from(
+-                pedido.getId(), pedido.getValorTotal(), token, forma.name(), regiao,
++                pedido.getId(), pedido.getValorTotal(), token, forma.name(), avaliacao.regiao(),
+                 pedido.getRestaurante().getEndereco().getLocalizacao().formatarParaProvedor(),
+                 pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
+         FakePaymentGateway.GatewayResult resposta = paymentGateway.processarPagamento(requisicao);
+@@ -56,8 +54,8 @@
+         pedidoRepository.save(pedido);
+         Pagamento pagamento = pagamentoRepository.save(new Pagamento(pedido, forma, status,
+                 pedido.getValorTotal(), resposta.transactionCode(), resposta.providerMessage(),
+-                regiao, rotaPagamento.distanceKm()));
+-        notificacaoService.notificarPagamento(pedido, status);
++                avaliacao.regiao(), avaliacao.rota().distanciaKm()));
++        notificacaoService.notificarPagamento(pedido, status, avaliacao.rota());
+         if (status == StatusPagamento.APROVADO) {
+             entregaService.criarPara(pedido);
+         }
+diff -ruN a/src/main/java/br/edu/foodnow/service/PedidoService.java b/src/main/java/br/edu/foodnow/service/PedidoService.java
+--- a/src/main/java/br/edu/foodnow/service/PedidoService.java	2026-09-30 03:26:09.615966920 +0000
++++ b/src/main/java/br/edu/foodnow/service/PedidoService.java	2026-09-30 03:26:09.620992299 +0000
+@@ -1,7 +1,8 @@
+ package br.edu.foodnow.service;
+ 
+-import br.edu.foodnow.integration.FakeEmailClient;
+-import br.edu.foodnow.integration.FakeMapsClient;
++import br.edu.foodnow.entrega.CotacaoEntrega;
++import br.edu.foodnow.entrega.PoliticaEntrega;
++import br.edu.foodnow.entrega.SolicitacaoCotacao;
+ import br.edu.foodnow.model.Cliente;
+ import br.edu.foodnow.model.Endereco;
+ import br.edu.foodnow.model.FormaPagamento;
+@@ -13,11 +14,9 @@
+ import br.edu.foodnow.repository.PedidoRepository;
+ import br.edu.foodnow.repository.ProdutoRepository;
+ import br.edu.foodnow.repository.RestauranteRepository;
+-import br.edu.foodnow.util.TaxaEntregaUtil;
+ import org.springframework.stereotype.Service;
+ import org.springframework.transaction.annotation.Transactional;
+ 
+-import java.math.BigDecimal;
+ import java.util.List;
+ 
+ @Service
+@@ -26,23 +25,21 @@
+     private final RestauranteRepository restauranteRepository;
+     private final ProdutoRepository produtoRepository;
+     private final PedidoRepository pedidoRepository;
+-    private final LocalizacaoService localizacaoService;
++    private final PoliticaEntrega politicaEntrega;
+     private final PagamentoService pagamentoService;
+-    private final FakeEmailClient emailClient;
+-    private final FakeMapsClient mapsClient;
++    private final NotificacaoService notificacaoService;
+ 
+     public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
+                          ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
+-                         LocalizacaoService localizacaoService, PagamentoService pagamentoService,
+-                         FakeEmailClient emailClient, FakeMapsClient mapsClient) {
++                         PoliticaEntrega politicaEntrega, PagamentoService pagamentoService,
++                         NotificacaoService notificacaoService) {
+         this.clienteRepository = clienteRepository;
+         this.restauranteRepository = restauranteRepository;
+         this.produtoRepository = produtoRepository;
+         this.pedidoRepository = pedidoRepository;
+-        this.localizacaoService = localizacaoService;
++        this.politicaEntrega = politicaEntrega;
+         this.pagamentoService = pagamentoService;
+-        this.emailClient = emailClient;
+-        this.mapsClient = mapsClient;
++        this.notificacaoService = notificacaoService;
+     }
+ 
+     @Transactional
+@@ -57,29 +54,17 @@
+                 .findFirst()
+                 .orElseThrow(() -> new RegraNegocioException("Endereço não pertence ao cliente"));
+ 
+-        double distanciaDoService = localizacaoService.calcularDistancia(restaurante.getEndereco(), endereco);
+-        FakeMapsClient.RouteResult rotaConcreta = mapsClient.calcularRota(
+-                restaurante.getEndereco().getLocalizacao(), endereco.getLocalizacao());
+-        double distanciaDoRestaurante = restaurante.calcularDistanciaAte(endereco);
+-        double distanciaDoEndereco = restaurante.getEndereco().calcularDistanciaAte(endereco);
+-        double distanciaManhattan = restaurante.getEndereco().getLocalizacao()
+-                .calcularDistanciaManhattan(endereco.getLocalizacao());
+-        double distancia = Math.max(distanciaDoService, Math.max(rotaConcreta.distanceKm(),
+-                Math.max(distanciaDoRestaurante, Math.max(distanciaDoEndereco, distanciaManhattan))));
+-        if (distancia > restaurante.getRaioEntregaKm() || !cliente.estaDentroDaAreaDeEntrega(restaurante)
+-                || !restaurante.atendeEndereco(endereco)) {
++        CotacaoEntrega cotacao = politicaEntrega.cotar(new SolicitacaoCotacao(cliente, restaurante, endereco));
++        if (!cotacao.atendido()) {
+             throw new RegraNegocioException("Endereço fora da área de entrega");
+         }
+ 
+         Pedido pedido = new Pedido(cliente, restaurante, endereco);
+-        BigDecimal taxaEntrega = maiorTaxa(TaxaEntregaUtil.calcular(distancia),
+-                restaurante.calcularTaxaEntrega(endereco), restaurante.getEndereco().calcularTaxaLocalAte(endereco),
+-                cliente.calcularTaxaEntregaDoRestaurante(restaurante), pedido.calcularTaxaEntregaPorDistancia());
+-        pedido.definirEntrega(distancia, taxaEntrega);
++        pedido.definirEntrega(cotacao.distanciaKm(), cotacao.taxaBase());
+         for (ItemSolicitado item : itensSolicitados) {
+             adicionarItemCarregado(pedido, item.produtoId(), item.quantidade());
+         }
+-        pedido.definirEntrega(distancia, taxaEntrega.add(pedido.calcularAdicionalGeograficoDosItens()));
++        pedido.definirEntrega(cotacao.distanciaKm(), politicaEntrega.taxaFinal(cotacao, pedido));
+         return pedidoRepository.save(pedido);
+     }
+ 
+@@ -122,10 +107,7 @@
+         } catch (IllegalStateException excecao) {
+             throw new RegraNegocioException(excecao.getMessage());
+         }
+-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
+-                "O pedido " + pedido.getId() + " foi confirmado para a região "
+-                        + pedido.determinarRegiaoEntrega() + ". Estimativa interna: "
+-                        + pedido.estimarTempoEntregaPeloPedido() + " minutos.");
++        notificacaoService.notificarConfirmacao(pedido);
+         return pedidoRepository.save(pedido);
+     }
+ 
+@@ -133,16 +115,6 @@
+         return pagamentoService.processar(pedidoId, forma, token);
+     }
+ 
+-    private BigDecimal maiorTaxa(BigDecimal... taxas) {
+-        BigDecimal maior = BigDecimal.ZERO;
+-        for (BigDecimal taxa : taxas) {
+-            if (taxa.compareTo(maior) > 0) {
+-                maior = taxa;
+-            }
+-        }
+-        return maior;
+-    }
+-
+     public record ItemSolicitado(Long produtoId, int quantidade) {
+     }
+ }
+diff -ruN a/src/main/java/br/edu/foodnow/service/RestauranteService.java b/src/main/java/br/edu/foodnow/service/RestauranteService.java
+--- a/src/main/java/br/edu/foodnow/service/RestauranteService.java	2026-09-30 03:26:09.616067356 +0000
++++ b/src/main/java/br/edu/foodnow/service/RestauranteService.java	2026-09-30 03:26:09.621060277 +0000
+@@ -1,6 +1,7 @@
+ package br.edu.foodnow.service;
+ 
+-import br.edu.foodnow.integration.FakeMapsClient;
++import br.edu.foodnow.geo.ProvedorGeografico;
++import br.edu.foodnow.geo.Rota;
+ import br.edu.foodnow.model.Endereco;
+ import br.edu.foodnow.model.Localizacao;
+ import br.edu.foodnow.model.Produto;
+@@ -16,14 +17,14 @@
+     private final RestauranteRepository restauranteRepository;
+     private final ProdutoRepository produtoRepository;
+     private final LocalizacaoService localizacaoService;
+-    private final FakeMapsClient mapsClient;
++    private final ProvedorGeografico provedorGeografico;
+ 
+     public RestauranteService(RestauranteRepository restauranteRepository, ProdutoRepository produtoRepository,
+-                              LocalizacaoService localizacaoService, FakeMapsClient mapsClient) {
++                              LocalizacaoService localizacaoService, ProvedorGeografico provedorGeografico) {
+         this.restauranteRepository = restauranteRepository;
+         this.produtoRepository = produtoRepository;
+         this.localizacaoService = localizacaoService;
+-        this.mapsClient = mapsClient;
++        this.provedorGeografico = provedorGeografico;
+     }
+ 
+     public Restaurante cadastrar(String nome, double raioEntregaKm, Endereco endereco) {
+@@ -61,7 +62,7 @@
+ 
+     public SimulacaoRestaurante simularEntrega(Long restauranteId, Endereco destino) {
+         Restaurante restaurante = consultar(restauranteId);
+-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(restaurante.getEndereco().getLocalizacao(),
++        Rota rota = provedorGeografico.calcularRota(restaurante.getEndereco().getLocalizacao(),
+                 destino.getLocalizacao());
+         double distanciaDaEntidade = restaurante.calcularDistanciaAte(destino);
+         double distanciaDosEnderecos = restaurante.getEndereco().calcularDistanciaAte(destino);
+@@ -69,8 +70,8 @@
+         BigDecimal taxaDoEndereco = restaurante.getEndereco().calcularTaxaLocalAte(destino);
+         int tempo = Math.max(restaurante.estimarTempoEntrega(destino), destino.estimarMinutosAte(
+                 restaurante.getEndereco()));
+-        return new SimulacaoRestaurante(distanciaDaEntidade, distanciaDosEnderecos, rota.distanceKm(),
+-                restaurante.classificarRegiaoDeEntrega(destino), rota.deliveryZone(),
++        return new SimulacaoRestaurante(distanciaDaEntidade, distanciaDosEnderecos, rota.distanciaKm(),
++                restaurante.classificarRegiaoDeEntrega(destino), rota.zona(),
+                 taxaDoRestaurante, taxaDoEndereco, tempo);
+     }
+ 
+diff -ruN a/src/test/java/br/edu/foodnow/controller/CaracterizacaoEntregaIT.java b/src/test/java/br/edu/foodnow/controller/CaracterizacaoEntregaIT.java
+--- a/src/test/java/br/edu/foodnow/controller/CaracterizacaoEntregaIT.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/test/java/br/edu/foodnow/controller/CaracterizacaoEntregaIT.java	2026-09-30 03:26:09.621798670 +0000
+@@ -0,0 +1,188 @@
++package br.edu.foodnow.controller;
++
++import br.edu.foodnow.model.Notificacao;
++import io.restassured.http.ContentType;
++import io.restassured.path.json.JsonPath;
++import org.junit.jupiter.api.Test;
++
++import java.util.List;
++import java.util.Map;
++
++import static io.restassured.RestAssured.given;
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.within;
++
++/**
++ * Testes de caracterização da Atividade 06: fixam os valores EXATOS de distância, taxa, total,
++ * tempo, região, zona e notificações produzidos pelo código antes da refatoração, inclusive
++ * os resultados diferentes expostos em campos diferentes da API (distância do pedido, do
++ * pagamento e da entrega). Os valores esperados foram obtidos executando a versão original.
++ */
++class CaracterizacaoEntregaIT extends ApiTestSupport {
++    private static final double KM = 1e-5;
++    private static final double REAIS = 0.001;
++
++    @Test
++    void fluxoNaZonaCentralDeveManterValoresExatos() {
++        Cenario cenario = criarCenario(true, 25, -25.095, -50.160);
++
++        JsonPath pedido = criarPedidoComDuasUnidades(cenario);
++        long pedidoId = pedido.getLong("id");
++        assertThat(pedido.getString("status")).isEqualTo("CRIADO");
++        assertThat(pedido.getDouble("subtotal")).isCloseTo(60.00, within(REAIS));
++        assertThat(pedido.getDouble("taxaEntrega")).isCloseTo(6.55, within(REAIS));
++        assertThat(pedido.getDouble("valorTotal")).isCloseTo(66.55, within(REAIS));
++        assertThat(pedido.getDouble("distanciaEntregaKm")).isCloseTo(1.515000000000093, within(KM));
++
++        given().post("/pedidos/{id}/confirmar", pedidoId).then().statusCode(200);
++        assertEmail("Pedido confirmado", "O pedido " + pedidoId
++                + " foi confirmado para a região CENTRAL. Estimativa interna: 21 minutos.");
++
++        JsonPath pagamento = pagar(pedidoId, "TOKEN_APROVADO");
++        assertThat(pagamento.getString("status")).isEqualTo("APROVADO");
++        assertThat(pagamento.getString("regiaoEntrega")).isEqualTo("CENTRAL");
++        assertThat(pagamento.getDouble("distanciaValidadaKm")).isCloseTo(1.32, within(KM));
++        assertThat(pagamento.getBoolean("riscoGeografico")).isFalse();
++        assertEmail("Pagamento aprovado", "O pagamento do pedido " + pedidoId
++                + " foi aprovado. Rota estimada pelo e-mail: 17 minutos."
++                + " Região de entrega: CENTRAL [-25.095000,-50.160000].");
++
++        JsonPath entrega = given().get("/entregas/pedido/{id}", pedidoId).then().statusCode(200)
++                .extract().jsonPath();
++        assertThat(entrega.getString("status")).isEqualTo("AGUARDANDO_ENTREGADOR");
++        assertThat(entrega.getDouble("distanciaKm")).isCloseTo(1.32, within(KM));
++        assertThat(entrega.getInt("tempoEstimadoMinutos")).isEqualTo(25);
++        assertThat(entrega.getString("zonaEntrega")).isEqualTo("CENTRAL");
++        assertThat(entrega.getString("codigoEntregadorExterno")).isEqualTo("COURIER-" + pedidoId);
++        assertThat(entrega.getString("statusDespachoExterno")).isEqualTo("DRIVER_ASSIGNED");
++        assertThat(entrega.getDouble("custoOperacional")).isCloseTo(3.56, within(REAIS));
++
++        given().contentType(ContentType.JSON).body(Map.of("status", "EM_ROTA"))
++                .patch("/entregas/{id}/status", entrega.getLong("id")).then().statusCode(200);
++        assertEmail("Entrega iniciada", "O pedido " + pedidoId + " saiu para entrega.");
++    }
++
++    @Test
++    void fluxoForaDoCentroComZonaExpandidaDeveManterValoresExatos() {
++        Cenario cenario = criarCenarioComEnderecoDeEntrega("Uvaranas", "84010-100", -25.150, -50.200);
++
++        JsonPath pedido = criarPedidoComDuasUnidades(cenario);
++        long pedidoId = pedido.getLong("id");
++        assertThat(pedido.getDouble("subtotal")).isCloseTo(60.00, within(REAIS));
++        assertThat(pedido.getDouble("taxaEntrega")).isCloseTo(19.60, within(REAIS));
++        assertThat(pedido.getDouble("valorTotal")).isCloseTo(79.60, within(REAIS));
++        assertThat(pedido.getDouble("distanciaEntregaKm")).isCloseTo(10.35, within(KM));
++
++        given().post("/pedidos/{id}/confirmar", pedidoId).then().statusCode(200);
++        assertEmail("Pedido confirmado", "O pedido " + pedidoId
++                + " foi confirmado para a região URBANA. Estimativa interna: 45 minutos.");
++
++        JsonPath pagamento = pagar(pedidoId, "TOKEN_APROVADO");
++        assertThat(pagamento.getString("regiaoEntrega")).isEqualTo("URBANA");
++        assertThat(pagamento.getDouble("distanciaValidadaKm")).isCloseTo(8.62, within(KM));
++        assertThat(pagamento.getBoolean("riscoGeografico")).isFalse();
++        assertEmail("Pagamento aprovado", "O pagamento do pedido " + pedidoId
++                + " foi aprovado. Rota estimada pelo e-mail: 43 minutos."
++                + " Região de entrega: URBANA [-25.150000,-50.200000].");
++
++        JsonPath entrega = given().get("/entregas/pedido/{id}", pedidoId).then().statusCode(200)
++                .extract().jsonPath();
++        assertThat(entrega.getDouble("distanciaKm")).isCloseTo(8.62, within(KM));
++        assertThat(entrega.getInt("tempoEstimadoMinutos")).isEqualTo(54);
++        assertThat(entrega.getString("zonaEntrega")).isEqualTo("EXPANDIDA");
++        assertThat(entrega.getString("codigoEntregadorExterno")).isEqualTo("COURIER-" + pedidoId);
++        assertThat(entrega.getDouble("custoOperacional")).isCloseTo(12.22, within(REAIS));
++    }
++
++    @Test
++    void pagamentoRejeitadoDeveManterMensagemGeograficaESemEntrega() {
++        Cenario cenario = criarCenarioComEnderecoDeEntrega("Uvaranas", "84010-100", -25.150, -50.200);
++        long pedidoId = criarPedidoComDuasUnidades(cenario).getLong("id");
++        given().post("/pedidos/{id}/confirmar", pedidoId).then().statusCode(200);
++
++        JsonPath pagamento = pagar(pedidoId, "REJEITADO");
++
++        assertThat(pagamento.getString("status")).isEqualTo("REJEITADO");
++        assertThat(pagamento.getString("regiaoEntrega")).isEqualTo("URBANA");
++        assertThat(pagamento.getDouble("distanciaValidadaKm")).isCloseTo(8.62, within(KM));
++        assertEmail("Pagamento rejeitado", "O pagamento do pedido " + pedidoId
++                + " foi rejeitado na zona EXPANDIDA. Região de entrega: URBANA [-25.150000,-50.200000].");
++        given().get("/entregas/pedido/{id}", pedidoId).then().statusCode(404);
++    }
++
++    @Test
++    void simulacoesDeAtendimentoEDeEntregaDevemManterValoresExatos() {
++        Cenario cenario = criarCenario(true, 25, -25.095, -50.160);
++
++        JsonPath atendimento = given().get("/clientes/{c}/atendimento/{r}",
++                cenario.clienteId(), cenario.restauranteId()).then().statusCode(200).extract().jsonPath();
++        assertThat(atendimento.getBoolean("atendido")).isTrue();
++        assertThat(atendimento.getDouble("distanciaClienteKm")).isCloseTo(1.150256761130213, within(KM));
++        assertThat(atendimento.getDouble("distanciaEnderecoKm")).isCloseTo(1.1119721950210546, within(KM));
++        assertThat(atendimento.getDouble("distanciaProvedorKm")).isCloseTo(1.32, within(KM));
++        assertThat(atendimento.getString("zonaProvedor")).isEqualTo("CENTRAL");
++        assertThat(atendimento.getDouble("taxaCliente")).isCloseTo(5.17, within(REAIS));
++        assertThat(atendimento.getInt("tempoEstimadoMinutos")).isEqualTo(17);
++
++        JsonPath simulacao = given().contentType(ContentType.JSON)
++                .body(Map.of("destino", endereco("Rua para Simulação", -25.096, -50.161)))
++                .post("/restaurantes/{id}/simular-entrega", cenario.restauranteId())
++                .then().statusCode(200).extract().jsonPath();
++        assertThat(simulacao.getString("regiaoRestaurante")).isEqualTo("PROXIMA");
++        assertThat(simulacao.getString("zonaProvedor")).isEqualTo("CENTRAL");
++        assertThat(simulacao.getInt("tempoEstimadoMinutos")).isEqualTo(17);
++        assertThat(simulacao.getDouble("distanciaRestauranteKm")).isCloseTo(1.1936239669905606, within(KM));
++        assertThat(simulacao.getDouble("distanciaEnderecosKm")).isCloseTo(1.1497507716025681, within(KM));
++        assertThat(simulacao.getDouble("distanciaProvedorKm")).isCloseTo(1.37, within(KM));
++        assertThat(simulacao.getDouble("taxaRestaurante")).isCloseTo(5.61, within(REAIS));
++        assertThat(simulacao.getDouble("taxaEndereco")).isCloseTo(5.42, within(REAIS));
++    }
++
++    // ---------- apoio ----------
++
++    private Cenario criarCenarioComEnderecoDeEntrega(String bairro, String cep, double latitude, double longitude) {
++        long clienteId = given().contentType(ContentType.JSON)
++                .body(Map.of("nome", "Cliente API", "email", "cliente@foodnow.test"))
++                .post("/clientes").then().statusCode(201).extract().jsonPath().getLong("id");
++        Map<String, Object> enderecoCliente = Map.of("logradouro", "Rua do Cliente", "numero", "10",
++                "bairro", bairro, "cidade", "Ponta Grossa", "cep", cep,
++                "latitude", latitude, "longitude", longitude);
++        long enderecoId = given().contentType(ContentType.JSON).body(enderecoCliente)
++                .post("/clientes/{id}/enderecos", clienteId).then().statusCode(201)
++                .extract().jsonPath().getLong("enderecos[0].id");
++        long restauranteId = given().contentType(ContentType.JSON)
++                .body(Map.of("nome", "Cantina FoodNow", "raioEntregaKm", 25.0,
++                        "endereco", endereco("Rua da Cantina", -25.100, -50.150)))
++                .post("/restaurantes").then().statusCode(201).extract().jsonPath().getLong("id");
++        long produtoId = given().contentType(ContentType.JSON)
++                .body(Map.of("nome", "Pizza", "preco", new java.math.BigDecimal("30.00"), "disponivel", true))
++                .post("/restaurantes/{id}/produtos", restauranteId).then().statusCode(201)
++                .extract().jsonPath().getLong("id");
++        return new Cenario(clienteId, enderecoId, restauranteId, produtoId);
++    }
++
++    private JsonPath criarPedidoComDuasUnidades(Cenario cenario) {
++        Map<String, Object> pedido = Map.of(
++                "clienteId", cenario.clienteId(), "restauranteId", cenario.restauranteId(),
++                "enderecoEntregaId", cenario.enderecoId(),
++                "itens", List.of(Map.of("produtoId", cenario.produtoId(), "quantidade", 2)));
++        return given().contentType(ContentType.JSON).body(pedido).post("/pedidos")
++                .then().statusCode(201).extract().jsonPath();
++    }
++
++    private JsonPath pagar(long pedidoId, String token) {
++        return given().contentType(ContentType.JSON)
++                .body(Map.of("pedidoId", pedidoId, "forma", "PIX", "token", token))
++                .post("/pagamentos").then().statusCode(201).extract().jsonPath();
++    }
++
++    private void assertEmail(String assunto, String mensagem) {
++        assertThat(emailClient.getEnviadas())
++                .filteredOn(notificacao -> assunto.equals(notificacao.getAssunto()))
++                .singleElement()
++                .satisfies((Notificacao notificacao) -> {
++                    assertThat(notificacao.getDestinatario()).isEqualTo("cliente@foodnow.test");
++                    assertThat(notificacao.getMensagem()).isEqualTo(mensagem);
++                });
++    }
++}
+diff -ruN a/src/test/java/br/edu/foodnow/entrega/PoliticaEntregaPadraoTest.java b/src/test/java/br/edu/foodnow/entrega/PoliticaEntregaPadraoTest.java
+--- a/src/test/java/br/edu/foodnow/entrega/PoliticaEntregaPadraoTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/test/java/br/edu/foodnow/entrega/PoliticaEntregaPadraoTest.java	2026-09-30 03:26:09.622141770 +0000
+@@ -0,0 +1,210 @@
++package br.edu.foodnow.entrega;
++
++import br.edu.foodnow.geo.CoordenadasResolvidas;
++import br.edu.foodnow.geo.ProvedorGeografico;
++import br.edu.foodnow.geo.Rota;
++import br.edu.foodnow.model.Cliente;
++import br.edu.foodnow.model.Endereco;
++import br.edu.foodnow.model.Localizacao;
++import br.edu.foodnow.model.Pedido;
++import br.edu.foodnow.model.Produto;
++import br.edu.foodnow.model.Restaurante;
++import org.junit.jupiter.api.Test;
++
++import java.math.BigDecimal;
++import java.util.concurrent.atomic.AtomicInteger;
++
++import static org.assertj.core.api.Assertions.assertThat;
++import static org.assertj.core.api.Assertions.within;
++
++/**
++ * Testa a política de entrega sem Spring e sem o cliente de mapas concreto: o provedor
++ * geográfico é substituído por uma implementação fixa da porta {@link ProvedorGeografico}.
++ * Os valores esperados foram obtidos executando o código anterior à refatoração.
++ */
++class PoliticaEntregaPadraoTest {
++    private static final double KM = 1e-6;
++
++    private final AtomicInteger consultasDeRota = new AtomicInteger();
++
++    // ---------- cotar ----------
++
++    @Test
++    void cotarDeveUsarAMaiorDistanciaEntreProvedorEMedidasLocais() {
++        Cenario central = cenarioCentral();
++
++        CotacaoEntrega semAjudaDoProvedor = politica(new Rota(0.0, 10, "CENTRAL")).cotar(central.solicitacao());
++        assertThat(semAjudaDoProvedor.atendido()).isTrue();
++        assertThat(semAjudaDoProvedor.distanciaKm()).isCloseTo(1.515, within(KM));
++        assertThat(semAjudaDoProvedor.taxaBase()).isEqualByComparingTo("6.55");
++
++        CotacaoEntrega provedorMaior = politica(new Rota(3.0, 10, "CENTRAL")).cotar(central.solicitacao());
++        assertThat(provedorMaior.distanciaKm()).isEqualTo(3.0);
++    }
++
++    @Test
++    void cotarDeveRecusarQuandoADistanciaDoProvedorExcedeOAtendimento() {
++        Cenario central = cenarioCentral();
++
++        CotacaoEntrega cotacao = politica(new Rota(50.0, 90, "EXPANDIDA")).cotar(central.solicitacao());
++
++        assertThat(cotacao.atendido()).isFalse();
++        assertThat(cotacao.distanciaKm()).isEqualTo(50.0);
++        assertThat(cotacao.taxaBase()).isEqualByComparingTo("0");
++    }
++
++    @Test
++    void cotarDeveRecusarEnderecoDeOutraRegiao() {
++        Endereco restauranteEndereco = endereco("Centro", "Ponta Grossa", "84000-000", -25.100, -50.150);
++        Restaurante restaurante = new Restaurante("Cantina", 60, restauranteEndereco);
++        Endereco outraCidade = endereco("Centro", "Castro", "84160-000", -25.095, -50.160);
++        Cliente cliente = new Cliente("Ana", "ana@foodnow.test");
++        cliente.adicionarEndereco(outraCidade);
++
++        CotacaoEntrega cotacao = politica(new Rota(1.0, 10, "CENTRAL"))
++                .cotar(new SolicitacaoCotacao(cliente, restaurante, outraCidade));
++
++        assertThat(cotacao.atendido()).isFalse();
++    }
++
++    // ---------- taxa final ----------
++
++    @Test
++    void taxaFinalNaZonaCentralNaoDeveTerAdicionalDeItens() {
++        Cenario central = cenarioCentral();
++        PoliticaEntregaPadrao politica = politica(new Rota(1.32, 17, "CENTRAL"));
++        CotacaoEntrega cotacao = politica.cotar(central.solicitacao());
++
++        assertThat(politica.taxaFinal(cotacao, central.pedidoComItem())).isEqualByComparingTo("6.55");
++    }
++
++    @Test
++    void taxaFinalForaDoCentroDeveSomarAdicionalPorItem() {
++        Cenario urbano = cenarioUrbano();
++        PoliticaEntregaPadrao politica = politica(new Rota(8.62, 43, "EXPANDIDA"));
++        CotacaoEntrega cotacao = politica.cotar(urbano.solicitacao());
++
++        assertThat(cotacao.distanciaKm()).isCloseTo(10.35, within(KM));
++        assertThat(cotacao.taxaBase()).isEqualByComparingTo("18.42");
++        assertThat(politica.taxaFinal(cotacao, urbano.pedidoComItem())).isEqualByComparingTo("19.60");
++    }
++
++    // ---------- região, tempo e despacho ----------
++
++    @Test
++    void regiaoDeEntregaDeveClassificarCentralUrbanaENaoAtendida() {
++        PoliticaEntregaPadrao politica = politica(new Rota(1.0, 10, "CENTRAL"));
++        assertThat(politica.regiaoDeEntrega(cenarioCentral().pedidoComItem())).isEqualTo("CENTRAL");
++        assertThat(politica.regiaoDeEntrega(cenarioUrbano().pedidoComItem())).isEqualTo("URBANA");
++
++        Restaurante restaurante = new Restaurante("Cantina", 60,
++                endereco("Centro", "Ponta Grossa", "84000-000", -25.100, -50.150));
++        Endereco outraCidade = endereco("Centro", "Castro", "84160-000", -25.095, -50.160);
++        Cliente cliente = new Cliente("Ana", "ana@foodnow.test");
++        cliente.adicionarEndereco(outraCidade);
++        assertThat(politica.regiaoDeEntrega(new Pedido(cliente, restaurante, outraCidade))).isEqualTo("NAO_ATENDIDA");
++    }
++
++    @Test
++    void estimarTempoInternoDeveConsiderarDistanciaPlanaEQuantidadeDeItens() {
++        PoliticaEntregaPadrao politica = politica(new Rota(1.0, 10, "CENTRAL"));
++        assertThat(politica.estimarTempoInterno(cenarioCentral().pedidoComItem())).isEqualTo(21);
++        assertThat(politica.estimarTempoInterno(cenarioUrbano().pedidoComItem())).isEqualTo(45);
++    }
++
++    @Test
++    void avaliarDeveDevolverRotaDoProvedorERegiaoConsultandoORotaUmaVez() {
++        Rota rota = new Rota(8.62, 43, "EXPANDIDA");
++        PoliticaEntregaPadrao politica = politica(rota);
++
++        AvaliacaoGeografica avaliacao = politica.avaliar(cenarioUrbano().pedidoComItem());
++
++        assertThat(avaliacao.rota()).isEqualTo(rota);
++        assertThat(avaliacao.regiao()).isEqualTo("URBANA");
++        assertThat(consultasDeRota.get()).isEqualTo(1);
++    }
++
++    @Test
++    void planejarEntregaCentralDeveUsarRotaEMaiorTempo() {
++        PoliticaEntregaPadrao politica = politica(new Rota(1.32, 17, "CENTRAL"));
++
++        PlanoEntrega plano = politica.planejarEntrega(cenarioCentral().pedidoComItem());
++
++        assertThat(plano.distanciaKm()).isEqualTo(1.32);
++        assertThat(plano.zona()).isEqualTo("CENTRAL");
++        assertThat(plano.tempoBaseMinutos()).isEqualTo(21);
++        assertThat(plano.tempoTotalMinutos(4)).isEqualTo(25);
++    }
++
++    @Test
++    void planejarEntregaComZonaExpandidaDoProvedorDeveManterZonaExpandida() {
++        PoliticaEntregaPadrao politica = politica(new Rota(8.62, 43, "EXPANDIDA"));
++
++        PlanoEntrega plano = politica.planejarEntrega(cenarioUrbano().pedidoComItem());
++
++        assertThat(plano.distanciaKm()).isEqualTo(8.62);
++        assertThat(plano.zona()).isEqualTo("EXPANDIDA");
++        assertThat(plano.tempoBaseMinutos()).isEqualTo(45);
++        assertThat(plano.tempoTotalMinutos(9)).isEqualTo(54);
++    }
++
++    @Test
++    void planejarEntregaSemZonaExpandidaDeveClassificarPeloEndereco() {
++        PoliticaEntregaPadrao politica = politica(new Rota(1.0, 10, "CENTRAL"));
++
++        PlanoEntrega plano = politica.planejarEntrega(cenarioUrbano().pedidoComItem());
++
++        assertThat(plano.zona()).isEqualTo("URBANA");
++    }
++
++    // ---------- apoio ----------
++
++    private PoliticaEntregaPadrao politica(Rota rotaFixa) {
++        ProvedorGeografico provedor = new ProvedorGeografico() {
++            @Override
++            public CoordenadasResolvidas buscarCoordenadas(Endereco endereco) {
++                throw new UnsupportedOperationException("não usado pela política");
++            }
++
++            @Override
++            public Rota calcularRota(Localizacao origem, Localizacao destino) {
++                consultasDeRota.incrementAndGet();
++                return rotaFixa;
++            }
++        };
++        return new PoliticaEntregaPadrao(provedor);
++    }
++
++    private Cenario cenarioCentral() {
++        return cenario(endereco("Centro", "Ponta Grossa", "84000-000", -25.095, -50.160));
++    }
++
++    private Cenario cenarioUrbano() {
++        return cenario(endereco("Uvaranas", "Ponta Grossa", "84010-100", -25.150, -50.200));
++    }
++
++    private Cenario cenario(Endereco destino) {
++        Restaurante restaurante = new Restaurante("Cantina", 25,
++                endereco("Centro", "Ponta Grossa", "84000-000", -25.100, -50.150));
++        Cliente cliente = new Cliente("Ana", "ana@foodnow.test");
++        cliente.adicionarEndereco(destino);
++        Produto produto = new Produto("Pizza", new BigDecimal("30.00"), true, restaurante);
++        return new Cenario(cliente, restaurante, destino, produto);
++    }
++
++    private Endereco endereco(String bairro, String cidade, String cep, double latitude, double longitude) {
++        return new Endereco("Rua Teste", "10", bairro, cidade, cep, new Localizacao(latitude, longitude));
++    }
++
++    private record Cenario(Cliente cliente, Restaurante restaurante, Endereco destino, Produto produto) {
++        SolicitacaoCotacao solicitacao() {
++            return new SolicitacaoCotacao(cliente, restaurante, destino);
++        }
++
++        Pedido pedidoComItem() {
++            Pedido pedido = new Pedido(cliente, restaurante, destino);
++            pedido.adicionarItem(produto, 2);
++            return pedido;
++        }
++    }
++}
+diff -ruN a/src/test/java/br/edu/foodnow/integration/MapsProvedorGeograficoTest.java b/src/test/java/br/edu/foodnow/integration/MapsProvedorGeograficoTest.java
+--- a/src/test/java/br/edu/foodnow/integration/MapsProvedorGeograficoTest.java	1970-01-01 00:00:00.000000000 +0000
++++ b/src/test/java/br/edu/foodnow/integration/MapsProvedorGeograficoTest.java	2026-09-30 03:26:09.621951381 +0000
+@@ -0,0 +1,51 @@
++package br.edu.foodnow.integration;
++
++import br.edu.foodnow.geo.CoordenadasResolvidas;
++import br.edu.foodnow.geo.Rota;
++import br.edu.foodnow.model.Endereco;
++import br.edu.foodnow.model.Localizacao;
++import org.junit.jupiter.api.Test;
++
++import static org.assertj.core.api.Assertions.assertThat;
++
++class MapsProvedorGeograficoTest {
++    private final FakeMapsClient mapsClient = new FakeMapsClient();
++    private final MapsProvedorGeografico adapter = new MapsProvedorGeografico(mapsClient);
++
++    @Test
++    void deveTraduzirCoordenadasExatasDoProvedor() {
++        Endereco endereco = endereco(new Localizacao(-25.1, -50.15));
++
++        CoordenadasResolvidas resultado = adapter.buscarCoordenadas(endereco);
++
++        assertThat(resultado.aproximada()).isFalse();
++        assertThat(resultado.localizacao().getLatitude()).isEqualTo(-25.1);
++        assertThat(resultado.localizacao().getLongitude()).isEqualTo(-50.15);
++    }
++
++    @Test
++    void deveSinalizarCoordenadasAproximadasQuandoOEnderecoNaoTemLocalizacao() {
++        CoordenadasResolvidas resultado = adapter.buscarCoordenadas(endereco(null));
++
++        assertThat(resultado.aproximada()).isTrue();
++        assertThat(resultado.localizacao()).isNotNull();
++    }
++
++    @Test
++    void deveTraduzirARotaDoProvedorParaOVocabularioDoDominio() {
++        Localizacao origem = new Localizacao(-25.100, -50.150);
++        Localizacao destino = new Localizacao(-25.150, -50.200);
++        FakeMapsClient.RouteResult esperado = mapsClient.calcularRota(origem, destino);
++
++        Rota rota = adapter.calcularRota(origem, destino);
++
++        assertThat(rota.distanciaKm()).isEqualTo(esperado.distanceKm());
++        assertThat(rota.duracaoMinutos()).isEqualTo(esperado.durationMinutes());
++        assertThat(rota.zona()).isEqualTo(esperado.deliveryZone());
++        assertThat(rota.zona()).isEqualTo("EXPANDIDA");
++    }
++
++    private Endereco endereco(Localizacao localizacao) {
++        return new Endereco("Rua Adapter", "1", "Centro", "Ponta Grossa", "84000-000", localizacao);
++    }
++}
+diff -ruN a/src/test/java/br/edu/foodnow/model/PedidoTest.java b/src/test/java/br/edu/foodnow/model/PedidoTest.java
+--- a/src/test/java/br/edu/foodnow/model/PedidoTest.java	2026-09-30 03:26:09.616666531 +0000
++++ b/src/test/java/br/edu/foodnow/model/PedidoTest.java	2026-09-30 03:26:09.622097867 +0000
+@@ -20,8 +20,6 @@
+         assertThat(cenario.pedido().getValorTotal()).isEqualByComparingTo("58.34");
+         assertThat(cenario.pedido().getItens()).hasSize(1);
+         assertThat(cenario.produto().podeSerEntregueEm(cenario.endereco())).isTrue();
+-        assertThat(cenario.produto().calcularAdicionalRegional(cenario.endereco())).isZero();
+-        assertThat(cenario.pedido().getItens().getFirst().calcularParcelaGeografica(cenario.endereco())).isZero();
+     }
+ 
+     @Test
+@@ -81,23 +79,6 @@
+     }
+ 
+     @Test
+-    void deveCalcularDistanciaTaxaEAtendimentoNoPedido() {
+-        Cenario cenario = cenarioPadrao();
+-        assertThat(cenario.pedido().calcularDistanciaEntrega()).isPositive().isLessThan(5);
+-        assertThat(cenario.pedido().calcularTaxaEntregaPorDistancia()).isGreaterThan(new BigDecimal("5.00"));
+-        assertThat(cenario.pedido().verificarEnderecoAtendido()).isTrue();
+-        assertThat(cenario.pedido().determinarRegiaoEntrega()).isEqualTo("CENTRAL");
+-        assertThat(cenario.pedido().estimarTempoEntregaPeloPedido()).isGreaterThan(14);
+-        cenario.pedido().definirEntrega(20, new BigDecimal("10.00"));
+-        assertThat(cenario.pedido().possuiDivergenciaDeDistancia()).isTrue();
+-        assertThat(cenario.pedido().calcularAdicionalGeograficoDosItens()).isZero();
+-
+-        Restaurante restrito = restauranteEm(-25.10, -50.15, 0.1);
+-        Pedido foraDaArea = new Pedido(cenario.cliente(), restrito, cenario.endereco());
+-        assertThat(foraDaArea.verificarEnderecoAtendido()).isFalse();
+-    }
+-
+-    @Test
+     void pagamentoTambemDeveClassificarRiscoDeLocalizacao() {
+         Cenario cenario = cenarioPadrao();
+         Pagamento seguro = new Pagamento(cenario.pedido(), FormaPagamento.PIX, StatusPagamento.APROVADO,
