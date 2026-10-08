@@ -1,7 +1,6 @@
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
-import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.FormaPagamento;
@@ -22,6 +21,7 @@ import java.util.List;
 
 @Service
 public class PedidoService {
+
     private final ClienteRepository clienteRepository;
     private final RestauranteRepository restauranteRepository;
     private final ProdutoRepository produtoRepository;
@@ -29,12 +29,18 @@ public class PedidoService {
     private final LocalizacaoService localizacaoService;
     private final PagamentoService pagamentoService;
     private final FakeEmailClient emailClient;
-    private final FakeMapsClient mapsClient;
+    private final EntregaService entregaService;
 
-    public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
-                         ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
-                         LocalizacaoService localizacaoService, PagamentoService pagamentoService,
-                         FakeEmailClient emailClient, FakeMapsClient mapsClient) {
+    public PedidoService(
+            ClienteRepository clienteRepository,
+            RestauranteRepository restauranteRepository,
+            ProdutoRepository produtoRepository,
+            PedidoRepository pedidoRepository,
+            LocalizacaoService localizacaoService,
+            PagamentoService pagamentoService,
+            FakeEmailClient emailClient,
+            EntregaService entregaService) {
+
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
@@ -42,107 +48,232 @@ public class PedidoService {
         this.localizacaoService = localizacaoService;
         this.pagamentoService = pagamentoService;
         this.emailClient = emailClient;
-        this.mapsClient = mapsClient;
+        this.entregaService = entregaService;
     }
 
     @Transactional
-    public Pedido criar(Long clienteId, Long restauranteId, Long enderecoEntregaId,
-                        List<ItemSolicitado> itensSolicitados) {
-        Cliente cliente = clienteRepository.findById(clienteId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
-        Restaurante restaurante = restauranteRepository.findById(restauranteId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Restaurante não encontrado"));
-        Endereco endereco = cliente.getEnderecos().stream()
-                .filter(item -> item.getId().equals(enderecoEntregaId))
-                .findFirst()
-                .orElseThrow(() -> new RegraNegocioException("Endereço não pertence ao cliente"));
+    public Pedido criar(
+            Long clienteId,
+            Long restauranteId,
+            Long enderecoEntregaId,
+            List<ItemSolicitado> itensSolicitados) {
 
-        double distanciaDoService = localizacaoService.calcularDistancia(restaurante.getEndereco(), endereco);
-        FakeMapsClient.RouteResult rotaConcreta = mapsClient.calcularRota(
-                restaurante.getEndereco().getLocalizacao(), endereco.getLocalizacao());
-        double distanciaDoRestaurante = restaurante.calcularDistanciaAte(endereco);
-        double distanciaDoEndereco = restaurante.getEndereco().calcularDistanciaAte(endereco);
-        double distanciaManhattan = restaurante.getEndereco().getLocalizacao()
-                .calcularDistanciaManhattan(endereco.getLocalizacao());
-        double distancia = Math.max(distanciaDoService, Math.max(rotaConcreta.distanceKm(),
-                Math.max(distanciaDoRestaurante, Math.max(distanciaDoEndereco, distanciaManhattan))));
-        if (distancia > restaurante.getRaioEntregaKm() || !cliente.estaDentroDaAreaDeEntrega(restaurante)
+        Cliente cliente =
+                clienteRepository.findById(clienteId)
+                        .orElseThrow(() ->
+                                new RecursoNaoEncontradoException(
+                                        "Cliente não encontrado"
+                                ));
+
+        Restaurante restaurante =
+                restauranteRepository.findById(restauranteId)
+                        .orElseThrow(() ->
+                                new RecursoNaoEncontradoException(
+                                        "Restaurante não encontrado"
+                                ));
+
+        Endereco endereco =
+                cliente.getEnderecos()
+                        .stream()
+                        .filter(item ->
+                                item.getId().equals(enderecoEntregaId))
+                        .findFirst()
+                        .orElseThrow(() ->
+                                new RegraNegocioException(
+                                        "Endereço não pertence ao cliente"
+                                ));
+
+        /*
+         * A distância relacionada à entrega agora é obtida
+         * pelo EntregaService.
+         *
+         * O PedidoService não conhece mais o FakeMapsClient
+         * nem o RouteResult da integração geográfica.
+         */
+        Pedido pedido =
+                new Pedido(
+                        cliente,
+                        restaurante,
+                        endereco
+                );
+
+        double distancia =
+                entregaService.calcularDistanciaPara(pedido);
+
+        if (distancia > restaurante.getRaioEntregaKm()
+                || !cliente.estaDentroDaAreaDeEntrega(restaurante)
                 || !restaurante.atendeEndereco(endereco)) {
-            throw new RegraNegocioException("Endereço fora da área de entrega");
+
+            throw new RegraNegocioException(
+                    "Endereço fora da área de entrega"
+            );
         }
 
-        Pedido pedido = new Pedido(cliente, restaurante, endereco);
-        BigDecimal taxaEntrega = maiorTaxa(TaxaEntregaUtil.calcular(distancia),
-                restaurante.calcularTaxaEntrega(endereco), restaurante.getEndereco().calcularTaxaLocalAte(endereco),
-                cliente.calcularTaxaEntregaDoRestaurante(restaurante), pedido.calcularTaxaEntregaPorDistancia());
-        pedido.definirEntrega(distancia, taxaEntrega);
+        BigDecimal taxaEntrega =
+                maiorTaxa(
+                        TaxaEntregaUtil.calcular(distancia),
+                        restaurante.calcularTaxaEntrega(endereco),
+                        restaurante.getEndereco()
+                                .calcularTaxaLocalAte(endereco),
+                        cliente.calcularTaxaEntregaDoRestaurante(
+                                restaurante
+                        ),
+                        pedido.calcularTaxaEntregaPorDistancia()
+                );
+
+        pedido.definirEntrega(
+                distancia,
+                taxaEntrega
+        );
+
         for (ItemSolicitado item : itensSolicitados) {
-            adicionarItemCarregado(pedido, item.produtoId(), item.quantidade());
+            adicionarItemCarregado(
+                    pedido,
+                    item.produtoId(),
+                    item.quantidade()
+            );
         }
-        pedido.definirEntrega(distancia, taxaEntrega.add(pedido.calcularAdicionalGeograficoDosItens()));
+
+        pedido.definirEntrega(
+                distancia,
+                taxaEntrega.add(
+                        pedido.calcularAdicionalGeograficoDosItens()
+                )
+        );
+
         return pedidoRepository.save(pedido);
     }
 
     @Transactional
-    public Pedido adicionarItem(Long pedidoId, Long produtoId, int quantidade) {
+    public Pedido adicionarItem(
+            Long pedidoId,
+            Long produtoId,
+            int quantidade) {
+
         Pedido pedido = consultar(pedidoId);
-        adicionarItemCarregado(pedido, produtoId, quantidade);
+
+        adicionarItemCarregado(
+                pedido,
+                produtoId,
+                quantidade
+        );
+
         return pedidoRepository.save(pedido);
     }
 
-    private void adicionarItemCarregado(Pedido pedido, Long produtoId, int quantidade) {
-        Produto produto = produtoRepository.findById(produtoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Produto não encontrado"));
+    private void adicionarItemCarregado(
+            Pedido pedido,
+            Long produtoId,
+            int quantidade) {
+
+        Produto produto =
+                produtoRepository.findById(produtoId)
+                        .orElseThrow(() ->
+                                new RecursoNaoEncontradoException(
+                                        "Produto não encontrado"
+                                ));
+
         if (!produto.isDisponivel()) {
-            throw new RegraNegocioException("Produto indisponível: " + produto.getNome());
+            throw new RegraNegocioException(
+                    "Produto indisponível: "
+                            + produto.getNome()
+            );
         }
-        if (!produto.podeSerEntregueEm(pedido.getEnderecoEntrega())) {
-            throw new RegraNegocioException("Produto não pode ser entregue no endereço selecionado");
+
+        if (!produto.podeSerEntregueEm(
+                pedido.getEnderecoEntrega())) {
+
+            throw new RegraNegocioException(
+                    "Produto não pode ser entregue no endereço selecionado"
+            );
         }
-        if (!produto.getRestaurante().getId().equals(pedido.getRestaurante().getId())) {
-            throw new RegraNegocioException("Produto pertence a outro restaurante");
+
+        if (!produto.getRestaurante()
+                .getId()
+                .equals(pedido.getRestaurante().getId())) {
+
+            throw new RegraNegocioException(
+                    "Produto pertence a outro restaurante"
+            );
         }
+
         try {
-            pedido.adicionarItem(produto, quantidade);
+            pedido.adicionarItem(
+                    produto,
+                    quantidade
+            );
         } catch (IllegalArgumentException excecao) {
-            throw new RegraNegocioException(excecao.getMessage());
+
+            throw new RegraNegocioException(
+                    excecao.getMessage()
+            );
         }
     }
 
     public Pedido consultar(Long id) {
         return pedidoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido não encontrado"));
+                .orElseThrow(() ->
+                        new RecursoNaoEncontradoException(
+                                "Pedido não encontrado"
+                        ));
     }
 
     @Transactional
     public Pedido confirmar(Long id) {
+
         Pedido pedido = consultar(id);
+
         try {
             pedido.confirmar();
         } catch (IllegalStateException excecao) {
-            throw new RegraNegocioException(excecao.getMessage());
+
+            throw new RegraNegocioException(
+                    excecao.getMessage()
+            );
         }
-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
-                "O pedido " + pedido.getId() + " foi confirmado para a região "
-                        + pedido.determinarRegiaoEntrega() + ". Estimativa interna: "
-                        + pedido.estimarTempoEntregaPeloPedido() + " minutos.");
+
+        emailClient.enviar(
+                pedido.getCliente().getEmail(),
+                "Pedido confirmado",
+                "O pedido " + pedido.getId()
+                        + " foi confirmado para a região "
+                        + pedido.determinarRegiaoEntrega()
+                        + ". Estimativa interna: "
+                        + pedido.estimarTempoEntregaPeloPedido()
+                        + " minutos."
+        );
+
         return pedidoRepository.save(pedido);
     }
 
-    public Pagamento pagar(Long pedidoId, FormaPagamento forma, String token) {
-        return pagamentoService.processar(pedidoId, forma, token);
+    public Pagamento pagar(
+            Long pedidoId,
+            FormaPagamento forma,
+            String token) {
+
+        return pagamentoService.processar(
+                pedidoId,
+                forma,
+                token
+        );
     }
 
-    private BigDecimal maiorTaxa(BigDecimal... taxas) {
+    private BigDecimal maiorTaxa(
+            BigDecimal... taxas) {
+
         BigDecimal maior = BigDecimal.ZERO;
+
         for (BigDecimal taxa : taxas) {
             if (taxa.compareTo(maior) > 0) {
                 maior = taxa;
             }
         }
+
         return maior;
     }
 
-    public record ItemSolicitado(Long produtoId, int quantidade) {
+    public record ItemSolicitado(
+            Long produtoId,
+            int quantidade) {
     }
 }
