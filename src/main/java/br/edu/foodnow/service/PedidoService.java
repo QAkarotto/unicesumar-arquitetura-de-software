@@ -1,7 +1,7 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeEmailClient;
-import br.edu.foodnow.integration.FakeMapsClient;
+import br.edu.foodnow.localizacao.PlanejamentoDeEntrega;
+import br.edu.foodnow.localizacao.PlanoDeEntrega;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.FormaPagamento;
@@ -13,11 +13,9 @@ import br.edu.foodnow.repository.ClienteRepository;
 import br.edu.foodnow.repository.PedidoRepository;
 import br.edu.foodnow.repository.ProdutoRepository;
 import br.edu.foodnow.repository.RestauranteRepository;
-import br.edu.foodnow.util.TaxaEntregaUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -26,23 +24,21 @@ public class PedidoService {
     private final RestauranteRepository restauranteRepository;
     private final ProdutoRepository produtoRepository;
     private final PedidoRepository pedidoRepository;
-    private final LocalizacaoService localizacaoService;
+    private final PlanejamentoDeEntrega planejamentoDeEntrega;
     private final PagamentoService pagamentoService;
-    private final FakeEmailClient emailClient;
-    private final FakeMapsClient mapsClient;
+    private final NotificacaoService notificacaoService;
 
     public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
                          ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
-                         LocalizacaoService localizacaoService, PagamentoService pagamentoService,
-                         FakeEmailClient emailClient, FakeMapsClient mapsClient) {
+                         PlanejamentoDeEntrega planejamentoDeEntrega,
+                         PagamentoService pagamentoService, NotificacaoService notificacaoService) {
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
         this.pedidoRepository = pedidoRepository;
-        this.localizacaoService = localizacaoService;
+        this.planejamentoDeEntrega = planejamentoDeEntrega;
         this.pagamentoService = pagamentoService;
-        this.emailClient = emailClient;
-        this.mapsClient = mapsClient;
+        this.notificacaoService = notificacaoService;
     }
 
     @Transactional
@@ -57,29 +53,17 @@ public class PedidoService {
                 .findFirst()
                 .orElseThrow(() -> new RegraNegocioException("Endereço não pertence ao cliente"));
 
-        double distanciaDoService = localizacaoService.calcularDistancia(restaurante.getEndereco(), endereco);
-        FakeMapsClient.RouteResult rotaConcreta = mapsClient.calcularRota(
-                restaurante.getEndereco().getLocalizacao(), endereco.getLocalizacao());
-        double distanciaDoRestaurante = restaurante.calcularDistanciaAte(endereco);
-        double distanciaDoEndereco = restaurante.getEndereco().calcularDistanciaAte(endereco);
-        double distanciaManhattan = restaurante.getEndereco().getLocalizacao()
-                .calcularDistanciaManhattan(endereco.getLocalizacao());
-        double distancia = Math.max(distanciaDoService, Math.max(rotaConcreta.distanceKm(),
-                Math.max(distanciaDoRestaurante, Math.max(distanciaDoEndereco, distanciaManhattan))));
-        if (distancia > restaurante.getRaioEntregaKm() || !cliente.estaDentroDaAreaDeEntrega(restaurante)
-                || !restaurante.atendeEndereco(endereco)) {
+        PlanoDeEntrega plano = planejamentoDeEntrega.planejar(cliente, restaurante, endereco);
+        if (!plano.atendido()) {
             throw new RegraNegocioException("Endereço fora da área de entrega");
         }
 
         Pedido pedido = new Pedido(cliente, restaurante, endereco);
-        BigDecimal taxaEntrega = maiorTaxa(TaxaEntregaUtil.calcular(distancia),
-                restaurante.calcularTaxaEntrega(endereco), restaurante.getEndereco().calcularTaxaLocalAte(endereco),
-                cliente.calcularTaxaEntregaDoRestaurante(restaurante), pedido.calcularTaxaEntregaPorDistancia());
-        pedido.definirEntrega(distancia, taxaEntrega);
+        planejamentoDeEntrega.aplicarA(pedido, plano);
         for (ItemSolicitado item : itensSolicitados) {
             adicionarItemCarregado(pedido, item.produtoId(), item.quantidade());
         }
-        pedido.definirEntrega(distancia, taxaEntrega.add(pedido.calcularAdicionalGeograficoDosItens()));
+        planejamentoDeEntrega.reaplicarComItens(pedido, plano);
         return pedidoRepository.save(pedido);
     }
 
@@ -96,7 +80,7 @@ public class PedidoService {
         if (!produto.isDisponivel()) {
             throw new RegraNegocioException("Produto indisponível: " + produto.getNome());
         }
-        if (!produto.podeSerEntregueEm(pedido.getEnderecoEntrega())) {
+        if (!planejamentoDeEntrega.produtoAlcanca(produto, pedido.getEnderecoEntrega())) {
             throw new RegraNegocioException("Produto não pode ser entregue no endereço selecionado");
         }
         if (!produto.getRestaurante().getId().equals(pedido.getRestaurante().getId())) {
@@ -122,25 +106,12 @@ public class PedidoService {
         } catch (IllegalStateException excecao) {
             throw new RegraNegocioException(excecao.getMessage());
         }
-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
-                "O pedido " + pedido.getId() + " foi confirmado para a região "
-                        + pedido.determinarRegiaoEntrega() + ". Estimativa interna: "
-                        + pedido.estimarTempoEntregaPeloPedido() + " minutos.");
+        notificacaoService.notificarPedidoConfirmado(pedido);
         return pedidoRepository.save(pedido);
     }
 
     public Pagamento pagar(Long pedidoId, FormaPagamento forma, String token) {
         return pagamentoService.processar(pedidoId, forma, token);
-    }
-
-    private BigDecimal maiorTaxa(BigDecimal... taxas) {
-        BigDecimal maior = BigDecimal.ZERO;
-        for (BigDecimal taxa : taxas) {
-            if (taxa.compareTo(maior) > 0) {
-                maior = taxa;
-            }
-        }
-        return maior;
     }
 
     public record ItemSolicitado(Long produtoId, int quantidade) {
