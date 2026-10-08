@@ -29,12 +29,11 @@ public class PedidoService {
     private final LocalizacaoService localizacaoService;
     private final PagamentoService pagamentoService;
     private final FakeEmailClient emailClient;
-    private final FakeMapsClient mapsClient;
 
     public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
                          ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
                          LocalizacaoService localizacaoService, PagamentoService pagamentoService,
-                         FakeEmailClient emailClient, FakeMapsClient mapsClient) {
+                         FakeEmailClient emailClient) {
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
@@ -42,7 +41,6 @@ public class PedidoService {
         this.localizacaoService = localizacaoService;
         this.pagamentoService = pagamentoService;
         this.emailClient = emailClient;
-        this.mapsClient = mapsClient;
     }
 
     @Transactional
@@ -58,13 +56,13 @@ public class PedidoService {
                 .orElseThrow(() -> new RegraNegocioException("Endereço não pertence ao cliente"));
 
         double distanciaDoService = localizacaoService.calcularDistancia(restaurante.getEndereco(), endereco);
-        FakeMapsClient.RouteResult rotaConcreta = mapsClient.calcularRota(
-                restaurante.getEndereco().getLocalizacao(), endereco.getLocalizacao());
+        LocalizacaoService.RotaEntrega rotaConcreta = localizacaoService.avaliarRota(
+                restaurante.getEndereco(), endereco);
         double distanciaDoRestaurante = restaurante.calcularDistanciaAte(endereco);
         double distanciaDoEndereco = restaurante.getEndereco().calcularDistanciaAte(endereco);
         double distanciaManhattan = restaurante.getEndereco().getLocalizacao()
                 .calcularDistanciaManhattan(endereco.getLocalizacao());
-        double distancia = Math.max(distanciaDoService, Math.max(rotaConcreta.distanceKm(),
+        double distancia = Math.max(distanciaDoService, Math.max(rotaConcreta.distanciaKm(),
                 Math.max(distanciaDoRestaurante, Math.max(distanciaDoEndereco, distanciaManhattan))));
         if (distancia > restaurante.getRaioEntregaKm() || !cliente.estaDentroDaAreaDeEntrega(restaurante)
                 || !restaurante.atendeEndereco(endereco)) {
