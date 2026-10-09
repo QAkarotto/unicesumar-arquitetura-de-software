@@ -18,18 +18,6 @@ public class PedidoService {
         return subtotal + taxaEntrega;
     }
 
-    public double calcularTaxaEntrega(double distancia) {
-        return distancia * 2.50;
-    }
-
-    public int estimarTempoEntrega(double distancia) {
-        return (int) (distancia * 5);
-    }
-
-    public boolean verificarAreaEntrega(double distancia) {
-        return distancia <= 15;
-    }
-
     public String consultarStatusPedido(int pedidoId) {
         return "EM PREPARO";
     }
