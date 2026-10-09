@@ -34,10 +34,6 @@ public class ItemPedido {
         return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
     }
 
-    public BigDecimal calcularParcelaGeografica(Endereco destino) {
-        return produto.calcularAdicionalRegional(destino).multiply(BigDecimal.valueOf(quantidade));
-    }
-
     public Long getId() { return id; }
     public Produto getProduto() { return produto; }
     public int getQuantidade() { return quantidade; }

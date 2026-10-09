@@ -70,41 +70,6 @@ public class Pedido {
         valorTotal = subtotal.add(taxaEntrega).setScale(2, RoundingMode.HALF_UP);
     }
 
-    public double calcularDistanciaEntrega() {
-        double diferencaLatitude = restaurante.buscarLatitude() - enderecoEntrega.getLocalizacao().getLatitude();
-        double diferencaLongitude = restaurante.buscarLongitude() - enderecoEntrega.getLocalizacao().getLongitude();
-        return Math.sqrt(diferencaLatitude * diferencaLatitude + diferencaLongitude * diferencaLongitude) * 111.0;
-    }
-
-    public BigDecimal calcularTaxaEntregaPorDistancia() {
-        return BigDecimal.valueOf(5.00 + calcularDistanciaEntrega() * 1.25)
-                .setScale(2, RoundingMode.HALF_UP);
-    }
-
-    public boolean verificarEnderecoAtendido() {
-        return calcularDistanciaEntrega() <= restaurante.getRaioEntregaKm();
-    }
-
-    public String determinarRegiaoEntrega() {
-        if (!restaurante.getEndereco().pertenceARegiaoDo(enderecoEntrega)) {
-            return "NAO_ATENDIDA";
-        }
-        return enderecoEntrega.classificarZonaDeEntrega();
-    }
-
-    public int estimarTempoEntregaPeloPedido() {
-        return 14 + (int) Math.ceil(calcularDistanciaEntrega() * 3.6) + itens.size() * 2;
-    }
-
-    public boolean possuiDivergenciaDeDistancia() {
-        return Math.abs(distanciaEntregaKm - calcularDistanciaEntrega()) > 0.5;
-    }
-
-    public BigDecimal calcularAdicionalGeograficoDosItens() {
-        return itens.stream().map(item -> item.calcularParcelaGeografica(enderecoEntrega))
-                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-    }
-
     public void confirmar() {
         if (itens.isEmpty()) {
             throw new IllegalStateException("Pedido deve possuir ao menos um item");
