@@ -160,11 +160,11 @@ mvn --batch-mode --no-transfer-progress clean verify
 | Linhas cobertas no relatório JaCoCo | 684 / 703 — 97,30% | 700 / 715 — 97,90% |
 | Resultado | BUILD SUCCESS | BUILD SUCCESS |
 
-Os percentuais correspondem ao total do relatório XML do JaCoCo. O limite configurado de 80% também passou, sem alteração de exclusões, dependências, `pom.xml` ou pipeline.
+Os percentuais correspondem ao total do relatório XML do JaCoCo. O limite configurado de 80% também passou, sem alteração de exclusões, dependências, `../../../pom.xml` ou pipeline.
 
 `ApiTestSupport`, `FoodNowFlowIT` e `FoodNowErrorsIT` foram mantidos sem alterações. Os testes unitários de pedido foram ajustados à retirada das regras geográficas; os cálculos extraídos são verificados em `PoliticaEntregaAtualTest`. `MapsLocalizacaoAdapterTest` cobre a tradução do fornecedor, incluindo coordenadas aproximadas. Um provedor implementado no próprio teste demonstra que a logística aceita outra implementação sem depender de `FakeMapsClient`.
 
-`GeografiaContratoIT` acrescenta seis cenários: quatro fluxos com referências capturadas no executável original e duas rejeições de atendimento. As referências em `src/test/resources/geografia` cobrem área central, urbana, expandida com pagamento rejeitado e trajeto sem entregador. Incluem respostas completas de atendimento, simulação, pedido, pagamento e entrega, além dos textos das notificações. Somente identificadores gerados são normalizados; os testes originais continuam verificando associações. JSON é comparado como estrutura, com números decimais, sem depender da ordem das propriedades.
+`GeografiaContratoIT` acrescenta seis cenários: quatro fluxos com referências capturadas no executável original e duas rejeições de atendimento. As referências em `../../../src/test/resources/geografia` cobrem área central, urbana, expandida com pagamento rejeitado e trajeto sem entregador. Incluem respostas completas de atendimento, simulação, pedido, pagamento e entrega, além dos textos das notificações. Somente identificadores gerados são normalizados; os testes originais continuam verificando associações. JSON é comparado como estrutura, com números decimais, sem depender da ordem das propriedades.
 
 As referências são somente lidas pelos testes; não são regeneradas durante a execução. Elas também preservam casos como taxa não recalculada ao adicionar itens e diferentes prazos em e-mail/entrega. Isso evita que valores “corrigidos” inadvertidamente sejam aceitos só porque continuam positivos.
 
