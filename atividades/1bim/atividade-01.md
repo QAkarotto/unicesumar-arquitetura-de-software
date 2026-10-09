@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Adicionar seu nome à lista de alunos no **Manifesto Oficial** do arquivo `README.md` e enviar um **Pull Request (PR)** com a alteração.
+Adicionar seu nome à lista de alunos no **Manifesto Oficial** do arquivo `../../README.md` e enviar um **Pull Request (PR)** com a alteração.
 
 ---
 
@@ -46,11 +46,11 @@ git checkout -b feature/sua-turma/seu-nome
 
 ---
 
-## Passo 4 – Edite o `README.md`
+## Passo 4 – Edite o `../../README.md`
 
 Abra o projeto em um editor de código (como o VS Code) e:
 
-- Localize o arquivo `README.md`;
+- Localize o arquivo `../../README.md`;
 - Adicione seu nome na lista de alunos da seção **Manifesto Oficial**;
 - Salve as alterações.
 

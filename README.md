@@ -6,7 +6,7 @@ O projeto funciona inteiramente offline: mapas, pagamentos, despacho de entregad
 
 ## Base refatorada para as atividades
 
-A solução de referência da Atividade 06 concentra a cotação e o planejamento logístico, encapsula o provedor de mapas e centraliza notificações, preservando os contratos da API. O levantamento, a comparação antes/depois, os limites da solução e os resultados dos testes estão em [Solução da Atividade 06](docs/atividade-06-solucao.md). Esta versão pode ser utilizada como base para a Atividade 07.
+A solução de referência da Atividade 06 concentra a cotação e o planejamento logístico, encapsula o provedor de mapas e centraliza notificações, preservando os contratos da API. O levantamento, a comparação antes/depois, os limites da solução e os resultados dos testes estão em [Solução da Atividade 06](atividades/1bim/atividade-06/atividade-06-solucao.md). Esta versão pode ser utilizada como base para a Atividade 07.
 
 ## Requisitos
 
