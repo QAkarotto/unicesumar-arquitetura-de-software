@@ -4,6 +4,10 @@ FoodNow é uma aplicação monolítica de delivery usada em atividades práticas
 
 O projeto funciona inteiramente offline: mapas, pagamentos, despacho de entregadores e e-mails são simulados localmente, e o banco H2 é criado em memória.
 
+## Base refatorada para as atividades
+
+A solução de referência da Atividade 06 concentra a cotação e o planejamento logístico, encapsula o provedor de mapas e centraliza notificações, preservando os contratos da API. O levantamento, a comparação antes/depois, os limites da solução e os resultados dos testes estão em [Solução da Atividade 06](docs/atividade-06-solucao.md). Esta versão pode ser utilizada como base para a Atividade 07.
+
 ## Requisitos
 
 - JDK 26;
