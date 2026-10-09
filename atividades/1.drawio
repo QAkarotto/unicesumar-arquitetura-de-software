@@ -1,0 +1,46 @@
+<mxfile host="Electron">
+  <diagram name="Página-1" id="UAKLVAQl8ukSfNGRJSKO">
+    <mxGraphModel dx="1212" dy="776" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="4681" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="190" width="970" x="30" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Usuário&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="70" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-4" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;span style=&quot;font-size: 24px; font-weight: 700; text-align: left; white-space: nowrap;&quot;&gt;FoodNow — Consulta de Restaurantes | Diagrama de Sequência&lt;/span&gt;" vertex="1">
+          <mxGeometry height="30" width="60" x="470" y="40" as="geometry" />
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Frontend&lt;br style=&quot;&quot;&gt;React / TypeScript&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="320" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;API / Backend&lt;br style=&quot;&quot;&gt;Java / Spring Boot&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="580" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-7" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Banco de Dados&lt;br style=&quot;&quot;&gt;PostgreSQL&lt;/font&gt;" vertex="1">
+          <mxGeometry height="80" width="110" x="810" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-8" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="190" y="210" as="sourcePoint" />
+            <mxPoint x="310" y="210" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-9" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="FaMLlBIhGgCe09gPz3_5-6" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="440" y="210" as="sourcePoint" />
+            <mxPoint x="490" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FaMLlBIhGgCe09gPz3_5-10" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" target="FaMLlBIhGgCe09gPz3_5-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="700" y="210" as="sourcePoint" />
+            <mxPoint x="750" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
