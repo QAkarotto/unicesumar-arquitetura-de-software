@@ -1,5 +1,7 @@
 # Notas do professor — FoodNow
 
+> Este levantamento registra a versão inicial. A refatoração implementada e os problemas mantidos fora do escopo estão documentados na [solução da Atividade 06](atividade-06-solucao.md).
+
 Este documento descreve o gabarito arquitetural da versão inicial do FoodNow. O sistema está funcional e coberto por testes, mas foi estruturado como um monólito organizado por camadas técnicas e contém problemas arquiteturais moderados e intencionais. O objetivo é analisar distribuição de responsabilidades e custo de mudança, não procurar defeitos de estilo ou de funcionamento.
 
 ## Visão geral da arquitetura inicial

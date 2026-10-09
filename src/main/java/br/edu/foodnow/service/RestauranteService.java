@@ -1,6 +1,5 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.Localizacao;
 import br.edu.foodnow.model.Produto;
@@ -16,14 +15,12 @@ public class RestauranteService {
     private final RestauranteRepository restauranteRepository;
     private final ProdutoRepository produtoRepository;
     private final LocalizacaoService localizacaoService;
-    private final FakeMapsClient mapsClient;
 
     public RestauranteService(RestauranteRepository restauranteRepository, ProdutoRepository produtoRepository,
-                              LocalizacaoService localizacaoService, FakeMapsClient mapsClient) {
+                              LocalizacaoService localizacaoService) {
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
         this.localizacaoService = localizacaoService;
-        this.mapsClient = mapsClient;
     }
 
     public Restaurante cadastrar(String nome, double raioEntregaKm, Endereco endereco) {
@@ -61,16 +58,15 @@ public class RestauranteService {
 
     public SimulacaoRestaurante simularEntrega(Long restauranteId, Endereco destino) {
         Restaurante restaurante = consultar(restauranteId);
-        FakeMapsClient.RouteResult rota = mapsClient.calcularRota(restaurante.getEndereco().getLocalizacao(),
-                destino.getLocalizacao());
+        var rota = localizacaoService.calcularRota(restaurante.getEndereco(), destino);
         double distanciaDaEntidade = restaurante.calcularDistanciaAte(destino);
         double distanciaDosEnderecos = restaurante.getEndereco().calcularDistanciaAte(destino);
         BigDecimal taxaDoRestaurante = restaurante.calcularTaxaEntrega(destino);
         BigDecimal taxaDoEndereco = restaurante.getEndereco().calcularTaxaLocalAte(destino);
         int tempo = Math.max(restaurante.estimarTempoEntrega(destino), destino.estimarMinutosAte(
                 restaurante.getEndereco()));
-        return new SimulacaoRestaurante(distanciaDaEntidade, distanciaDosEnderecos, rota.distanceKm(),
-                restaurante.classificarRegiaoDeEntrega(destino), rota.deliveryZone(),
+        return new SimulacaoRestaurante(distanciaDaEntidade, distanciaDosEnderecos, rota.distanciaKm(),
+                restaurante.classificarRegiaoDeEntrega(destino), rota.zona(),
                 taxaDoRestaurante, taxaDoEndereco, tempo);
     }
 

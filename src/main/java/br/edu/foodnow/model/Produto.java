@@ -7,7 +7,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 @Entity
 public class Produto {
@@ -34,12 +33,6 @@ public class Produto {
 
     public boolean podeSerEntregueEm(Endereco destino) {
         return disponivel && restaurante.atendeEndereco(destino);
-    }
-
-    public BigDecimal calcularAdicionalRegional(Endereco destino) {
-        double distancia = restaurante.getEndereco().calcularDistanciaAte(destino);
-        double adicional = "CENTRAL".equals(destino.classificarZonaDeEntrega()) ? 0.0 : distancia * 0.08;
-        return BigDecimal.valueOf(adicional).setScale(2, RoundingMode.HALF_UP);
     }
 
     public Long getId() { return id; }

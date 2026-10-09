@@ -1,28 +1,32 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeMapsClient;
+import br.edu.foodnow.localizacao.ProvedorLocalizacao;
+import br.edu.foodnow.localizacao.Rota;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.Localizacao;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LocalizacaoService {
-    private final FakeMapsClient mapsClient;
+    private final ProvedorLocalizacao provedor;
 
-    public LocalizacaoService(FakeMapsClient mapsClient) {
-        this.mapsClient = mapsClient;
+    public LocalizacaoService(ProvedorLocalizacao provedor) {
+        this.provedor = provedor;
     }
 
     public Localizacao buscarCoordenadas(Endereco endereco) {
-        FakeMapsClient.MapCoordinates resposta = mapsClient.buscarCoordenadas(endereco);
-        return new Localizacao(Double.parseDouble(resposta.lat()), Double.parseDouble(resposta.lng()));
+        return provedor.buscarCoordenadas(endereco);
+    }
+
+    public Rota calcularRota(Endereco origem, Endereco destino) {
+        return provedor.calcularRota(origem.getLocalizacao(), destino.getLocalizacao());
     }
 
     public double calcularDistancia(Endereco origem, Endereco destino) {
-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).distanceKm();
+        return calcularRota(origem, destino).distanciaKm();
     }
 
     public int estimarTempoEntrega(Endereco origem, Endereco destino) {
-        return mapsClient.calcularRota(origem.getLocalizacao(), destino.getLocalizacao()).durationMinutes();
+        return calcularRota(origem, destino).tempoMinutos();
     }
 }
