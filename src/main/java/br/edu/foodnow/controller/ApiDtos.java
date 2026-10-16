@@ -15,6 +15,7 @@ import br.edu.foodnow.model.StatusPagamento;
 import br.edu.foodnow.model.StatusPedido;
 import br.edu.foodnow.service.ClienteService;
 import br.edu.foodnow.service.RestauranteService;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
@@ -22,6 +23,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -115,7 +117,13 @@ public final class ApiDtos {
 
     public record PedidoRequest(@NotNull Long clienteId, @NotNull Long restauranteId,
                                 @NotNull Long enderecoEntregaId,
-                                @NotEmpty List<@Valid ItemPedidoRequest> itens) {
+                                @NotEmpty List<@Valid ItemPedidoRequest> itens,
+                                @Size(max = 500) String observacao) {
+        public PedidoRequest {
+            if (observacao != null && observacao.isBlank()) {
+                observacao = null;
+            }
+        }
     }
 
     public record ItemResponse(Long produtoId, String nome, int quantidade, BigDecimal precoUnitario,
@@ -126,15 +134,17 @@ public final class ApiDtos {
         }
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public record PedidoResponse(Long id, Long clienteId, Long restauranteId, Long enderecoEntregaId,
                                  List<ItemResponse> itens, BigDecimal subtotal, BigDecimal taxaEntrega,
-                                 BigDecimal valorTotal, double distanciaEntregaKm, StatusPedido status) {
+                                 BigDecimal valorTotal, double distanciaEntregaKm, StatusPedido status,
+                                 String observacao) {
         public static PedidoResponse from(Pedido pedido) {
             return new PedidoResponse(pedido.getId(), pedido.getCliente().getId(),
                     pedido.getRestaurante().getId(), pedido.getEnderecoEntrega().getId(),
                     pedido.getItens().stream().map(ItemResponse::from).toList(), pedido.getSubtotal(),
                     pedido.getTaxaEntrega(), pedido.getValorTotal(), pedido.getDistanciaEntregaKm(),
-                    pedido.getStatus());
+                    pedido.getStatus(), pedido.getObservacao());
         }
     }
 

@@ -1,6 +1,7 @@
 package br.edu.foodnow.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -35,6 +36,8 @@ public class Pedido {
     private BigDecimal taxaEntrega = BigDecimal.ZERO;
     private BigDecimal valorTotal = BigDecimal.ZERO;
     private double distanciaEntregaKm;
+    @Column(length = 500)
+    private String observacao;
     @Enumerated(EnumType.STRING)
     private StatusPedido status = StatusPedido.CRIADO;
 
@@ -42,9 +45,14 @@ public class Pedido {
     }
 
     public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega) {
+        this(cliente, restaurante, enderecoEntrega, null);
+    }
+
+    public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega, String observacao) {
         this.cliente = cliente;
         this.restaurante = restaurante;
         this.enderecoEntrega = enderecoEntrega;
+        this.observacao = observacao;
     }
 
     public void adicionarItem(Produto produto, int quantidade) {
@@ -134,5 +142,6 @@ public class Pedido {
     public BigDecimal getTaxaEntrega() { return taxaEntrega; }
     public BigDecimal getValorTotal() { return valorTotal; }
     public double getDistanciaEntregaKm() { return distanciaEntregaKm; }
+    public String getObservacao() { return observacao; }
     public StatusPedido getStatus() { return status; }
 }

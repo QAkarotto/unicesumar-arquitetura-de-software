@@ -46,6 +46,12 @@ public class PedidoService {
     @Transactional
     public Pedido criar(Long clienteId, Long restauranteId, Long enderecoEntregaId,
                         List<ItemSolicitado> itensSolicitados) {
+        return criar(clienteId, restauranteId, enderecoEntregaId, itensSolicitados, null);
+    }
+
+    @Transactional
+    public Pedido criar(Long clienteId, Long restauranteId, Long enderecoEntregaId,
+                        List<ItemSolicitado> itensSolicitados, String observacao) {
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
@@ -69,7 +75,7 @@ public class PedidoService {
             throw new RegraNegocioException("Endereço fora da área de entrega");
         }
 
-        Pedido pedido = new Pedido(cliente, restaurante, endereco);
+        Pedido pedido = new Pedido(cliente, restaurante, endereco, observacao);
         BigDecimal taxaEntrega = maiorTaxa(TaxaEntregaUtil.calcular(distancia),
                 restaurante.calcularTaxaEntrega(endereco), restaurante.getEndereco().calcularTaxaLocalAte(endereco),
                 cliente.calcularTaxaEntregaDoRestaurante(restaurante), pedido.calcularTaxaEntregaPorDistancia());

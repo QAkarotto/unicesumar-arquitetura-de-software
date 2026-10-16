@@ -52,20 +52,26 @@ class FoodNowFlowIT extends ApiTestSupport {
         Map<String, Object> novoPedido = Map.of(
                 "clienteId", cenario.clienteId(), "restauranteId", cenario.restauranteId(),
                 "enderecoEntregaId", segundoEndereco,
+                "observacao", "Não incluir talheres",
                 "itens", java.util.List.of(Map.of("produtoId", cenario.produtoId(), "quantidade", 2)));
         long pedidoId = given().contentType(ContentType.JSON).body(novoPedido)
                 .post("/pedidos").then().statusCode(201)
                 .body("status", equalTo("CRIADO"))
+                .body("observacao", equalTo("Não incluir talheres"))
                 .body("subtotal", equalTo(60.0F))
                 .body("valorTotal", greaterThan(60.0F))
                 .extract().jsonPath().getLong("id");
 
+        given().get("/pedidos/{id}", pedidoId).then().statusCode(200)
+                .body("observacao", equalTo("Não incluir talheres"));
         given().contentType(ContentType.JSON)
                 .body(Map.of("produtoId", cenario.produtoId(), "quantidade", 1))
                 .post("/pedidos/{id}/itens", pedidoId).then().statusCode(200)
-                .body("subtotal", equalTo(90.0F));
+                .body("subtotal", equalTo(90.0F))
+                .body("observacao", equalTo("Não incluir talheres"));
         given().post("/pedidos/{id}/confirmar", pedidoId).then().statusCode(200)
-                .body("status", equalTo("CONFIRMADO"));
+                .body("status", equalTo("CONFIRMADO"))
+                .body("observacao", equalTo("Não incluir talheres"));
 
         long pagamentoId = given().contentType(ContentType.JSON)
                 .body(Map.of("pedidoId", pedidoId, "forma", "PIX", "token", "TOKEN_APROVADO"))
@@ -77,7 +83,8 @@ class FoodNowFlowIT extends ApiTestSupport {
         given().get("/pagamentos/{id}", pagamentoId).then().statusCode(200)
                 .body("pedidoId", equalTo((int) pedidoId));
         given().get("/pedidos/{id}", pedidoId).then().statusCode(200)
-                .body("status", equalTo("PAGO"));
+                .body("status", equalTo("PAGO"))
+                .body("observacao", equalTo("Não incluir talheres"));
 
         long entregaId = given().get("/entregas/pedido/{pedidoId}", pedidoId).then().statusCode(200)
                 .body("status", equalTo("AGUARDANDO_ENTREGADOR"))
