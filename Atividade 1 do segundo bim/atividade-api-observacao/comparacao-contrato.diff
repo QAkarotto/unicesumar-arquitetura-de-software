@@ -1,0 +1,136 @@
+--- openapi-antes.yaml	2026-10-16 15:29:09.490512353 -0300
++++ openapi-depois.yaml	2026-10-16 15:29:27.240795845 -0300
+@@ -1,30 +1,41 @@
+ openapi: 3.0.3
+ info:
+-  title: FoodNow API - Pedidos (contrato ATUAL)
+-  version: 1.0.0
++  title: FoodNow API - Pedidos (contrato PROPOSTO)
++  version: 1.1.0
+   description: |
+-    Contrato atual das quatro operacoes de pedidos, ANTES da observacao.
+-    ATENCAO: reconstruido a partir do enunciado, sem acesso ao repositorio.
+-    Nomes de campos, codigos de erro e exemplos devem ser conferidos contra
+-    os DTOs e testes reais antes da entrega.
++    Contrato das quatro operacoes de pedidos APOS a inclusao da observacao.
++    Mudanca aditiva: campo opcional `observacao` (ate 500 caracteres) na criacao
++    do pedido e nas respostas que representam o pedido. Nao ha edicao posterior.
++    ATENCAO: base reconstruida a partir do enunciado, sem acesso ao repositorio.
+ servers:
+   - url: http://localhost:8080
+ paths:
+   /pedidos:
+     post:
+       operationId: criarPedido
+-      summary: Cria um pedido
++      summary: Cria um pedido (observacao opcional)
+       requestBody:
+         required: true
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/CriarPedidoRequest'
+-            example:
+-              clienteId: 10
+-              restauranteId: 3
+-              latitude: -25.095
+-              longitude: -50.161
++            examples:
++              semObservacao:
++                summary: Cliente antigo, sem o campo
++                value:
++                  clienteId: 10
++                  restauranteId: 3
++                  latitude: -25.095
++                  longitude: -50.161
++              comObservacao:
++                summary: Com observacao
++                value:
++                  clienteId: 10
++                  restauranteId: 3
++                  latitude: -25.095
++                  longitude: -50.161
++                  observacao: Não incluir talheres
+       responses:
+         '201':
+           description: Pedido criado
+@@ -32,8 +43,25 @@
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/PedidoResponse'
++              example:
++                id: 1
++                status: CRIADO
++                clienteId: 10
++                restauranteId: 3
++                itens: []
++                subtotal: 0.0
++                taxaEntrega: 6.98
++                total: 6.98
++                observacao: Não incluir talheres
+         '400':
+-          $ref: '#/components/responses/RequisicaoInvalida'
++          description: Corpo invalido, inclusive observacao com mais de 500 caracteres
++          content:
++            application/json:
++              schema:
++                $ref: '#/components/schemas/ErroResponse'
++              example:
++                status: 400
++                mensagem: observacao deve ter no maximo 500 caracteres
+         '404':
+           $ref: '#/components/responses/NaoEncontrado'
+         '422':
+@@ -60,7 +88,7 @@
+   /pedidos/{id}/itens:
+     post:
+       operationId: adicionarItem
+-      summary: Adiciona um item ao pedido
++      summary: Adiciona um item ao pedido (observacao e mantida)
+       parameters:
+         - $ref: '#/components/parameters/PedidoId'
+       requestBody:
+@@ -88,7 +116,7 @@
+   /pedidos/{id}/confirmar:
+     post:
+       operationId: confirmarPedido
+-      summary: Confirma o pedido
++      summary: Confirma o pedido (observacao e mantida)
+       parameters:
+         - $ref: '#/components/parameters/PedidoId'
+       responses:
+@@ -147,6 +175,13 @@
+         longitude:
+           type: number
+           format: double
++        observacao:
++          type: string
++          maxLength: 500
++          nullable: true
++          description: |
++            Opcional. Ausente, null ou texto vazio/so espacos significam "sem observacao"
++            e a resposta devolve null. Acima de 500 caracteres retorna 400.
+     ItemPedidoRequest:
+       type: object
+       required: [produtoId, quantidade]
+@@ -192,15 +227,11 @@
+           type: number
+         total:
+           type: number
+-      example:
+-        id: 1
+-        status: CRIADO
+-        clienteId: 10
+-        restauranteId: 3
+-        itens: []
+-        subtotal: 0.0
+-        taxaEntrega: 6.98
+-        total: 6.98
++        observacao:
++          type: string
++          nullable: true
++          maxLength: 500
++          description: Observacao informada na criacao; null quando nao informada.
+     ErroResponse:
+       type: object
+       properties:
