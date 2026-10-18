@@ -79,6 +79,35 @@ class PedidoTest {
     }
 
     @Test
+    void deveGuardarObservacaoETratarTextoEmBrancoComoAusente() {
+        Cenario cenario = cenarioPadrao();
+        Pedido comObservacao = new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(),
+                "Não incluir talheres");
+
+        assertThat(comObservacao.getObservacao()).isEqualTo("Não incluir talheres");
+        assertThat(cenario.pedido().getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), null)
+                .getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), "")
+                .getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), "   ")
+                .getObservacao()).isNull();
+    }
+
+    @Test
+    void deveLimitarObservacaoEm500Caracteres() {
+        Cenario cenario = cenarioPadrao();
+        Pedido noLimite = new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(),
+                "a".repeat(500));
+
+        assertThat(noLimite.getObservacao()).hasSize(500);
+        assertThatThrownBy(() -> new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(),
+                "a".repeat(501)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Observação deve ter no máximo 500 caracteres");
+    }
+
+    @Test
     void pagamentoTambemDeveClassificarRiscoDeLocalizacao() {
         Cenario cenario = cenarioPadrao();
         Pagamento seguro = new Pagamento(cenario.pedido(), FormaPagamento.PIX, StatusPagamento.APROVADO,

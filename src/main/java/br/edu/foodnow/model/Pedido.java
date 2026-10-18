@@ -1,6 +1,7 @@
 package br.edu.foodnow.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,6 +21,8 @@ import java.util.Objects;
 
 @Entity
 public class Pedido {
+    public static final int LIMITE_OBSERVACAO = 500;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -37,14 +40,32 @@ public class Pedido {
     private double distanciaEntregaKm;
     @Enumerated(EnumType.STRING)
     private StatusPedido status = StatusPedido.CRIADO;
+    @Column(length = LIMITE_OBSERVACAO)
+    private String observacao;
 
     protected Pedido() {
     }
 
     public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega) {
+        this(cliente, restaurante, enderecoEntrega, null);
+    }
+
+    public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega, String observacao) {
         this.cliente = cliente;
         this.restaurante = restaurante;
         this.enderecoEntrega = enderecoEntrega;
+        this.observacao = normalizarObservacao(observacao);
+    }
+
+    private static String normalizarObservacao(String observacao) {
+        if (observacao == null || observacao.isBlank()) {
+            return null;
+        }
+        if (observacao.length() > LIMITE_OBSERVACAO) {
+            throw new IllegalArgumentException("Observação deve ter no máximo " + LIMITE_OBSERVACAO
+                    + " caracteres");
+        }
+        return observacao;
     }
 
     public void adicionarItem(Produto produto, int quantidade) {
@@ -100,4 +121,5 @@ public class Pedido {
     public BigDecimal getValorTotal() { return valorTotal; }
     public double getDistanciaEntregaKm() { return distanciaEntregaKm; }
     public StatusPedido getStatus() { return status; }
+    public String getObservacao() { return observacao; }
 }
