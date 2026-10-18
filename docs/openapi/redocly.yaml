@@ -1,0 +1,6 @@
+extends:
+  - recommended
+rules:
+  # projeto didático sem licença publicada e que só roda localmente
+  info-license: off
+  no-server-example.com: off

@@ -1,0 +1,338 @@
+openapi: 3.1.0
+info:
+  title: FoodNow API - Pedidos
+  version: 1.0.0
+  description: |
+    Contrato das operações de pedidos do FoodNow, levantado a partir do código
+    (PedidoController, ApiDtos e ApiExceptionHandler) e conferido contra as
+    respostas reais da aplicação.
+
+    Campos desconhecidos enviados no corpo são ignorados pelo Jackson e não geram erro.
+    Os erros tratados pelo ApiExceptionHandler usam o schema ErroResponse. Corpo ausente
+    ou JSON malformado não passa pelo handler e cai na resposta padrão do Spring Boot,
+    descrita em ErroPadraoSpring.
+servers:
+  - url: http://localhost:8080
+    description: Execução local com mvn spring-boot:run
+security: []
+tags:
+  - name: Pedidos
+    description: Criação, consulta, inclusão de itens e confirmação de pedidos
+paths:
+  /pedidos:
+    post:
+      tags: [Pedidos]
+      operationId: criarPedido
+      summary: Cria um pedido com itens
+      description: |
+        Valida cliente, restaurante, endereço de entrega e área de atendimento, adiciona os
+        itens e calcula subtotal, taxa de entrega e valor total. O pedido nasce com status CRIADO.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoRequest'
+            examples:
+              pedidoSimples:
+                summary: Pedido com um item
+                value:
+                  clienteId: 1
+                  restauranteId: 1
+                  enderecoEntregaId: 1
+                  itens:
+                    - produtoId: 1
+                      quantidade: 2
+      responses:
+        '201':
+          description: Pedido criado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              examples:
+                pedidoCriado:
+                  $ref: '#/components/examples/PedidoCriado'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '422':
+          $ref: '#/components/responses/RegraNegocio'
+  /pedidos/{id}:
+    get:
+      tags: [Pedidos]
+      operationId: consultarPedido
+      summary: Consulta um pedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              examples:
+                pedidoCriado:
+                  $ref: '#/components/examples/PedidoCriado'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '422':
+          $ref: '#/components/responses/IdNaoNumerico'
+  /pedidos/{id}/itens:
+    post:
+      tags: [Pedidos]
+      operationId: adicionarItemPedido
+      summary: Adiciona um item ao pedido
+      description: |
+        Acrescenta o item e recalcula subtotal e valor total. A taxa de entrega calculada na
+        criação não é recalculada. A operação não verifica o status do pedido, então hoje
+        também aceita itens em pedidos já confirmados.
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemPedidoRequest'
+            examples:
+              umItem:
+                value:
+                  produtoId: 1
+                  quantidade: 1
+      responses:
+        '200':
+          description: Pedido com o item adicionado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '422':
+          $ref: '#/components/responses/RegraNegocio'
+  /pedidos/{id}/confirmar:
+    post:
+      tags: [Pedidos]
+      operationId: confirmarPedido
+      summary: Confirma um pedido
+      description: |
+        Muda o status de CRIADO para CONFIRMADO e dispara a notificação de confirmação.
+        Não recebe corpo.
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido confirmado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '404':
+          $ref: '#/components/responses/NaoEncontrado'
+        '422':
+          $ref: '#/components/responses/RegraNegocio'
+components:
+  parameters:
+    PedidoId:
+      name: id
+      in: path
+      required: true
+      description: Identificador do pedido
+      schema:
+        type: integer
+        format: int64
+  schemas:
+    ItemPedidoRequest:
+      type: object
+      required: [produtoId]
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+        quantidade:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Campo primitivo no DTO. Se omitido vale 0 e é rejeitado pela validação.
+    PedidoRequest:
+      type: object
+      required: [clienteId, restauranteId, enderecoEntregaId, itens]
+      properties:
+        clienteId:
+          type: integer
+          format: int64
+        restauranteId:
+          type: integer
+          format: int64
+        enderecoEntregaId:
+          type: integer
+          format: int64
+          description: Precisa ser um endereço cadastrado do próprio cliente.
+        itens:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ItemPedidoRequest'
+    ItemResponse:
+      type: object
+      required: [produtoId, nome, quantidade, precoUnitario, subtotal]
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+        nome:
+          type: string
+        quantidade:
+          type: integer
+          format: int32
+        precoUnitario:
+          type: number
+        subtotal:
+          type: number
+    StatusPedido:
+      type: string
+      enum: [CRIADO, CONFIRMADO, PAGO, PAGAMENTO_REJEITADO, EM_ENTREGA, ENTREGUE]
+    PedidoResponse:
+      type: object
+      required:
+        - id
+        - clienteId
+        - restauranteId
+        - enderecoEntregaId
+        - itens
+        - subtotal
+        - taxaEntrega
+        - valorTotal
+        - distanciaEntregaKm
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+        clienteId:
+          type: integer
+          format: int64
+        restauranteId:
+          type: integer
+          format: int64
+        enderecoEntregaId:
+          type: integer
+          format: int64
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResponse'
+        subtotal:
+          type: number
+        taxaEntrega:
+          type: number
+        valorTotal:
+          type: number
+        distanciaEntregaKm:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/StatusPedido'
+    ErroResponse:
+      type: object
+      required: [status, erro, mensagem]
+      properties:
+        status:
+          type: integer
+        erro:
+          type: string
+          enum: [VALIDATION_ERROR, NOT_FOUND, REGRA_NEGOCIO]
+        mensagem:
+          type: string
+    ErroPadraoSpring:
+      type: object
+      description: Corpo padrão do Spring Boot para requisições que não chegam ao controller.
+      required: [timestamp, status, error, path]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+  examples:
+    PedidoCriado:
+      value:
+        id: 1
+        clienteId: 1
+        restauranteId: 1
+        enderecoEntregaId: 1
+        itens:
+          - produtoId: 1
+            nome: Pizza
+            quantidade: 2
+            precoUnitario: 30.00
+            subtotal: 60.00
+        subtotal: 60.00
+        taxaEntrega: 6.55
+        valorTotal: 66.55
+        distanciaEntregaKm: 1.515000000000093
+        status: CRIADO
+  responses:
+    RequisicaoInvalida:
+      description: |
+        Falha de Bean Validation (ErroResponse com VALIDATION_ERROR, mensagem com o primeiro
+        campo inválido) ou corpo ausente ou malformado (ErroPadraoSpring).
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/ErroResponse'
+              - $ref: '#/components/schemas/ErroPadraoSpring'
+          examples:
+            semItens:
+              value:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: 'itens: must not be empty'
+            jsonMalformado:
+              value:
+                timestamp: '2026-10-18T18:10:57.822Z'
+                status: 400
+                error: Bad Request
+                path: /pedidos
+    NaoEncontrado:
+      description: Cliente, restaurante, produto ou pedido inexistente.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            status: 404
+            erro: NOT_FOUND
+            mensagem: Pedido não encontrado
+    RegraNegocio:
+      description: |
+        Regra de negócio violada. Na criação e na adição de itens cobre endereço que não
+        pertence ao cliente, endereço fora da área de entrega, produto indisponível, produto
+        de outro restaurante e produto que não pode ser entregue no endereço. Na confirmação
+        cobre pedido que não está em CRIADO.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            status: 422
+            erro: REGRA_NEGOCIO
+            mensagem: Endereço fora da área de entrega
+    IdNaoNumerico:
+      description: |
+        Id do caminho que não converte para número. A falha de conversão é uma
+        IllegalArgumentException e cai no mesmo handler das regras de negócio.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
