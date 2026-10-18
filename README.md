@@ -62,4 +62,6 @@ O relatório HTML do JaCoCo é gerado em `target/site/jacoco/index.html`. O buil
 | `GET` | `/entregas/pedido/{pedidoId}` | Consultar entrega por pedido |
 | `PATCH` | `/entregas/{id}/status` | Atualizar status da entrega |
 
+O contrato das operações de pedidos está especificado em OpenAPI em [docs/openapi/foodnow-pedidos.yaml](docs/openapi/foodnow-pedidos.yaml).
+
 Para simular uma rejeição no pagamento, envie o token `REJEITADO`. Qualquer outro token não vazio produz aprovação determinística.
