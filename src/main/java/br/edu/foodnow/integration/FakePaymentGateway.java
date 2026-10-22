@@ -1,5 +1,6 @@
 package br.edu.foodnow.integration;
 
+import br.edu.foodnow.service.GatewayPagamento;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -7,8 +8,17 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class FakePaymentGateway {
+public class FakePaymentGateway implements GatewayPagamento {
     private final Map<String, GatewayResult> transacoes = new ConcurrentHashMap<>();
+
+    @Override
+    public GatewayPagamento.ResultadoPagamento processarPagamento(GatewayPagamento.RequisicaoPagamento request) {
+        GatewayRequest gatewayRequest = GatewayRequest.from(request.pedidoId(), request.valor(), request.token(),
+                request.forma(), request.regiaoEntrega(), request.origem(), request.destino());
+        GatewayResult result = processarPagamento(gatewayRequest);
+        return new GatewayPagamento.ResultadoPagamento("AUTHORIZED".equals(result.providerStatus()),
+                result.transactionCode(), result.providerMessage());
+    }
 
     public GatewayResult processarPagamento(GatewayRequest request) {
         boolean rejeitado = "REJEITADO".equalsIgnoreCase(request.paymentToken());

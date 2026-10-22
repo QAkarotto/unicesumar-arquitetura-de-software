@@ -1,6 +1,5 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakePaymentGateway;
 import br.edu.foodnow.model.FormaPagamento;
 import br.edu.foodnow.model.Pagamento;
 import br.edu.foodnow.model.Pedido;
@@ -15,13 +14,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class PagamentoService {
     private final PedidoRepository pedidoRepository;
     private final PagamentoRepository pagamentoRepository;
-    private final FakePaymentGateway paymentGateway;
+    private final GatewayPagamento paymentGateway;
     private final NotificacaoService notificacaoService;
     private final EntregaService entregaService;
     private final LocalizacaoService localizacaoService;
 
     public PagamentoService(PedidoRepository pedidoRepository, PagamentoRepository pagamentoRepository,
-                            FakePaymentGateway paymentGateway, NotificacaoService notificacaoService,
+                            GatewayPagamento paymentGateway, NotificacaoService notificacaoService,
                             EntregaService entregaService, LocalizacaoService localizacaoService) {
         this.pedidoRepository = pedidoRepository;
         this.pagamentoRepository = pagamentoRepository;
@@ -42,17 +41,17 @@ public class PagamentoService {
         LocalizacaoService.RotaEntrega rotaPagamento = localizacaoService.avaliarRota(
                 pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
         String regiao = pedido.determinarRegiaoEntrega();
-        FakePaymentGateway.GatewayRequest requisicao = FakePaymentGateway.GatewayRequest.from(
+        GatewayPagamento.RequisicaoPagamento requisicao = new GatewayPagamento.RequisicaoPagamento(
                 pedido.getId(), pedido.getValorTotal(), token, forma.name(), regiao,
                 rotaPagamento.origemFormatada(), rotaPagamento.destinoFormatada());
-        FakePaymentGateway.GatewayResult resposta = paymentGateway.processarPagamento(requisicao);
-        StatusPagamento status = "AUTHORIZED".equals(resposta.providerStatus())
+        GatewayPagamento.ResultadoPagamento resposta = paymentGateway.processarPagamento(requisicao);
+        StatusPagamento status = resposta.aprovado()
                 ? StatusPagamento.APROVADO : StatusPagamento.REJEITADO;
 
         pedido.registrarPagamento(status);
         pedidoRepository.save(pedido);
         Pagamento pagamento = pagamentoRepository.save(new Pagamento(pedido, forma, status,
-                pedido.getValorTotal(), resposta.transactionCode(), resposta.providerMessage(),
+                pedido.getValorTotal(), resposta.codigoTransacao(), resposta.mensagem(),
                 regiao, rotaPagamento.distanciaKm()));
         notificacaoService.notificarPagamento(pedido, status);
         if (status == StatusPagamento.APROVADO) {
