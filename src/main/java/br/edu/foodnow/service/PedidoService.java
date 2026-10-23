@@ -42,7 +42,7 @@ public class PedidoService {
 
     @Transactional
     public Pedido criar(Long clienteId, Long restauranteId, Long enderecoEntregaId,
-                        List<ItemSolicitado> itensSolicitados) {
+                        List<ItemSolicitado> itensSolicitados, String observacao) {
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
@@ -53,7 +53,7 @@ public class PedidoService {
                 .orElseThrow(() -> new RegraNegocioException("Endereço não pertence ao cliente"));
 
         var cotacao = logisticaService.cotarPedido(cliente, restaurante, endereco);
-        Pedido pedido = new Pedido(cliente, restaurante, endereco);
+        Pedido pedido = new Pedido(cliente, restaurante, endereco, observacao);
         pedido.definirEntrega(cotacao.distanciaKm(), cotacao.taxaBase());
         for (ItemSolicitado item : itensSolicitados) {
             adicionarItemCarregado(pedido, item.produtoId(), item.quantidade());

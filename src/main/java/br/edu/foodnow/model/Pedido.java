@@ -1,6 +1,7 @@
 package br.edu.foodnow.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,6 +24,8 @@ public class Pedido {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(length = 1000, updatable = false)
+    private String observacao;
     @ManyToOne(optional = false)
     private Cliente cliente;
     @ManyToOne(optional = false)
@@ -42,9 +45,14 @@ public class Pedido {
     }
 
     public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega) {
+        this(cliente, restaurante, enderecoEntrega, null);
+    }
+
+    public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega, String observacao) {
         this.cliente = cliente;
         this.restaurante = restaurante;
         this.enderecoEntrega = enderecoEntrega;
+        this.observacao = observacao;
     }
 
     public void adicionarItem(Produto produto, int quantidade) {
@@ -91,6 +99,7 @@ public class Pedido {
     public void iniciarEntrega() { status = StatusPedido.EM_ENTREGA; }
     public void concluirEntrega() { status = StatusPedido.ENTREGUE; }
     public Long getId() { return id; }
+    public String getObservacao() { return observacao; }
     public Cliente getCliente() { return cliente; }
     public Restaurante getRestaurante() { return restaurante; }
     public Endereco getEnderecoEntrega() { return enderecoEntrega; }
