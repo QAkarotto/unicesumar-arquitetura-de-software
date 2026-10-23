@@ -1,5 +1,6 @@
 package br.edu.foodnow.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.Entrega;
@@ -22,6 +23,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import org.hibernate.validator.constraints.CodePointLength;
+import tools.jackson.databind.annotation.JsonDeserialize;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -115,7 +118,9 @@ public final class ApiDtos {
 
     public record PedidoRequest(@NotNull Long clienteId, @NotNull Long restauranteId,
                                 @NotNull Long enderecoEntregaId,
-                                @NotEmpty List<@Valid ItemPedidoRequest> itens) {
+                                @NotEmpty List<@Valid ItemPedidoRequest> itens,
+                                @CodePointLength(max = 500) @JsonDeserialize(using = ObservacaoDeserializer.class)
+                                String observacao) {
     }
 
     public record ItemResponse(Long produtoId, String nome, int quantidade, BigDecimal precoUnitario,
@@ -128,13 +133,14 @@ public final class ApiDtos {
 
     public record PedidoResponse(Long id, Long clienteId, Long restauranteId, Long enderecoEntregaId,
                                  List<ItemResponse> itens, BigDecimal subtotal, BigDecimal taxaEntrega,
-                                 BigDecimal valorTotal, double distanciaEntregaKm, StatusPedido status) {
+                                 BigDecimal valorTotal, double distanciaEntregaKm, StatusPedido status,
+                                 @JsonInclude(JsonInclude.Include.NON_NULL) String observacao) {
         public static PedidoResponse from(Pedido pedido) {
             return new PedidoResponse(pedido.getId(), pedido.getCliente().getId(),
                     pedido.getRestaurante().getId(), pedido.getEnderecoEntrega().getId(),
                     pedido.getItens().stream().map(ItemResponse::from).toList(), pedido.getSubtotal(),
                     pedido.getTaxaEntrega(), pedido.getValorTotal(), pedido.getDistanciaEntregaKm(),
-                    pedido.getStatus());
+                    pedido.getStatus(), pedido.getObservacao());
         }
     }
 
