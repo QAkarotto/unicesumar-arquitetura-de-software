@@ -48,7 +48,7 @@ public class PedidoService {
 
     @Transactional
     public Pedido criar(Long clienteId, Long restauranteId, Long enderecoEntregaId,
-                        List<ItemSolicitado> itensSolicitados) {
+                    List<ItemSolicitado> itensSolicitados, String observacao) { //adicionei a observação wawa
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
@@ -71,7 +71,9 @@ public class PedidoService {
             throw new RegraNegocioException("Endereço fora da área de entrega");
         }
 
-        Pedido pedido = new Pedido(cliente, restaurante, endereco);
+        Pedido pedido = new Pedido(cliente, restaurante, endereco); //Criação do pedido
+        pedido.definirObservacao(
+        observacao == null || observacao.isBlank() ? null : observacao.trim()); //Definição da observação no pedido wawa
         BigDecimal taxaEntrega = calculoFrete.calcularMaiorTaxa(
                 calculoFrete.calcularTaxaEntrega(distancia),
                 calculoFrete.calcularTaxaRestaurante(restaurante, endereco),

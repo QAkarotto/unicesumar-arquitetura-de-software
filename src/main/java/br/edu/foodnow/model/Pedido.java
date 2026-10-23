@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Column;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 
 @Entity
 public class Pedido {
@@ -35,6 +37,8 @@ public class Pedido {
     private BigDecimal taxaEntrega = BigDecimal.ZERO;
     private BigDecimal valorTotal = BigDecimal.ZERO;
     private double distanciaEntregaKm;
+    @Column(length = 500)
+    private String observacao;//wawa
     @Enumerated(EnumType.STRING)
     private StatusPedido status = StatusPedido.CRIADO;
 
@@ -100,4 +104,7 @@ public class Pedido {
     public BigDecimal getValorTotal() { return valorTotal; }
     public double getDistanciaEntregaKm() { return distanciaEntregaKm; }
     public StatusPedido getStatus() { return status; }
+    public String getObservacao() {return observacao; } //wawa2
+//wawa3 esse método permite definir a observação
+    public void definirObservacao(String observacao) { this.observacao = observacao;}
 }

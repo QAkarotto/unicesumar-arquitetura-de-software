@@ -1,0 +1,313 @@
+
+openapi: 3.0.3
+
+info:
+  title: FoodNow API
+  version: 1.0.0
+  description: API para gerenciamento de pedidos do FoodNow.
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor local
+
+tags:
+  - name: Pedidos
+    description: Operações de gerenciamento de pedidos
+
+paths:
+  /pedidos:
+    post:
+      tags:
+        - Pedidos
+      summary: Criar um pedido
+      operationId: criarPedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoRequest'
+            example:
+              clienteId: 1
+              restauranteId: 1
+              enderecoEntregaId: 1
+              itens:
+                - produtoId: 1
+                  quantidade: 2
+              observacao: "Entregar na portaria"
+      responses:
+        '201':
+          description: Pedido criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: Dados inválidos
+        '404':
+          description: Cliente, restaurante ou endereço não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Recurso não encontrado
+        '422':
+          description: Regra de negócio inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: Regra de negócio inválida
+
+  /pedidos/{id}:
+    get:
+      tags:
+        - Pedidos
+      summary: Consultar um pedido
+      operationId: consultarPedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '404':
+          description: Pedido não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Pedido não encontrado
+
+  /pedidos/{id}/itens:
+    post:
+      tags:
+        - Pedidos
+      summary: Adicionar item ao pedido
+      operationId: adicionarItem
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemPedidoRequest'
+            example:
+              produtoId: 1
+              quantidade: 2
+      responses:
+        '200':
+          description: Item adicionado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '400':
+          description: Dados inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: Dados inválidos
+        '404':
+          description: Pedido ou produto não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Recurso não encontrado
+        '422':
+          description: Regra de negócio inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: Regra de negócio inválida
+
+  /pedidos/{id}/confirmar:
+    post:
+      tags:
+        - Pedidos
+      summary: Confirmar um pedido
+      operationId: confirmarPedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido confirmado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '404':
+          description: Pedido não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Pedido não encontrado
+        '422':
+          description: Pedido não pode ser confirmado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: Pedido não pode ser confirmado
+
+components:
+  parameters:
+    PedidoId:
+      name: id
+      in: path
+      required: true
+      description: Identificador do pedido
+      schema:
+        type: integer
+        format: int64
+
+  schemas:
+    PedidoRequest:
+      type: object
+      required:
+        - clienteId
+        - restauranteId
+        - enderecoEntregaId
+        - itens
+      properties:
+        clienteId:
+          type: integer
+          format: int64
+        restauranteId:
+          type: integer
+          format: int64
+        enderecoEntregaId:
+          type: integer
+          format: int64
+        itens:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ItemPedidoRequest'
+        observacao:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: Observação opcional do pedido. Pode ser omitida ou enviada como null.
+
+    ItemPedidoRequest:
+      type: object
+      required:
+        - produtoId
+        - quantidade
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+        quantidade:
+          type: integer
+          minimum: 1
+
+    ItemResponse:
+      type: object
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+        nome:
+          type: string
+        quantidade:
+          type: integer
+        precoUnitario:
+          type: number
+        subtotal:
+          type: number
+
+    PedidoResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        clienteId:
+          type: integer
+          format: int64
+        restauranteId:
+          type: integer
+          format: int64
+        enderecoEntregaId:
+          type: integer
+          format: int64
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResponse'
+        subtotal:
+          type: number
+        taxaEntrega:
+          type: number
+        valorTotal:
+          type: number
+        distanciaEntregaKm:
+          type: number
+        status:
+          type: string
+          description: Estado atual do pedido
+        observacao:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: Observação opcional do pedido
+
+    ErroResponse:
+      type: object
+      required:
+        - status
+        - erro
+        - mensagem
+      properties:
+        status:
+          type: integer
+          description: Código HTTP da resposta
+          example: 400
+        erro:
+          type: string
+          example: VALIDATION_ERROR
+        mensagem:
+          type: string
+          example: Dados inválidos
