@@ -1,4 +1,4 @@
-package main.java.foodnow.service;
+package foodnow.service;
 
 public class NotificacaoService {
 

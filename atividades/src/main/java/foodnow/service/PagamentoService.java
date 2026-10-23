@@ -1,15 +1,19 @@
-package main.java.foodnow.service;
+package foodnow.service;
 
 public class PagamentoService {
 
-    public boolean processarPagamento(int pedidoId, double valor) {
-        if (valor <= 0) {
-            System.out.println("Pagamento inválido.");
-            return false;
-        }
+    private final PaymentGateway paymentGateway;
 
-        System.out.println("Pagamento do pedido " + pedidoId + " processado com sucesso.");
-        return true;
+    public PagamentoService() {
+        this.paymentGateway = new FakePaymentGateway();
+    }
+
+    public PagamentoService(PaymentGateway paymentGateway) {
+        this.paymentGateway = paymentGateway;
+    }
+
+    public boolean processarPagamento(int pedidoId, double valor) {
+        return paymentGateway.processarPagamento(pedidoId, valor);
     }
 
     public void confirmarPagamento(int pedidoId) {
