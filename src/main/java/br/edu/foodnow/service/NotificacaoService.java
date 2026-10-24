@@ -1,6 +1,6 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeEmailClient;
+import br.edu.foodnow.notificacao.EnvioNotificacao;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.Notificacao;
 import br.edu.foodnow.model.Pedido;
@@ -9,26 +9,26 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NotificacaoService {
-    private final FakeEmailClient emailClient;
+    private final EnvioNotificacao envioNotificacao;
     private final LocalizacaoService localizacaoService;
     private final LogisticaService logisticaService;
 
-    public NotificacaoService(FakeEmailClient emailClient, LocalizacaoService localizacaoService,
+    public NotificacaoService(EnvioNotificacao envioNotificacao, LocalizacaoService localizacaoService,
                               LogisticaService logisticaService) {
-        this.emailClient = emailClient;
+        this.envioNotificacao = envioNotificacao;
         this.localizacaoService = localizacaoService;
         this.logisticaService = logisticaService;
     }
 
     public void notificarConfirmacao(Pedido pedido) {
         var resumo = logisticaService.resumirPedido(pedido);
-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
+        envioNotificacao.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
                 "O pedido " + pedido.getId() + " foi confirmado para a região "
                         + resumo.regiao() + ". Estimativa interna: " + resumo.tempoMinutos() + " minutos.");
     }
 
     public void notificarInicioEntrega(Pedido pedido) {
-        emailClient.enviar(pedido.getCliente().getEmail(), "Entrega iniciada",
+        envioNotificacao.enviar(pedido.getCliente().getEmail(), "Entrega iniciada",
                 "O pedido " + pedido.getId() + " saiu para entrega.");
     }
 
@@ -39,13 +39,13 @@ public class NotificacaoService {
                     "O pagamento do pedido " + pedido.getId() + " foi aprovado. Rota estimada pelo e-mail: "
                             + rota.tempoMinutos() + " minutos.")
                     .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
-            emailClient.enviar(notificacao);
+            envioNotificacao.enviar(notificacao);
         } else {
             Notificacao notificacao = new Notificacao(pedido.getCliente().getEmail(), "Pagamento rejeitado",
                     "O pagamento do pedido " + pedido.getId() + " foi rejeitado na zona "
                             + rota.zona() + ".")
                     .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
-            emailClient.enviar(notificacao);
+            envioNotificacao.enviar(notificacao);
         }
     }
 }
