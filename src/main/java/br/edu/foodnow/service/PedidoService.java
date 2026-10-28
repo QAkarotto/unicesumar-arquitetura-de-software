@@ -1,7 +1,6 @@
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
-import br.edu.foodnow.integration.FakeMapsClient;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.FormaPagamento;

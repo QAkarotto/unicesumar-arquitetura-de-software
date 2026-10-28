@@ -1,7 +1,10 @@
-package br.edu.foodnow.controller;
+package br.edu.foodnow.Exceptions;
 
+import br.edu.foodnow.controller.ApiDtos;
+import br.edu.foodnow.controller.ApiDtos.ErroResponse;
 import br.edu.foodnow.service.RecursoNaoEncontradoException;
 import br.edu.foodnow.service.RegraNegocioException;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -21,6 +24,12 @@ public class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public ApiDtos.ErroResponse regraNegocio(RuntimeException excecao) {
         return new ApiDtos.ErroResponse(422, "REGRA_NEGOCIO", excecao.getMessage());
+    }
+
+    @ExceptionHandler(ServicoLocalizacaoIndisponivelException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ApiDtos.ErroResponse servicoIndisponivel(ServicoLocalizacaoIndisponivelException excecao) {
+        return new ApiDtos.ErroResponse(503, "SERVICO_INDISPONIVEL", excecao.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
