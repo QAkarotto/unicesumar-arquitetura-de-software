@@ -4,6 +4,8 @@ public class PagamentoService {
 
     private final PaymentGateway paymentGateway;
 
+    private static final int MAX_TENTATIVAS = 3;
+
     public PagamentoService() {
         this.paymentGateway = new FakePaymentGateway();
     }
@@ -13,7 +15,20 @@ public class PagamentoService {
     }
 
     public boolean processarPagamento(int pedidoId, double valor) {
-        return paymentGateway.processarPagamento(pedidoId, valor);
+
+        RuntimeException ultimaExcecao = null;
+
+        for (int tentativa = 1; tentativa <= MAX_TENTATIVAS; tentativa++) {
+
+            try {
+                return paymentGateway.processarPagamento(pedidoId, valor);
+            } catch (RuntimeException e) {
+                ultimaExcecao = e;
+            }
+
+        }
+
+        throw ultimaExcecao;
     }
 
     public void confirmarPagamento(int pedidoId) {
