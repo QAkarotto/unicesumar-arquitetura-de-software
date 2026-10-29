@@ -1,3 +1,4 @@
+
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
@@ -5,16 +6,26 @@ import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.Notificacao;
 import br.edu.foodnow.model.Pedido;
 import br.edu.foodnow.model.StatusPagamento;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class NotificacaoService {
+
+    private static final Logger LOGGER =
+            LoggerFactory.getLogger(NotificacaoService.class);
+
+    private static final int MAX_TENTATIVAS_ENVIO = 3;
+
     private final FakeEmailClient emailClient;
     private final LocalizacaoService localizacaoService;
     private final LogisticaService logisticaService;
 
-    public NotificacaoService(FakeEmailClient emailClient, LocalizacaoService localizacaoService,
-                              LogisticaService logisticaService) {
+    public NotificacaoService(
+            FakeEmailClient emailClient,
+            LocalizacaoService localizacaoService,
+            LogisticaService logisticaService) {
         this.emailClient = emailClient;
         this.localizacaoService = localizacaoService;
         this.logisticaService = logisticaService;
@@ -22,30 +33,100 @@ public class NotificacaoService {
 
     public void notificarConfirmacao(Pedido pedido) {
         var resumo = logisticaService.resumirPedido(pedido);
-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
-                "O pedido " + pedido.getId() + " foi confirmado para a região "
-                        + resumo.regiao() + ". Estimativa interna: " + resumo.tempoMinutos() + " minutos.");
+
+        enviarComRetentativas(() ->
+                emailClient.enviar(
+                        pedido.getCliente().getEmail(),
+                        "Pedido confirmado",
+                        "O pedido " + pedido.getId()
+                                + " foi confirmado para a região "
+                                + resumo.regiao()
+                                + ". Estimativa interna: "
+                                + resumo.tempoMinutos() + " minutos."
+                )
+        );
     }
 
     public void notificarInicioEntrega(Pedido pedido) {
-        emailClient.enviar(pedido.getCliente().getEmail(), "Entrega iniciada",
-                "O pedido " + pedido.getId() + " saiu para entrega.");
+        enviarComRetentativas(() ->
+                emailClient.enviar(
+                        pedido.getCliente().getEmail(),
+                        "Entrega iniciada",
+                        "O pedido " + pedido.getId()
+                                + " saiu para entrega."
+                )
+        );
     }
 
-    public void notificarPagamento(Pedido pedido, StatusPagamento status) {
-        var rota = localizacaoService.calcularRota(pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+    public void notificarPagamento(
+            Pedido pedido,
+            StatusPagamento status) {
+
+        var rota = localizacaoService.calcularRota(
+                pedido.getRestaurante().getEndereco(),
+                pedido.getEnderecoEntrega()
+        );
+
         if (status == StatusPagamento.APROVADO) {
-            Notificacao notificacao = new Notificacao(pedido.getCliente().getEmail(), "Pagamento aprovado",
-                    "O pagamento do pedido " + pedido.getId() + " foi aprovado. Rota estimada pelo e-mail: "
-                            + rota.tempoMinutos() + " minutos.")
-                    .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
-            emailClient.enviar(notificacao);
+            Notificacao notificacao = new Notificacao(
+                    pedido.getCliente().getEmail(),
+                    "Pagamento aprovado",
+                    "O pagamento do pedido " + pedido.getId()
+                            + " foi aprovado. Rota estimada pelo e-mail: "
+                            + rota.tempoMinutos() + " minutos."
+            ).adicionarReferenciaGeografica(
+                    pedido.getEnderecoEntrega()
+            );
+
+            enviarComRetentativas(() ->
+                    emailClient.enviar(notificacao)
+            );
+
         } else {
-            Notificacao notificacao = new Notificacao(pedido.getCliente().getEmail(), "Pagamento rejeitado",
-                    "O pagamento do pedido " + pedido.getId() + " foi rejeitado na zona "
-                            + rota.zona() + ".")
-                    .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
-            emailClient.enviar(notificacao);
+            Notificacao notificacao = new Notificacao(
+                    pedido.getCliente().getEmail(),
+                    "Pagamento rejeitado",
+                    "O pagamento do pedido " + pedido.getId()
+                            + " foi rejeitado na zona "
+                            + rota.zona() + "."
+            ).adicionarReferenciaGeografica(
+                    pedido.getEnderecoEntrega()
+            );
+
+            enviarComRetentativas(() ->
+                    emailClient.enviar(notificacao)
+            );
+        }
+    }
+
+    private void enviarComRetentativas(Runnable envio) {
+        for (int tentativa = 1;
+             tentativa <= MAX_TENTATIVAS_ENVIO;
+             tentativa++) {
+
+            try {
+                envio.run();
+                return;
+
+            } catch (RuntimeException erro) {
+                if (tentativa < MAX_TENTATIVAS_ENVIO) {
+                    LOGGER.warn(
+                            "Falha no envio de e-mail. Tentativa {}/{}. "
+                                    + "Uma nova tentativa será realizada.",
+                            tentativa,
+                            MAX_TENTATIVAS_ENVIO,
+                            erro
+                    );
+                } else {
+                    LOGGER.error(
+                            "Não foi possível enviar o e-mail após {} "
+                                    + "tentativas. O fluxo principal "
+                                    + "continuará sem a notificação.",
+                            MAX_TENTATIVAS_ENVIO,
+                            erro
+                    );
+                }
+            }
         }
     }
 }
