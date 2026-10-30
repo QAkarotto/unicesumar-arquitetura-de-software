@@ -6,7 +6,10 @@ import br.edu.foodnow.model.Localizacao;
 import br.edu.foodnow.service.LocalizacaoService;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MapsLocalizacaoAdapterTest {
     private final LocalizacaoService localizacao = new LocalizacaoService(new MapsLocalizacaoAdapter(new FakeMapsClient()));
@@ -29,6 +32,60 @@ class MapsLocalizacaoAdapterTest {
         var coordenadas = localizacao.buscarCoordenadas(endereco);
         assertThat(coordenadas.getLatitude()).isEqualTo(Double.parseDouble(esperado.lat()));
         assertThat(coordenadas.getLongitude()).isEqualTo(Double.parseDouble(esperado.lng()));
+    }
+
+    @Test
+    void deveRepetirConsultaAposFalhasTemporariasEConcluirQuandoProvedorSeRecuperar() {
+        AtomicInteger tentativas = new AtomicInteger();
+        FakeMapsClient clienteInstavel = new FakeMapsClient() {
+            @Override
+            public RouteResult calcularRota(Localizacao origem, Localizacao destino) {
+                if (tentativas.incrementAndGet() < 3) {
+                    throw new FalhaTemporariaMapsException("Timeout temporário simulado.");
+                }
+                return new RouteResult(4.5, 20, "CENTRAL");
+            }
+        };
+        MapsLocalizacaoAdapter adapter = new MapsLocalizacaoAdapter(clienteInstavel);
+
+        Rota rota = adapter.calcularRota(new Localizacao(-25.1, -50.1), new Localizacao(-25.2, -50.2));
+
+        assertThat(rota).isEqualTo(new Rota(4.5, 20, "CENTRAL"));
+        assertThat(tentativas.get()).isEqualTo(3);
+    }
+
+    @Test
+    void deveEncerrarComErroClaroAposTresFalhasTemporarias() {
+        AtomicInteger tentativas = new AtomicInteger();
+        FakeMapsClient clienteIndisponivel = new FakeMapsClient() {
+            @Override
+            public RouteResult calcularRota(Localizacao origem, Localizacao destino) {
+                tentativas.incrementAndGet();
+                throw new FalhaTemporariaMapsException("Provedor temporariamente indisponível.");
+            }
+        };
+        MapsLocalizacaoAdapter adapter = new MapsLocalizacaoAdapter(clienteIndisponivel);
+
+        assertThatThrownBy(() -> adapter.calcularRota(
+                new Localizacao(-25.1, -50.1), new Localizacao(-25.2, -50.2)))
+                .isInstanceOf(FalhaTemporariaMapsException.class)
+                .hasMessageContaining("após 3 tentativas");
+        assertThat(tentativas.get()).isEqualTo(3);
+    }
+
+    @Test
+    void deveInformarQuandoProvedorRetornaCoordenadasInvalidas() {
+        FakeMapsClient clienteComRespostaInvalida = new FakeMapsClient() {
+            @Override
+            public MapCoordinates buscarCoordenadas(Endereco endereco) {
+                return new MapCoordinates("latitude-invalida", "-50.1", "APPROXIMATE");
+            }
+        };
+        MapsLocalizacaoAdapter adapter = new MapsLocalizacaoAdapter(clienteComRespostaInvalida);
+
+        assertThatThrownBy(() -> adapter.buscarCoordenadas(endereco(null)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("coordenadas inválidas");
     }
 
     private Endereco endereco(Localizacao coordenadas) {
