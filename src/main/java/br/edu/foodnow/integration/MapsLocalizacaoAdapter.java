@@ -16,13 +16,22 @@ public class MapsLocalizacaoAdapter implements ProvedorLocalizacao {
 
     @Override
     public Localizacao buscarCoordenadas(Endereco endereco) {
-        var coordenadas = mapsClient.buscarCoordenadas(endereco);
+        var coordenadas = tentarNovamente(() -> mapsClient.buscarCoordenadas(endereco));
         return new Localizacao(Double.parseDouble(coordenadas.lat()), Double.parseDouble(coordenadas.lng()));
     }
 
     @Override
     public Rota calcularRota(Localizacao origem, Localizacao destino) {
-        var resposta = mapsClient.calcularRota(origem, destino);
+        var resposta = tentarNovamente(() -> mapsClient.calcularRota(origem, destino));
         return new Rota(resposta.distanceKm(), resposta.durationMinutes(), resposta.deliveryZone());
     }
+
+    private <T> T tentarNovamente(java.util.function.Supplier<T> consulta) {
+        try {
+            return consulta.get();
+        } catch (RuntimeException primeiraFalha) {
+            return consulta.get();
+        }
+    }
+
 }
