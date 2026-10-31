@@ -1,3 +1,4 @@
+
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.localizacao.ProvedorLocalizacao;
@@ -6,8 +7,12 @@ import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.Localizacao;
 import org.springframework.stereotype.Service;
 
+import java.io.UncheckedIOException;
+import java.net.SocketTimeoutException;
+
 @Service
 public class LocalizacaoService {
+
     private final ProvedorLocalizacao provedor;
 
     public LocalizacaoService(ProvedorLocalizacao provedor) {
@@ -19,7 +24,21 @@ public class LocalizacaoService {
     }
 
     public Rota calcularRota(Endereco origem, Endereco destino) {
-        return provedor.calcularRota(origem.getLocalizacao(), destino.getLocalizacao());
+
+        Localizacao localOrigem = origem.getLocalizacao();
+        Localizacao localDestino = destino.getLocalizacao();
+
+        try {
+            return provedor.calcularRota(localOrigem, localDestino);
+
+        } catch (UncheckedIOException erro) {
+
+            if (erro.getCause() instanceof SocketTimeoutException) {
+                return provedor.calcularRota(localOrigem, localDestino);
+            }
+
+            throw erro;
+        }
     }
 
     public double calcularDistancia(Endereco origem, Endereco destino) {
