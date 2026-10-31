@@ -1,6 +1,5 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeEmailClient;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.Notificacao;
 import br.edu.foodnow.model.Pedido;
@@ -9,11 +8,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NotificacaoService {
-    private final FakeEmailClient emailClient;
+    private final EnvioNotificacao emailClient;
     private final LocalizacaoService localizacaoService;
     private final LogisticaService logisticaService;
 
-    public NotificacaoService(FakeEmailClient emailClient, LocalizacaoService localizacaoService,
+    public NotificacaoService(EnvioNotificacao emailClient, LocalizacaoService localizacaoService,
                               LogisticaService logisticaService) {
         this.emailClient = emailClient;
         this.localizacaoService = localizacaoService;
