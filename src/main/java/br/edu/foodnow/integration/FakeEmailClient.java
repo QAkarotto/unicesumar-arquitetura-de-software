@@ -14,6 +14,10 @@ public class FakeEmailClient {
         enviadas.add(new Notificacao(destinatario, assunto, mensagem));
     }
 
+    /**
+     * @throws EmailIndisponivelException quando o provedor estiver indisponível;
+     * o simulador padrão sempre registra o envio com sucesso.
+     */
     public void enviar(Notificacao notificacao) {
         enviadas.add(notificacao);
     }
