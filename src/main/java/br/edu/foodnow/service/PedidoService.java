@@ -1,6 +1,6 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeEmailClient;
+import br.edu.foodnow.event.PedidoConfirmado;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
 import br.edu.foodnow.model.FormaPagamento;
@@ -14,6 +14,7 @@ import br.edu.foodnow.repository.ProdutoRepository;
 import br.edu.foodnow.repository.RestauranteRepository;
 import br.edu.foodnow.util.TaxaEntregaUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -27,19 +28,19 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final LocalizacaoService localizacaoService;
     private final PagamentoService pagamentoService;
-    private final FakeEmailClient emailClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
                          ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
                          LocalizacaoService localizacaoService, PagamentoService pagamentoService,
-                         FakeEmailClient emailClient) {
+                         ApplicationEventPublisher eventPublisher) {
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
         this.pedidoRepository = pedidoRepository;
         this.localizacaoService = localizacaoService;
         this.pagamentoService = pagamentoService;
-        this.emailClient = emailClient;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -125,11 +126,11 @@ public class PedidoService {
         } catch (IllegalStateException excecao) {
             throw new RegraNegocioException(excecao.getMessage());
         }
-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
-                "O pedido " + pedido.getId() + " foi confirmado para a região "
-                        + pedido.determinarRegiaoEntrega() + ". Estimativa interna: "
-                        + pedido.estimarTempoEntregaPeloPedido() + " minutos.");
-        return pedidoRepository.save(pedido);
+        Pedido confirmado = pedidoRepository.save(pedido);
+        eventPublisher.publishEvent(new PedidoConfirmado(confirmado.getId(),
+                confirmado.getCliente().getEmail(), confirmado.determinarRegiaoEntrega(),
+                confirmado.estimarTempoEntregaPeloPedido()));
+        return confirmado;
     }
 
     public Pagamento pagar(Long pedidoId, FormaPagamento forma, String token) {

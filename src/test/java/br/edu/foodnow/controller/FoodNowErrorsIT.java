@@ -8,6 +8,8 @@ import java.util.Map;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+import java.time.Duration;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -48,8 +50,9 @@ class FoodNowErrorsIT extends ApiTestSupport {
                 .body("status", equalTo("PAGAMENTO_REJEITADO"));
         given().get("/entregas/pedido/{pedidoId}", pedidoId).then().statusCode(404);
 
-        assertThat(emailClient.getEnviadas()).extracting("assunto")
-                .contains("Pedido confirmado", "Pagamento rejeitado");
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() ->
+                assertThat(emailClient.getEnviadas()).extracting("assunto")
+                        .contains("Pedido confirmado", "Pagamento rejeitado"));
     }
 
     @Test

@@ -10,6 +10,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.awaitility.Awaitility.await;
+import java.time.Duration;
 
 class FoodNowFlowIT extends ApiTestSupport {
 
@@ -103,7 +105,8 @@ class FoodNowFlowIT extends ApiTestSupport {
         given().get("/pedidos/{id}", pedidoId).then().statusCode(200)
                 .body("status", equalTo("ENTREGUE"));
 
-        assertThat(emailClient.getEnviadas()).extracting("assunto")
-                .contains("Pedido confirmado", "Pagamento aprovado", "Entrega iniciada");
+        await().atMost(Duration.ofSeconds(2)).untilAsserted(() ->
+                assertThat(emailClient.getEnviadas()).extracting("assunto")
+                        .contains("Pedido confirmado", "Pagamento aprovado", "Entrega iniciada"));
     }
 }
