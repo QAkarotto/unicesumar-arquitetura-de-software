@@ -1,3 +1,4 @@
+
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakePaymentGateway;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PagamentoService {
+
     private final PedidoRepository pedidoRepository;
     private final PagamentoRepository pagamentoRepository;
     private final FakePaymentGateway paymentGateway;
@@ -21,10 +23,15 @@ public class PagamentoService {
     private final LocalizacaoService localizacaoService;
     private final ValidadorEntrega validadorEntrega;
 
-    public PagamentoService(PedidoRepository pedidoRepository, PagamentoRepository pagamentoRepository,
-                            FakePaymentGateway paymentGateway, NotificacaoService notificacaoService,
-                            EntregaService entregaService, LocalizacaoService localizacaoService,
-                            ValidadorEntrega validadorEntrega) {
+    public PagamentoService(
+            PedidoRepository pedidoRepository,
+            PagamentoRepository pagamentoRepository,
+            FakePaymentGateway paymentGateway,
+            NotificacaoService notificacaoService,
+            EntregaService entregaService,
+            LocalizacaoService localizacaoService,
+            ValidadorEntrega validadorEntrega) {
+
         this.pedidoRepository = pedidoRepository;
         this.pagamentoRepository = pagamentoRepository;
         this.paymentGateway = paymentGateway;
@@ -36,32 +43,83 @@ public class PagamentoService {
 
     @Transactional
     public Pagamento processar(Long pedidoId, FormaPagamento forma, String token) {
+
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Pedido não encontrado"));
+
         if (pedido.getStatus() != StatusPedido.CONFIRMADO) {
             throw new RegraNegocioException("Pedido precisa estar confirmado para pagamento");
         }
 
         double distanciaRota = localizacaoService.calcularDistancia(
-                pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+                pedido.getRestaurante().getEndereco(),
+                pedido.getEnderecoEntrega()
+        );
+
         String regiao = validadorEntrega.determinarRegiaoEntrega(pedido);
-        FakePaymentGateway.GatewayRequest requisicao = FakePaymentGateway.GatewayRequest.from(
-                pedido.getId(), pedido.getValorTotal(), token, forma.name(), regiao,
-                pedido.getRestaurante().getEndereco().getLocalizacao().formatarParaProvedor(),
-                pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
-        FakePaymentGateway.GatewayResult resposta = paymentGateway.processarPagamento(requisicao);
-        StatusPagamento status = "AUTHORIZED".equals(resposta.providerStatus())
-                ? StatusPagamento.APROVADO : StatusPagamento.REJEITADO;
+
+        FakePaymentGateway.GatewayRequest requisicao =
+                FakePaymentGateway.GatewayRequest.from(
+                        pedido.getId(),
+                        pedido.getValorTotal(),
+                        token,
+                        forma.name(),
+                        regiao,
+                        pedido.getRestaurante().getEndereco().getLocalizacao().formatarParaProvedor(),
+                        pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor()
+                );
+
+        FakePaymentGateway.GatewayResult resposta;
+
+        try {
+            resposta = paymentGateway.processarPagamento(requisicao);
+        } catch (RuntimeException excecao) {
+            throw new FalhaIntegracaoException(
+                    "Falha ao processar pagamento no provedor externo",
+                    excecao
+            );
+        }
+
+        if (resposta == null || resposta.providerStatus() == null) {
+            throw new FalhaIntegracaoException(
+                    "O provedor retornou uma resposta inválida"
+            );
+        }
+
+        StatusPagamento status;
+
+        if ("AUTHORIZED".equalsIgnoreCase(resposta.providerStatus())) {
+            status = StatusPagamento.APROVADO;
+        } else if ("DECLINED".equalsIgnoreCase(resposta.providerStatus())) {
+            status = StatusPagamento.REJEITADO;
+        } else {
+            throw new FalhaIntegracaoException(
+                    "O provedor retornou um status de pagamento desconhecido"
+            );
+        }
 
         pedido.registrarPagamento(status);
         pedidoRepository.save(pedido);
-        Pagamento pagamento = pagamentoRepository.save(new Pagamento(pedido, forma, status,
-                pedido.getValorTotal(), resposta.transactionCode(), resposta.providerMessage(),
-                regiao, distanciaRota));
+
+        Pagamento pagamento = pagamentoRepository.save(
+                new Pagamento(
+                        pedido,
+                        forma,
+                        status,
+                        pedido.getValorTotal(),
+                        resposta.transactionCode(),
+                        resposta.providerMessage(),
+                        regiao,
+                        distanciaRota
+                )
+        );
+
         notificacaoService.notificarPagamento(pedido, status);
+
         if (status == StatusPagamento.APROVADO) {
             entregaService.criarPara(pedido);
         }
+
         return pagamento;
     }
 

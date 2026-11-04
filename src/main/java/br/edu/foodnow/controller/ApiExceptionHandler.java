@@ -2,11 +2,14 @@ package br.edu.foodnow.controller;
 
 import br.edu.foodnow.service.RecursoNaoEncontradoException;
 import br.edu.foodnow.service.RegraNegocioException;
+import br.edu.foodnow.service.FalhaIntegracaoException;//WAWA
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
@@ -30,5 +33,15 @@ public class ApiExceptionHandler {
                 .map(erro -> erro.getField() + ": " + erro.getDefaultMessage())
                 .orElse("Requisição inválida");
         return new ApiDtos.ErroResponse(400, "VALIDATION_ERROR", mensagem);
+    }
+
+    @ExceptionHandler(FalhaIntegracaoException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ApiDtos.ErroResponse falhaIntegracao(FalhaIntegracaoException excecao) {
+        return new ApiDtos.ErroResponse(
+                503,
+                "INTEGRACAO_INDISPONIVEL",
+                "Não foi possível processar o pagamento no momento"
+        );
     }
 }
