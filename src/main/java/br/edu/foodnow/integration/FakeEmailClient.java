@@ -1,13 +1,14 @@
 package br.edu.foodnow.integration;
 
 import br.edu.foodnow.model.Notificacao;
+import br.edu.foodnow.service.EnvioNotificacao;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 @Component
-public class FakeEmailClient {
+public class FakeEmailClient implements EnvioNotificacao {
     private final List<Notificacao> enviadas = new CopyOnWriteArrayList<>();
 
     public void enviar(String destinatario, String assunto, String mensagem) {
