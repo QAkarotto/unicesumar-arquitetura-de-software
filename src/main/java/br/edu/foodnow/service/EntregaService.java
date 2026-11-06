@@ -1,5 +1,6 @@
 package br.edu.foodnow.service;
 
+import br.edu.foodnow.evento.EntregaIniciada;
 import br.edu.foodnow.integration.FakeCourierClient;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.Entrega;
@@ -7,6 +8,7 @@ import br.edu.foodnow.model.Pedido;
 import br.edu.foodnow.model.StatusEntrega;
 import br.edu.foodnow.repository.EntregaRepository;
 import br.edu.foodnow.repository.PedidoRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,16 +17,16 @@ public class EntregaService {
     private final EntregaRepository entregaRepository;
     private final PedidoRepository pedidoRepository;
     private final LogisticaService logisticaService;
-    private final NotificacaoService notificacaoService;
+    private final ApplicationEventPublisher eventos;
     private final FakeCourierClient courierClient;
 
     public EntregaService(EntregaRepository entregaRepository, PedidoRepository pedidoRepository,
-                          LogisticaService logisticaService, NotificacaoService notificacaoService,
+                          LogisticaService logisticaService, ApplicationEventPublisher eventos,
                           FakeCourierClient courierClient) {
         this.entregaRepository = entregaRepository;
         this.pedidoRepository = pedidoRepository;
         this.logisticaService = logisticaService;
-        this.notificacaoService = notificacaoService;
+        this.eventos = eventos;
         this.courierClient = courierClient;
     }
 
@@ -56,11 +58,15 @@ public class EntregaService {
         entrega.atualizarStatus(novoStatus);
         if (novoStatus == StatusEntrega.EM_ROTA) {
             pedido.iniciarEntrega();
-            notificacaoService.notificarInicioEntrega(pedido);
         } else if (novoStatus == StatusEntrega.ENTREGUE) {
             pedido.concluirEntrega();
         }
         pedidoRepository.save(pedido);
-        return entregaRepository.save(entrega);
+        Entrega salva = entregaRepository.save(entrega);
+        if (novoStatus == StatusEntrega.EM_ROTA) {
+            eventos.publishEvent(new EntregaIniciada(salva.getId(), pedido.getId(),
+                    pedido.getCliente().getEmail()));
+        }
+        return salva;
     }
 }
