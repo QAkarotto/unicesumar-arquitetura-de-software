@@ -1,0 +1,52 @@
+Atividade 04 - 2BIM
+
+Integrantes:
+Victor Gabriel Alves Carneiro
+Felipe Augusto Graniska
+
+Operação escolhida:
+PedidoService.confirmarPedido. A operação é considerada concluída quando o pedido é confirmado. A ação secundária, enviar a notificação de confirmação, passou a ser executada separadamente.
+
+Evento:
+PedidoConfirmado(pedidoId, confirmadoEm), publicado ao final de confirmarPedido.
+
+Fluxo atual:
+PedidoService.confirmarPedido -> NotificacaoService.enviarConfirmacaoPedido
+(chamada direta e síncrona: a notificação, se feita no mesmo fluxo, acopla os serviços e atrasa a operação principal).
+
+Fluxo proposto:
+Produtor: PedidoService.confirmarPedido
+Evento: PedidoConfirmado
+Consumidor: NotificacaoPedidoListener -> NotificacaoService.enviarConfirmacaoPedido
+PedidoService --publica--> PedidoConfirmado --(@Async, outra thread)--> NotificacaoPedidoListener --> NotificacaoService
+
+Cenários de falha:
+- Falha do consumidor ao enviar a notificação (serviço de notificação indisponível).
+
+Decisão adotada:
+Migração mínima do projeto para Spring Boot. O evento é publicado com ApplicationEventPublisher e consumido por um @EventListener com @Async (@EnableAsync na FoodNowApplication). A falha do consumidor é capturada e registrada em log, sem afetar a confirmação do pedido. Como o projeto não possui banco de dados nem transação, não foi usado @TransactionalEventListener (com persistência, seria usado com fase AFTER_COMMIT).
+
+Principais alterações:
+- pom.xml com parent do Spring Boot e classe FoodNowApplication.
+- Evento PedidoConfirmado (pacote foodnow.evento).
+- PedidoService publica o evento após confirmar o pedido (construtor sem argumentos preservado).
+- NotificacaoPedidoListener assíncrono, com tratamento de falha.
+- Testes: PedidoServiceTest (publicação do evento) e ConfirmacaoPedidoEventoTest (execução do consumidor, execução em outra thread e falha do consumidor sem desfazer o pedido).
+
+Benefício:
+O PedidoService não conhece nem espera o NotificacaoService, e novos consumidores podem ser adicionados sem alterar o produtor.
+
+Trade-off:
+Evento local em memória não tem entrega durável, reprocessamento nem idempotência: se a aplicação encerrar antes do consumidor processar, a notificação é perdida.
+
+Análise:
+1) Dependência reduzida: o PedidoService não depende mais do NotificacaoService nem espera a notificação terminar; ele apenas publica o fato "pedido confirmado".
+2) Encerramento após a publicação e antes do consumo: o evento é perdido (existe só em memória). O pedido continua confirmado, mas a notificação não é enviada e não há reprocessamento.
+3) Broker/fila/Pub-Sub: sim, seria mais adequado. A mensagem fica persistida, pode ser reprocessada após falha ou reinício e isola o produtor da disponibilidade do consumidor. Pub/Sub permitiria vários interessados (notificação, nota fiscal, analytics). Seria necessário tratar idempotência no consumidor.
+
+Resultado do `mvn clean verify`:
+BUILD SUCCESS
+Tests run: 10
+Failures: 0
+Errors: 0
+Skipped: 0

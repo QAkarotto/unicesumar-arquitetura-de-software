@@ -1,5 +1,8 @@
 package foodnow.service;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class NotificacaoService {
 
     public void enviarConfirmacaoPedido(int pedidoId) {
