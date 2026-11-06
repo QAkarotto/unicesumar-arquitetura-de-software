@@ -1,0 +1,39 @@
+ATIVIDADE 02 – Dependency Rule e Limites Arquiteturais
+
+Integrante:
+Victor Gabriel Alves Carneiro
+Felipe Augusto Graniska
+
+Dependência escolhida:
+Pagamento.
+
+Problema encontrado:
+O PagamentoService estava diretamente responsável pelo processamento do pagamento, ficando acoplado à implementação utilizada
+isso dificultava a substituição da implementação e a realização de testes da regra de negócio.
+
+Decisão adotada:
+Foi criada a interface PaymentGateway para representar o contrato de processamento de pagamentos. A implementação 
+FakePaymentGateway passou a implementar essa interface e o PagamentoService passou a depender dessa abstração por 
+meio de injeção via construtor.
+
+Principais alterações realizadas:
+- Criação da interface PaymentGateway.
+- Criação da classe FakePaymentGateway.
+- Refatoração do PagamentoService para depender da interface PaymentGateway.
+- Criação de testes unitários utilizando uma implementação de teste (GatewayTeste).
+- Configuração do projeto com Maven e JUnit para execução dos testes.
+
+Resultado do mvn clean verify:
+
+Tests run: 2
+Failures: 0
+Errors: 0
+Skipped: 0
+
+BUILD SUCCESS
+
+Resposta:
+
+Após a refatoração, as dependências passaram a apontar para a abstração PaymentGateway, em vez da implementação concreta
+FakePaymentGateway. Com isso, é possível substituir a implementação de pagamento por outra ou criar implementações específicas
+para testes com menor impacto, sem alterar a regra de negócio presente no PagamentoService.

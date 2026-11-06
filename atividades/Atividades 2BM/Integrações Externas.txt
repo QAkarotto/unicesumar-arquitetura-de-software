@@ -1,0 +1,33 @@
+Atividade 03 - 2BIM
+
+Integrante:
+Victor Gabriel Alves Carneiro
+Felipe Augusto Graniska
+
+Integração escolhida:
+PaymentGateway utilizado pelo PagamentoService.
+
+Cenários de falha:
+- Falha temporária do gateway de pagamento.
+- Indisponibilidade contínua do gateway.
+
+Decisão adotada:
+Foi implementado um mecanismo de retry com até 3 tentativas no processamento do pagamento. Caso todas as tentativas falhem, a exceção é lançada.
+
+Principais alterações:
+- Implementação de retry no PagamentoService.
+- Tratamento de exceções.
+- Inclusão de testes para validar o retry e a falha após três tentativas.
+
+Benefício:
+Maior confiabilidade diante de falhas temporárias do serviço de pagamento.
+
+Trade-off:
+Em caso de falha contínua, o tempo de resposta aumenta devido às novas tentativas.
+
+Resultado do `mvn clean verify`:
+BUILD SUCCESS
+Tests run: 4
+Failures: 0
+Errors: 0
+Skipped: 0
