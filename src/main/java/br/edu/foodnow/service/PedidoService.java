@@ -1,5 +1,6 @@
 package br.edu.foodnow.service;
 
+import br.edu.foodnow.evento.PedidoConfirmado;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.Cliente;
 import br.edu.foodnow.model.Endereco;
@@ -12,9 +13,11 @@ import br.edu.foodnow.repository.ClienteRepository;
 import br.edu.foodnow.repository.PedidoRepository;
 import br.edu.foodnow.repository.ProdutoRepository;
 import br.edu.foodnow.repository.RestauranteRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -25,19 +28,19 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final LogisticaService logisticaService;
     private final PagamentoService pagamentoService;
-    private final NotificacaoService notificacaoService;
+    private final ApplicationEventPublisher eventos;
 
     public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
                          ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
                          LogisticaService logisticaService, PagamentoService pagamentoService,
-                         NotificacaoService notificacaoService) {
+                         ApplicationEventPublisher eventos) {
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
         this.pedidoRepository = pedidoRepository;
         this.logisticaService = logisticaService;
         this.pagamentoService = pagamentoService;
-        this.notificacaoService = notificacaoService;
+        this.eventos = eventos;
     }
 
     @Transactional
@@ -101,8 +104,10 @@ public class PedidoService {
         } catch (IllegalStateException excecao) {
             throw new RegraNegocioException(excecao.getMessage());
         }
-        notificacaoService.notificarConfirmacao(pedido);
-        return pedidoRepository.save(pedido);
+        Pedido confirmado = pedidoRepository.save(pedido);
+        eventos.publishEvent(new PedidoConfirmado(confirmado.getId(), confirmado.getCliente().getId(),
+                confirmado.getRestaurante().getId(), confirmado.getValorTotal(), Instant.now()));
+        return confirmado;
     }
 
     public Pagamento pagar(Long pedidoId, FormaPagamento forma, String token) {
