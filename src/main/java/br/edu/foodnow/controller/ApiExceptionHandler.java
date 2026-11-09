@@ -1,5 +1,6 @@
 package br.edu.foodnow.controller;
 
+import br.edu.foodnow.service.PagamentoIndisponivelException;
 import br.edu.foodnow.service.RecursoNaoEncontradoException;
 import br.edu.foodnow.service.RegraNegocioException;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,12 @@ public class ApiExceptionHandler {
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
     public ApiDtos.ErroResponse regraNegocio(RuntimeException excecao) {
         return new ApiDtos.ErroResponse(422, "REGRA_NEGOCIO", excecao.getMessage());
+    }
+
+    @ExceptionHandler(PagamentoIndisponivelException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ApiDtos.ErroResponse pagamentoIndisponivel(PagamentoIndisponivelException excecao) {
+        return new ApiDtos.ErroResponse(503, "PAGAMENTO_INDISPONIVEL", excecao.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
