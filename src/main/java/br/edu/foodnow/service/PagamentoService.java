@@ -1,6 +1,7 @@
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakePaymentGateway;
+import br.edu.foodnow.integration.GatewayPagamentoResiliente;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.FormaPagamento;
 import br.edu.foodnow.model.Pagamento;
@@ -16,14 +17,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class PagamentoService {
     private final PedidoRepository pedidoRepository;
     private final PagamentoRepository pagamentoRepository;
-    private final FakePaymentGateway paymentGateway;
+    private final GatewayPagamentoResiliente paymentGateway;
     private final NotificacaoService notificacaoService;
     private final EntregaService entregaService;
     private final LocalizacaoService localizacaoService;
     private final LogisticaService logisticaService;
 
     public PagamentoService(PedidoRepository pedidoRepository, PagamentoRepository pagamentoRepository,
-                            FakePaymentGateway paymentGateway, NotificacaoService notificacaoService,
+                            GatewayPagamentoResiliente paymentGateway, NotificacaoService notificacaoService,
                             EntregaService entregaService, LocalizacaoService localizacaoService,
                             LogisticaService logisticaService) {
         this.pedidoRepository = pedidoRepository;

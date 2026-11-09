@@ -12,7 +12,7 @@ public class FakePaymentGateway {
 
     public GatewayResult processarPagamento(GatewayRequest request) {
         boolean rejeitado = "REJEITADO".equalsIgnoreCase(request.paymentToken());
-        String codigo = "FN-" + request.orderReference();
+        String codigo = codigoTransacao(request.orderReference());
         GatewayResult resultado = rejeitado
                 ? new GatewayResult(codigo, "DECLINED", "Pagamento rejeitado pelo provedor simulado")
                 : new GatewayResult(codigo, "AUTHORIZED", "Pagamento autorizado");
@@ -22,6 +22,10 @@ public class FakePaymentGateway {
 
     public GatewayResult consultarPagamento(String codigo) {
         return transacoes.get(codigo);
+    }
+
+    public static String codigoTransacao(String orderReference) {
+        return "FN-" + orderReference;
     }
 
     public record GatewayRequest(String orderReference, long amountInCents, String paymentToken,
