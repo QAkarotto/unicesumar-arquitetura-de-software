@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   title: FoodNow - API de Pedidos
-  version: 1.0.0
+  version: 1.1.0
   description: |
     Contrato das operações de pedidos do FoodNow, extraído da implementação
     (`PedidoController`, `ApiDtos`, `ApiExceptionHandler`) e confirmado contra o
@@ -15,6 +15,11 @@ info:
       corpo (JSON malformado, campo primitivo ausente, tipo incompatível) são produzidos
       pelo framework e usam o schema `ErroPadraoSpring`.
     - A API não exige autenticação (`security: []`).
+
+    Histórico:
+    - 1.1.0: campo opcional `observacao` em `PedidoRequest` e `PedidoResponse`
+      (mudança aditiva e compatível com consumidores da 1.0.0).
+    - 1.0.0: contrato inicial das operações de pedidos.
 servers:
   - url: http://localhost:8080
     description: Execução local (`mvn spring-boot:run`)
@@ -32,6 +37,9 @@ paths:
         Cria o pedido no status `CRIADO`, calculando subtotal, taxa de entrega,
         valor total e distância de entrega. O endereço de entrega deve pertencer ao
         cliente e estar dentro da área atendida pelo restaurante.
+
+        A `observacao` é opcional e só pode ser informada nesta operação; não há
+        edição posterior.
       requestBody:
         required: true
         content:
@@ -48,6 +56,16 @@ paths:
                   itens:
                     - produtoId: 1
                       quantidade: 2
+              pedidoComObservacao:
+                summary: Pedido com observação
+                value:
+                  clienteId: 1
+                  restauranteId: 1
+                  enderecoEntregaId: 1
+                  itens:
+                    - produtoId: 1
+                      quantidade: 2
+                  observacao: Não incluir talheres
       responses:
         '201':
           description: Pedido criado.
@@ -58,6 +76,8 @@ paths:
               examples:
                 pedidoCriado:
                   $ref: '#/components/examples/PedidoCriado'
+                pedidoComObservacao:
+                  $ref: '#/components/examples/PedidoComObservacao'
         '400':
           $ref: '#/components/responses/RequisicaoInvalida'
         '404':
@@ -102,6 +122,8 @@ paths:
               examples:
                 pedidoCriado:
                   $ref: '#/components/examples/PedidoCriado'
+                pedidoComObservacao:
+                  $ref: '#/components/examples/PedidoComObservacao'
         '404':
           $ref: '#/components/responses/PedidoNaoEncontrado'
         '422':
@@ -115,6 +137,8 @@ paths:
         Acrescenta um novo item (não agrupa com itens existentes do mesmo produto) e
         recalcula subtotal e valor total. A taxa de entrega calculada na criação é mantida.
         A implementação atual não restringe a operação pelo status do pedido.
+        A `observacao` do pedido é preservada; um campo `observacao` enviado neste corpo
+        é ignorado, como qualquer campo desconhecido.
       parameters:
         - $ref: '#/components/parameters/PedidoId'
       requestBody:
@@ -222,6 +246,21 @@ components:
           description: Itens do pedido; não pode ser vazio.
           items:
             $ref: '#/components/schemas/ItemPedidoRequest'
+        observacao:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: |
+            Observação livre do cliente (desde 1.1.0). Opcional.
+            - Ausente ou `null`: pedido criado sem observação.
+            - Texto vazio ou só com espaços: tratado como ausente.
+            - Espaços no início e no fim são removidos antes de armazenar.
+            - Mais de 500 caracteres no valor recebido: `400` com `erro = VALIDATION_ERROR`
+              e `mensagem` iniciada por `observacao:`.
+
+            O limite segue `String.length()` do Java (unidades UTF-16): caracteres fora do
+            plano básico, como emojis, contam como 2.
+          example: Não incluir talheres
     ItemPedidoRequest:
       type: object
       required: [produtoId, quantidade]
@@ -270,6 +309,16 @@ components:
           format: double
         status:
           $ref: '#/components/schemas/StatusPedido'
+        observacao:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: |
+            Observação informada na criação, sem espaços nas bordas (desde 1.1.0).
+            Presente apenas quando o pedido possui observação; o campo é omitido (não
+            retorna `null`) quando ela não foi informada. Mantida em todas as respostas
+            que representam o pedido.
+          example: Não incluir talheres
     ItemResponse:
       type: object
       required: [produtoId, nome, quantidade, precoUnitario, subtotal]
@@ -338,6 +387,12 @@ components:
                 status: 400
                 erro: VALIDATION_ERROR
                 mensagem: 'itens: não deve estar vazio'
+            observacaoAcimaDoLimite:
+              summary: Observação com mais de 500 caracteres
+              value:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: 'observacao: tamanho deve ser entre 0 e 500'
             corpoIlegivel:
               summary: JSON malformado
               value:
@@ -388,3 +443,22 @@ components:
         valorTotal: 66.55
         distanciaEntregaKm: 1.515
         status: CRIADO
+    PedidoComObservacao:
+      summary: Pedido criado com observação
+      value:
+        id: 2
+        clienteId: 1
+        restauranteId: 1
+        enderecoEntregaId: 1
+        itens:
+          - produtoId: 1
+            nome: Pizza
+            quantidade: 2
+            precoUnitario: 30.00
+            subtotal: 60.00
+        subtotal: 60.00
+        taxaEntrega: 6.55
+        valorTotal: 66.55
+        distanciaEntregaKm: 1.515
+        status: CRIADO
+        observacao: Não incluir talheres
