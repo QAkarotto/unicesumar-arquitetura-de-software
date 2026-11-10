@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +55,28 @@ class ContratoOpenApiIT extends ApiTestSupport {
         assertarCamposDocumentados(chamar("POST", "/pedidos/" + pedidoId + "/itens",
                 Map.of("produtoId", cenario.produtoId(), "quantidade", 1), 200));
         assertarCamposDocumentados(chamar("POST", "/pedidos/" + pedidoId + "/confirmar", null, 200));
+    }
+
+    @Test
+    void operacoesComObservacaoDevemSeguirContratoDocumentado() {
+        Cenario cenario = criarCenario(true, 25, -25.095, -50.160);
+        Map<String, Object> corpo = new HashMap<>(pedido(cenario));
+        corpo.put("observacao", "a".repeat(500));
+
+        Response criado = chamar("POST", "/pedidos", corpo, 201);
+        long pedidoId = criado.jsonPath().getLong("id");
+        assertarCamposDocumentados(criado);
+        assertarCamposDocumentados(chamar("GET", "/pedidos/" + pedidoId, null, 200));
+        assertarCamposDocumentados(chamar("POST", "/pedidos/" + pedidoId + "/itens",
+                Map.of("produtoId", cenario.produtoId(), "quantidade", 1), 200));
+        assertarCamposDocumentados(chamar("POST", "/pedidos/" + pedidoId + "/confirmar", null, 200));
+
+        corpo.put("observacao", "   ");
+        assertarCamposDocumentados(chamar("POST", "/pedidos", corpo, 201));
+        corpo.put("observacao", null);
+        assertarCamposDocumentados(chamar("POST", "/pedidos", corpo, 201));
+        corpo.put("observacao", "a".repeat(501));
+        chamarSemValidarRequisicao("POST", "/pedidos", "application/json", JSON.writeValueAsString(corpo), 400);
     }
 
     @Test

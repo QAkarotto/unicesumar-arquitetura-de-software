@@ -92,6 +92,51 @@ class PedidoTest {
         assertThat(arriscado.getDistanciaValidadaKm()).isEqualTo(20.0);
     }
 
+    @Test
+    void deveArmazenarObservacaoSemEspacosNasBordas() {
+        Cenario cenario = cenarioPadrao();
+        Pedido pedido = new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(),
+                "  Não incluir talheres  ");
+
+        assertThat(pedido.getObservacao()).isEqualTo("Não incluir talheres");
+    }
+
+    @Test
+    void deveTratarObservacaoNulaOuEmBrancoComoAusente() {
+        Cenario cenario = cenarioPadrao();
+
+        assertThat(cenario.pedido().getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), null)
+                .getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), "")
+                .getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), " \t\n ")
+                .getObservacao()).isNull();
+    }
+
+    @Test
+    void deveAceitarObservacaoNoLimiteERejeitarAcimaDele() {
+        Cenario cenario = cenarioPadrao();
+        String limite = "a".repeat(Pedido.LIMITE_OBSERVACAO);
+
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), limite)
+                .getObservacao()).hasSize(500);
+        assertThatThrownBy(() -> new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(),
+                limite + "a"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Observação deve ter no máximo 500 caracteres");
+    }
+
+    @Test
+    void deveManterObservacaoAoAdicionarItensEConfirmar() {
+        Cenario cenario = cenarioPadrao();
+        Pedido pedido = new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), "Sem cebola");
+        pedido.adicionarItem(cenario.produto(), 1);
+        pedido.confirmar();
+
+        assertThat(pedido.getObservacao()).isEqualTo("Sem cebola");
+    }
+
     private Cenario cenarioPadrao() {
         Endereco endereco = enderecoEm(-25.095, -50.160);
         Cliente cliente = new Cliente("Ana", "ana@foodnow.test");
