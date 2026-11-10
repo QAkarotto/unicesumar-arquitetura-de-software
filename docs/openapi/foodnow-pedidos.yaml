@@ -1,0 +1,464 @@
+openapi: 3.0.3
+info:
+  title: FoodNow - API de Pedidos
+  version: 1.1.0
+  description: |
+    Contrato das operações de pedidos do FoodNow, extraído da implementação
+    (`PedidoController`, `ApiDtos`, `ApiExceptionHandler`) e confirmado contra o
+    JSON efetivamente retornado pela aplicação.
+
+    Observações gerais do contrato:
+    - Todas as requisições e respostas usam `application/json`; outro `Content-Type`
+      em operações com corpo resulta em `415`.
+    - Campos desconhecidos no corpo da requisição são ignorados (não geram erro).
+    - Erros tratados pela aplicação usam o schema `ErroResponse`. Erros de leitura do
+      corpo (JSON malformado, campo primitivo ausente, tipo incompatível) são produzidos
+      pelo framework e usam o schema `ErroPadraoSpring`.
+    - A API não exige autenticação (`security: []`).
+
+    Histórico:
+    - 1.1.0: campo opcional `observacao` em `PedidoRequest` e `PedidoResponse`
+      (mudança aditiva e compatível com consumidores da 1.0.0).
+    - 1.0.0: contrato inicial das operações de pedidos.
+servers:
+  - url: http://localhost:8080
+    description: Execução local (`mvn spring-boot:run`)
+security: []
+tags:
+  - name: Pedidos
+    description: Criação, consulta, inclusão de itens e confirmação de pedidos.
+paths:
+  /pedidos:
+    post:
+      tags: [Pedidos]
+      operationId: criarPedido
+      summary: Cria um pedido com seus itens
+      description: |
+        Cria o pedido no status `CRIADO`, calculando subtotal, taxa de entrega,
+        valor total e distância de entrega. O endereço de entrega deve pertencer ao
+        cliente e estar dentro da área atendida pelo restaurante.
+
+        A `observacao` é opcional e só pode ser informada nesta operação; não há
+        edição posterior.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoRequest'
+            examples:
+              pedidoSimples:
+                summary: Pedido com um item
+                value:
+                  clienteId: 1
+                  restauranteId: 1
+                  enderecoEntregaId: 1
+                  itens:
+                    - produtoId: 1
+                      quantidade: 2
+              pedidoComObservacao:
+                summary: Pedido com observação
+                value:
+                  clienteId: 1
+                  restauranteId: 1
+                  enderecoEntregaId: 1
+                  itens:
+                    - produtoId: 1
+                      quantidade: 2
+                  observacao: Não incluir talheres
+      responses:
+        '201':
+          description: Pedido criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              examples:
+                pedidoCriado:
+                  $ref: '#/components/examples/PedidoCriado'
+                pedidoComObservacao:
+                  $ref: '#/components/examples/PedidoComObservacao'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '404':
+          description: Cliente, restaurante ou produto não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Cliente não encontrado
+        '415':
+          $ref: '#/components/responses/MidiaNaoSuportada'
+        '422':
+          description: |
+            Regra de negócio violada: endereço não pertence ao cliente, endereço fora da
+            área de entrega, produto indisponível, produto de outro restaurante ou produto
+            que não pode ser entregue no endereço.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: Endereço fora da área de entrega
+  /pedidos/{id}:
+    get:
+      tags: [Pedidos]
+      operationId: consultarPedido
+      summary: Consulta um pedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              examples:
+                pedidoCriado:
+                  $ref: '#/components/examples/PedidoCriado'
+                pedidoComObservacao:
+                  $ref: '#/components/examples/PedidoComObservacao'
+        '404':
+          $ref: '#/components/responses/PedidoNaoEncontrado'
+        '422':
+          $ref: '#/components/responses/IdInvalido'
+  /pedidos/{id}/itens:
+    post:
+      tags: [Pedidos]
+      operationId: adicionarItemAoPedido
+      summary: Adiciona um item a um pedido existente
+      description: |
+        Acrescenta um novo item (não agrupa com itens existentes do mesmo produto) e
+        recalcula subtotal e valor total. A taxa de entrega calculada na criação é mantida.
+        A implementação atual não restringe a operação pelo status do pedido.
+        A `observacao` do pedido é preservada; um campo `observacao` enviado neste corpo
+        é ignorado, como qualquer campo desconhecido.
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemPedidoRequest'
+            example:
+              produtoId: 1
+              quantidade: 1
+      responses:
+        '200':
+          description: Pedido atualizado com o novo item.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalida'
+        '404':
+          description: Pedido ou produto não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Produto não encontrado
+        '415':
+          $ref: '#/components/responses/MidiaNaoSuportada'
+        '422':
+          description: |
+            Regra de negócio violada (produto indisponível, de outro restaurante ou que não
+            pode ser entregue no endereço do pedido) ou `id` não numérico.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: 'Produto indisponível: Pizza'
+  /pedidos/{id}/confirmar:
+    post:
+      tags: [Pedidos]
+      operationId: confirmarPedido
+      summary: Confirma um pedido
+      description: |
+        Altera o status de `CRIADO` para `CONFIRMADO` e envia a notificação de
+        confirmação ao cliente. Não possui corpo de requisição.
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido confirmado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+        '404':
+          $ref: '#/components/responses/PedidoNaoEncontrado'
+        '422':
+          description: Pedido sem itens, em status diferente de `CRIADO` ou `id` não numérico.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: Apenas pedidos criados podem ser confirmados
+components:
+  parameters:
+    PedidoId:
+      name: id
+      in: path
+      required: true
+      description: Identificador do pedido.
+      schema:
+        type: integer
+        format: int64
+      example: 1
+  schemas:
+    PedidoRequest:
+      type: object
+      required: [clienteId, restauranteId, enderecoEntregaId, itens]
+      properties:
+        clienteId:
+          type: integer
+          format: int64
+          description: Cliente que realiza o pedido.
+        restauranteId:
+          type: integer
+          format: int64
+          description: Restaurante que atenderá o pedido.
+        enderecoEntregaId:
+          type: integer
+          format: int64
+          description: Endereço de entrega; deve pertencer ao cliente.
+        itens:
+          type: array
+          minItems: 1
+          description: Itens do pedido; não pode ser vazio.
+          items:
+            $ref: '#/components/schemas/ItemPedidoRequest'
+        observacao:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: |
+            Observação livre do cliente (desde 1.1.0). Opcional.
+            - Ausente ou `null`: pedido criado sem observação.
+            - Texto vazio ou só com espaços: tratado como ausente.
+            - Espaços no início e no fim são removidos antes de armazenar.
+            - Mais de 500 caracteres no valor recebido: `400` com `erro = VALIDATION_ERROR`
+              e `mensagem` iniciada por `observacao:`.
+
+            O limite segue `String.length()` do Java (unidades UTF-16): caracteres fora do
+            plano básico, como emojis, contam como 2.
+          example: Não incluir talheres
+    ItemPedidoRequest:
+      type: object
+      required: [produtoId, quantidade]
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+          description: Produto do mesmo restaurante do pedido.
+        quantidade:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Quantidade do produto; ausente resulta em `400` com `ErroPadraoSpring`.
+    PedidoResponse:
+      type: object
+      required: [id, clienteId, restauranteId, enderecoEntregaId, itens, subtotal, taxaEntrega,
+                 valorTotal, distanciaEntregaKm, status]
+      properties:
+        id:
+          type: integer
+          format: int64
+        clienteId:
+          type: integer
+          format: int64
+        restauranteId:
+          type: integer
+          format: int64
+        enderecoEntregaId:
+          type: integer
+          format: int64
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResponse'
+        subtotal:
+          type: number
+          description: Soma dos subtotais dos itens, com duas casas decimais.
+        taxaEntrega:
+          type: number
+          description: Taxa de entrega calculada na criação do pedido.
+        valorTotal:
+          type: number
+          description: Subtotal mais taxa de entrega, com duas casas decimais.
+        distanciaEntregaKm:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/StatusPedido'
+        observacao:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: |
+            Observação informada na criação, sem espaços nas bordas (desde 1.1.0).
+            Presente apenas quando o pedido possui observação; o campo é omitido (não
+            retorna `null`) quando ela não foi informada. Mantida em todas as respostas
+            que representam o pedido.
+          example: Não incluir talheres
+    ItemResponse:
+      type: object
+      required: [produtoId, nome, quantidade, precoUnitario, subtotal]
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+        nome:
+          type: string
+        quantidade:
+          type: integer
+          format: int32
+        precoUnitario:
+          type: number
+          description: Preço do produto no momento em que o item foi adicionado.
+        subtotal:
+          type: number
+    StatusPedido:
+      type: string
+      enum: [CRIADO, CONFIRMADO, PAGO, PAGAMENTO_REJEITADO, EM_ENTREGA, ENTREGUE]
+    ErroResponse:
+      type: object
+      description: Erro tratado pelo `ApiExceptionHandler`.
+      required: [status, erro, mensagem]
+      properties:
+        status:
+          type: integer
+          format: int32
+        erro:
+          type: string
+          enum: [VALIDATION_ERROR, NOT_FOUND, REGRA_NEGOCIO]
+        mensagem:
+          type: string
+          description: "Para `VALIDATION_ERROR`, segue o formato `campo: mensagem`."
+    ErroPadraoSpring:
+      type: object
+      description: Erro gerado pelo tratamento padrão do Spring Boot.
+      required: [timestamp, status, error, path]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        path:
+          type: string
+  responses:
+    RequisicaoInvalida:
+      description: |
+        Corpo inválido. Falhas de Bean Validation retornam `ErroResponse` com
+        `erro = VALIDATION_ERROR`; corpo ilegível (JSON malformado, campo primitivo
+        ausente ou tipo incompatível) retorna `ErroPadraoSpring`.
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/ErroResponse'
+              - $ref: '#/components/schemas/ErroPadraoSpring'
+          examples:
+            validacao:
+              summary: Falha de Bean Validation
+              value:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: 'itens: não deve estar vazio'
+            observacaoAcimaDoLimite:
+              summary: Observação com mais de 500 caracteres
+              value:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: 'observacao: tamanho deve ser entre 0 e 500'
+            corpoIlegivel:
+              summary: JSON malformado
+              value:
+                timestamp: '2026-11-10T23:19:46.740Z'
+                status: 400
+                error: Bad Request
+                path: /pedidos
+    PedidoNaoEncontrado:
+      description: Pedido não encontrado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            status: 404
+            erro: NOT_FOUND
+            mensagem: Pedido não encontrado
+    IdInvalido:
+      description: |
+        `id` não numérico. A conversão falha antes do controller e o erro é classificado
+        pelo `ApiExceptionHandler` como regra de negócio (comportamento atual preservado).
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+    MidiaNaoSuportada:
+      description: '`Content-Type` diferente de `application/json`.'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroPadraoSpring'
+  examples:
+    PedidoCriado:
+      summary: Pedido recém-criado
+      value:
+        id: 1
+        clienteId: 1
+        restauranteId: 1
+        enderecoEntregaId: 1
+        itens:
+          - produtoId: 1
+            nome: Pizza
+            quantidade: 2
+            precoUnitario: 30.00
+            subtotal: 60.00
+        subtotal: 60.00
+        taxaEntrega: 6.55
+        valorTotal: 66.55
+        distanciaEntregaKm: 1.515
+        status: CRIADO
+    PedidoComObservacao:
+      summary: Pedido criado com observação
+      value:
+        id: 2
+        clienteId: 1
+        restauranteId: 1
+        enderecoEntregaId: 1
+        itens:
+          - produtoId: 1
+            nome: Pizza
+            quantidade: 2
+            precoUnitario: 30.00
+            subtotal: 60.00
+        subtotal: 60.00
+        taxaEntrega: 6.55
+        valorTotal: 66.55
+        distanciaEntregaKm: 1.515
+        status: CRIADO
+        observacao: Não incluir talheres

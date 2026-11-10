@@ -21,6 +21,7 @@
         <rest-assured.version>6.0.1</rest-assured.version>
         <jacoco.version>0.8.15</jacoco.version>
         <maven.failsafe.version>3.5.5</maven.failsafe.version>
+        <openapi-validator.version>3.0.0</openapi-validator.version>
     </properties>
     <dependencies>
         <dependency>
@@ -49,6 +50,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.oai</groupId>
+            <artifactId>openapi-request-validator-core</artifactId>
+            <version>${openapi-validator.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
