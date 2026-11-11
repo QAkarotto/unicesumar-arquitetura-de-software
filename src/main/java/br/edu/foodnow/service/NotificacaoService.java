@@ -22,9 +22,13 @@ public class NotificacaoService {
 
     public void notificarConfirmacao(Pedido pedido) {
         var resumo = logisticaService.resumirPedido(pedido);
-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
-                "O pedido " + pedido.getId() + " foi confirmado para a região "
-                        + resumo.regiao() + ". Estimativa interna: " + resumo.tempoMinutos() + " minutos.");
+        notificarConfirmacao(pedido.getId(), pedido.getCliente().getEmail(), resumo.regiao(), resumo.tempoMinutos());
+    }
+
+    public void notificarConfirmacao(Long pedidoId, String emailCliente, String regiao, int tempoMinutos) {
+        emailClient.enviar(emailCliente, "Pedido confirmado",
+                "O pedido " + pedidoId + " foi confirmado para a região "
+                        + regiao + ". Estimativa interna: " + tempoMinutos + " minutos.");
     }
 
     public void notificarInicioEntrega(Pedido pedido) {
