@@ -1,0 +1,28 @@
+Comando: mvn --batch-mode --no-transfer-progress clean verify
+Ambiente: Maven 3.9.15; JDK 27.0.1.0.3; compilacao release 26
+Trechos da saida da execucao em 11/11/2026:
+
+[INFO] Running br.edu.foodnow.integration.IntegracoesSimuladasTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.203 s -- in br.edu.foodnow.integration.IntegracoesSimuladasTest
+[INFO] Running br.edu.foodnow.integration.MapsLocalizacaoAdapterTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.105 s -- in br.edu.foodnow.integration.MapsLocalizacaoAdapterTest
+[INFO] Running br.edu.foodnow.integration.MapsResilienciaTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.230 s -- in br.edu.foodnow.integration.MapsResilienciaTest
+[INFO] Running br.edu.foodnow.logistica.PoliticaEntregaAtualTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.136 s -- in br.edu.foodnow.logistica.PoliticaEntregaAtualTest
+[INFO] Running br.edu.foodnow.model.LocalizacaoEntregaTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.169 s -- in br.edu.foodnow.model.LocalizacaoEntregaTest
+[INFO] Running br.edu.foodnow.model.PedidoTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.134 s -- in br.edu.foodnow.model.PedidoTest
+[INFO] Tests run: 34, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Running br.edu.foodnow.controller.FoodNowErrorsIT
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 49.14 s -- in br.edu.foodnow.controller.FoodNowErrorsIT
+[INFO] Running br.edu.foodnow.controller.FoodNowFlowIT
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.428 s -- in br.edu.foodnow.controller.FoodNowFlowIT
+[INFO] Running br.edu.foodnow.controller.GeografiaContratoIT
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.628 s -- in br.edu.foodnow.controller.GeografiaContratoIT
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0
+[INFO] All coverage checks have been met.
+[INFO] BUILD SUCCESS
+[INFO] Total time:  02:49 min
+[INFO] Finished at: 2026-11-11T12:23:21-03:00
