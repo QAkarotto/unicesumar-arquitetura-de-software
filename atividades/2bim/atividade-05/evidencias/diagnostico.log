@@ -1,0 +1,11 @@
+12:21:50.984 [main] WARN br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=c1144c2a-b0c6-442c-8e6c-163fce276c48 tentativa=1 limite=3 tipoFalha=ResourceAccessException resultado=nova_tentativa
+12:21:50.996 [main] INFO br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=c1144c2a-b0c6-442c-8e6c-163fce276c48 tentativa=2 limite=3 resultado=sucesso
+12:21:51.292 [main] WARN br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=94159f40-a26a-495a-a5d7-bad8df950078 tentativa=1 limite=3 tipoFalha=ResourceAccessException resultado=nova_tentativa
+12:21:51.302 [main] WARN br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=94159f40-a26a-495a-a5d7-bad8df950078 tentativa=2 limite=3 tipoFalha=ResourceAccessException resultado=nova_tentativa
+12:21:51.311 [main] ERROR br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=94159f40-a26a-495a-a5d7-bad8df950078 tentativa=3 limite=3 tipoFalha=ResourceAccessException resultado=tentativas_esgotadas
+12:21:51.375 [main] INFO br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=44d97b4c-5cfb-45f3-a5e7-21f55e94a095 tentativa=1 limite=3 resultado=sucesso
+12:21:51.378 [main] INFO br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=9628ed46-18c0-441e-97e5-8e5e840e0343 tentativa=1 limite=3 resultado=sucesso
+12:21:51.448 [main] WARN br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=c16c4c02-cd52-406b-85c3-96faa82fe3a7 tentativa=1 limite=3 tipoFalha=ResourceAccessException resultado=nova_tentativa
+12:21:51.449 [main] WARN br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=c16c4c02-cd52-406b-85c3-96faa82fe3a7 tentativa=2 limite=3 tipoFalha=ResourceAccessException resultado=nova_tentativa
+12:21:51.456 [main] INFO br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=c16c4c02-cd52-406b-85c3-96faa82fe3a7 tentativa=3 limite=3 resultado=sucesso
+12:21:51.501 [main] ERROR br.edu.foodnow.integration.MapsLocalizacaoAdapter -- operacao=calcular_rota operacaoId=cb89a11d-9753-4b2f-b9ca-ce10d11c9a44 tentativa=1 limite=3 tipoFalha=IllegalArgumentException resultado=falha_nao_repetivel
