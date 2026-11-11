@@ -1,3 +1,4 @@
+
 package br.edu.foodnow.controller;
 
 import br.edu.foodnow.service.PedidoService;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/pedidos")
 public class PedidoController {
+
     private final PedidoService pedidoService;
 
     public PedidoController(PedidoService pedidoService) {
@@ -22,27 +24,52 @@ public class PedidoController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiDtos.PedidoResponse criar(@Valid @RequestBody ApiDtos.PedidoRequest request) {
+    public ApiDtos.PedidoResponse criar(
+            @Valid @RequestBody ApiDtos.PedidoRequest request) {
+
         var itens = request.itens().stream()
-                .map(item -> new PedidoService.ItemSolicitado(item.produtoId(), item.quantidade())).toList();
-        return ApiDtos.PedidoResponse.from(pedidoService.criar(request.clienteId(), request.restauranteId(),
-                request.enderecoEntregaId(), itens));
+                .map(item -> new PedidoService.ItemSolicitado(
+                        item.produtoId(),
+                        item.quantidade()
+                ))
+                .toList();
+
+        return ApiDtos.PedidoResponse.from(
+                pedidoService.criar(
+                        request.clienteId(),
+                        request.restauranteId(),
+                        request.enderecoEntregaId(),
+                        itens,
+                        request.observacao()
+                )
+        );
     }
 
     @GetMapping("/{id}")
     public ApiDtos.PedidoResponse consultar(@PathVariable Long id) {
-        return ApiDtos.PedidoResponse.from(pedidoService.consultar(id));
+        return ApiDtos.PedidoResponse.from(
+                pedidoService.consultar(id)
+        );
     }
 
     @PostMapping("/{id}/itens")
-    public ApiDtos.PedidoResponse adicionarItem(@PathVariable Long id,
+    public ApiDtos.PedidoResponse adicionarItem(
+            @PathVariable Long id,
             @Valid @RequestBody ApiDtos.ItemPedidoRequest request) {
-        return ApiDtos.PedidoResponse.from(pedidoService.adicionarItem(id, request.produtoId(),
-                request.quantidade()));
+
+        return ApiDtos.PedidoResponse.from(
+                pedidoService.adicionarItem(
+                        id,
+                        request.produtoId(),
+                        request.quantidade()
+                )
+        );
     }
 
     @PostMapping("/{id}/confirmar")
     public ApiDtos.PedidoResponse confirmar(@PathVariable Long id) {
-        return ApiDtos.PedidoResponse.from(pedidoService.confirmar(id));
+        return ApiDtos.PedidoResponse.from(
+                pedidoService.confirmar(id)
+        );
     }
 }

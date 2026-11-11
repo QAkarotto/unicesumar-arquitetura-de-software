@@ -1,6 +1,8 @@
+
 package br.edu.foodnow.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -20,21 +22,31 @@ import java.util.Objects;
 
 @Entity
 public class Pedido {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne(optional = false)
     private Cliente cliente;
+
     @ManyToOne(optional = false)
     private Restaurante restaurante;
+
     @ManyToOne(optional = false)
     private Endereco enderecoEntrega;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<ItemPedido> itens = new ArrayList<>();
+
     private BigDecimal subtotal = BigDecimal.ZERO;
     private BigDecimal taxaEntrega = BigDecimal.ZERO;
     private BigDecimal valorTotal = BigDecimal.ZERO;
     private double distanciaEntregaKm;
+
+    @Column(length = 500)
+    private String observacao;
+
     @Enumerated(EnumType.STRING)
     private StatusPedido status = StatusPedido.CRIADO;
 
@@ -42,18 +54,40 @@ public class Pedido {
     }
 
     public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega) {
+        this(cliente, restaurante, enderecoEntrega, null);
+    }
+
+    public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega,
+                  String observacao) {
         this.cliente = cliente;
         this.restaurante = restaurante;
         this.enderecoEntrega = enderecoEntrega;
+        this.observacao = normalizarObservacao(observacao);
+    }
+
+    private static String normalizarObservacao(String observacao) {
+        if (observacao != null && observacao.length() > 500) {
+            throw new IllegalArgumentException(
+                    "Observação deve possuir no máximo 500 caracteres"
+            );
+        }
+
+        if (observacao == null || observacao.isBlank()) {
+            return null;
+        }
+
+        return observacao;
     }
 
     public void adicionarItem(Produto produto, int quantidade) {
         boolean mesmoRestaurante = produto.getRestaurante() == restaurante
                 || produto.getRestaurante().getId() != null
                 && Objects.equals(produto.getRestaurante().getId(), restaurante.getId());
+
         if (!mesmoRestaurante) {
             throw new IllegalArgumentException("Produto pertence a outro restaurante");
         }
+
         itens.add(new ItemPedido(produto, quantidade));
         recalcularValores();
     }
@@ -65,39 +99,92 @@ public class Pedido {
     }
 
     private void recalcularValores() {
-        subtotal = itens.stream().map(ItemPedido::calcularSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2, RoundingMode.HALF_UP);
-        valorTotal = subtotal.add(taxaEntrega).setScale(2, RoundingMode.HALF_UP);
+        subtotal = itens.stream()
+                .map(ItemPedido::calcularSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
+
+        valorTotal = subtotal.add(taxaEntrega)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     public void confirmar() {
         if (itens.isEmpty()) {
-            throw new IllegalStateException("Pedido deve possuir ao menos um item");
+            throw new IllegalStateException(
+                    "Pedido deve possuir ao menos um item"
+            );
         }
+
         if (status != StatusPedido.CRIADO) {
-            throw new IllegalStateException("Apenas pedidos criados podem ser confirmados");
+            throw new IllegalStateException(
+                    "Apenas pedidos criados podem ser confirmados"
+            );
         }
+
         status = StatusPedido.CONFIRMADO;
     }
 
     public void registrarPagamento(StatusPagamento statusPagamento) {
         if (status != StatusPedido.CONFIRMADO) {
-            throw new IllegalStateException("Pedido precisa estar confirmado para pagamento");
+            throw new IllegalStateException(
+                    "Pedido precisa estar confirmado para pagamento"
+            );
         }
+
         status = statusPagamento == StatusPagamento.APROVADO
-                ? StatusPedido.PAGO : StatusPedido.PAGAMENTO_REJEITADO;
+                ? StatusPedido.PAGO
+                : StatusPedido.PAGAMENTO_REJEITADO;
     }
 
-    public void iniciarEntrega() { status = StatusPedido.EM_ENTREGA; }
-    public void concluirEntrega() { status = StatusPedido.ENTREGUE; }
-    public Long getId() { return id; }
-    public Cliente getCliente() { return cliente; }
-    public Restaurante getRestaurante() { return restaurante; }
-    public Endereco getEnderecoEntrega() { return enderecoEntrega; }
-    public List<ItemPedido> getItens() { return Collections.unmodifiableList(itens); }
-    public BigDecimal getSubtotal() { return subtotal; }
-    public BigDecimal getTaxaEntrega() { return taxaEntrega; }
-    public BigDecimal getValorTotal() { return valorTotal; }
-    public double getDistanciaEntregaKm() { return distanciaEntregaKm; }
-    public StatusPedido getStatus() { return status; }
+    public void iniciarEntrega() {
+        status = StatusPedido.EM_ENTREGA;
+    }
+
+    public void concluirEntrega() {
+        status = StatusPedido.ENTREGUE;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public Restaurante getRestaurante() {
+        return restaurante;
+    }
+
+    public Endereco getEnderecoEntrega() {
+        return enderecoEntrega;
+    }
+
+    public List<ItemPedido> getItens() {
+        return Collections.unmodifiableList(itens);
+    }
+
+    public BigDecimal getSubtotal() {
+        return subtotal;
+    }
+
+    public BigDecimal getTaxaEntrega() {
+        return taxaEntrega;
+    }
+
+    public BigDecimal getValorTotal() {
+        return valorTotal;
+    }
+
+    public double getDistanciaEntregaKm() {
+        return distanciaEntregaKm;
+    }
+
+    public String getObservacao() {
+        return observacao;
+    }
+
+    public StatusPedido getStatus() {
+        return status;
+    }
 }
