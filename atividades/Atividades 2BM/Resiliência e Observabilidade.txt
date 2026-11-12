@@ -1,0 +1,115 @@
+
+# Atividade 05 - 2BIM
+
+**Integrantes:**
+- Victor Gabriel Alves Carneiro
+- Felipe Augusto Graniska
+
+## Fluxo escolhido
+
+Foi utilizado o fluxo de confirmação de pedidos do FoodNow.
+
+Após a confirmação de um pedido, o evento `PedidoConfirmado` é publicado e processado de forma assíncrona pelo
+`NotificacaoPedidoListener`, responsável por chamar o `NotificacaoService` para enviar a confirmação ao cliente.
+
+Fluxo:
+
+```
+PedidoService.confirmarPedido
+        ↓
+ApplicationEventPublisher
+        ↓
+PedidoConfirmado
+        ↓
+NotificacaoPedidoListener (@Async)
+        ↓
+NotificacaoService.enviarConfirmacaoPedido
+```
+
+---
+
+## Cenário de falha e impacto identificado
+
+Foi simulada uma falha no serviço de notificação utilizando um teste automatizado que força o método `enviarConfirmacaoPedido()`
+ a lançar uma `RuntimeException`.
+
+Sem tratamento adequado, uma falha no consumidor poderia dificultar a identificação do problema e comprometer o 
+processamento da notificação.
+
+---
+
+## Melhoria implementada e justificativa arquitetural
+
+Foi implementado tratamento explícito de exceções no `NotificacaoPedidoListener` utilizando um bloco `try/catch`.
+
+Também foram adicionados registros de diagnóstico (logs) para informar:
+
+- início do processamento da notificação;
+- identificação do pedido processado;
+- sucesso da operação;
+- falha encontrada e sua mensagem.
+
+A solução foi mantida localizada apenas no consumidor do evento, preservando os contratos existentes e o comportamento dos 
+fluxos bem-sucedidos.
+
+Essa abordagem aumenta a resiliência do sistema, pois uma falha na notificação não interfere na confirmação do pedido.
+
+---
+
+## Registros de diagnóstico
+
+Foram adicionados logs utilizando SLF4J para registrar:
+
+- início do processamento;
+- confirmação do envio da notificação;
+- falhas durante o processamento, incluindo o identificador do pedido e a mensagem da exceção.
+
+Nenhuma informação sensível, como senhas, tokens ou credenciais, é registrada.
+
+---
+
+## Evidências do teste automatizado
+
+Foi utilizado o teste `ConfirmacaoPedidoEventoTest`, que valida:
+
+- execução assíncrona do consumidor;
+- execução do consumidor em uma thread diferente;
+- tratamento da falha simulada no serviço de notificação;
+- manutenção da confirmação do pedido mesmo quando ocorre erro na notificação.
+
+Durante a execução da suíte de testes foi possível observar os logs indicando o início do processamento, sucesso nas 
+notificações válidas e o registro da falha simulada.
+
+---
+
+## Resultado da execução da suíte de testes
+
+Resultado obtido com:
+
+```
+mvn clean test
+```
+
+Resultado:
+
+```
+BUILD SUCCESS
+
+Tests run: 10
+Failures: 0
+Errors: 0
+Skipped: 0
+```
+
+Todos os testes foram executados com sucesso.
+
+---
+
+## Questão para reflexão
+
+A solução torna o sistema **mais resistente à falha e mais fácil de diagnosticar**.
+
+A resiliência foi melhorada porque uma falha no envio da notificação não interrompe o fluxo principal de confirmação do pedido.
+
+A observabilidade também foi aprimorada por meio dos registros de log, permitindo identificar qual operação foi executada
+qual pedido foi afetado, quando ocorreu a falha e qual foi o motivo informado pela exceção.
