@@ -21,11 +21,30 @@ public class NotificacaoPedidoListener {
     @Async
     @EventListener
     public void aoConfirmarPedido(PedidoConfirmado evento) {
+
+        LOG.info(
+                "Iniciando processamento da notificação do pedido {} em {}",
+                evento.pedidoId(),
+                evento.confirmadoEm()
+        );
+
         try {
+
             notificacaoService.enviarConfirmacaoPedido(evento.pedidoId());
+
+            LOG.info(
+                    "Notificação do pedido {} enviada com sucesso",
+                    evento.pedidoId()
+            );
+
         } catch (RuntimeException e) {
-            LOG.error("Falha ao notificar a confirmacao do pedido {}: {}",
-                    evento.pedidoId(), e.getMessage(), e);
+
+            LOG.error(
+                    "Falha ao enviar notificação do pedido {}. Motivo: {}",
+                    evento.pedidoId(),
+                    e.getMessage(),
+                    e
+            );
         }
     }
 }
