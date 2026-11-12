@@ -26,7 +26,7 @@ public class PedidoController {
         var itens = request.itens().stream()
                 .map(item -> new PedidoService.ItemSolicitado(item.produtoId(), item.quantidade())).toList();
         return ApiDtos.PedidoResponse.from(pedidoService.criar(request.clienteId(), request.restauranteId(),
-                request.enderecoEntregaId(), itens));
+                request.enderecoEntregaId(), itens, request.observacao()));
     }
 
     @GetMapping("/{id}")
