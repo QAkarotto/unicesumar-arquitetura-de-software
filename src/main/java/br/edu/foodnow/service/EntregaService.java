@@ -1,5 +1,6 @@
 package br.edu.foodnow.service;
 
+import br.edu.foodnow.integration.DespachoEntregadorResiliente;
 import br.edu.foodnow.integration.FakeCourierClient;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.Entrega;
@@ -16,11 +17,11 @@ public class EntregaService {
     private final PedidoRepository pedidoRepository;
     private final LogisticaService logisticaService;
     private final NotificacaoService notificacaoService;
-    private final FakeCourierClient courierClient;
+    private final DespachoEntregadorResiliente courierClient;
 
     public EntregaService(EntregaRepository entregaRepository, PedidoRepository pedidoRepository,
                           LogisticaService logisticaService, NotificacaoService notificacaoService,
-                          FakeCourierClient courierClient) {
+                          DespachoEntregadorResiliente courierClient) {
         this.entregaRepository = entregaRepository;
         this.pedidoRepository = pedidoRepository;
         this.logisticaService = logisticaService;
