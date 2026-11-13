@@ -35,6 +35,8 @@ public class Pedido {
     private BigDecimal taxaEntrega = BigDecimal.ZERO;
     private BigDecimal valorTotal = BigDecimal.ZERO;
     private double distanciaEntregaKm;
+    @jakarta.persistence.Column(length = 500)
+    private String observacao;
     @Enumerated(EnumType.STRING)
     private StatusPedido status = StatusPedido.CRIADO;
 
@@ -42,9 +44,14 @@ public class Pedido {
     }
 
     public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega) {
+        this(cliente, restaurante, enderecoEntrega, null);
+    }
+
+    public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega, String observacao) {
         this.cliente = cliente;
         this.restaurante = restaurante;
         this.enderecoEntrega = enderecoEntrega;
+        this.observacao = observacao;
     }
 
     public void adicionarItem(Produto produto, int quantidade) {
@@ -100,4 +107,5 @@ public class Pedido {
     public BigDecimal getValorTotal() { return valorTotal; }
     public double getDistanciaEntregaKm() { return distanciaEntregaKm; }
     public StatusPedido getStatus() { return status; }
+    public String getObservacao() { return observacao; }
 }
