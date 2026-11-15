@@ -1,3 +1,4 @@
+
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
@@ -8,31 +9,61 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NotificacaoService {
+
     private final FakeEmailClient emailClient;
     private final LocalizacaoService localizacaoService;
 
-    public NotificacaoService(FakeEmailClient emailClient, LocalizacaoService localizacaoService) {
+    public NotificacaoService(
+            FakeEmailClient emailClient,
+            LocalizacaoService localizacaoService) {
         this.emailClient = emailClient;
         this.localizacaoService = localizacaoService;
     }
 
-    public void notificarPagamento(Pedido pedido, StatusPagamento status) {
+    public Notificacao prepararNotificacao(
+            Pedido pedido,
+            StatusPagamento status) {
+
         int tempo = localizacaoService.estimarTempoEntrega(
-                pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+                pedido.getRestaurante().getEndereco(),
+                pedido.getEnderecoEntrega());
+
         String zona = localizacaoService.buscarZonaEntrega(
-                pedido.getRestaurante().getEndereco(), pedido.getEnderecoEntrega());
+                pedido.getRestaurante().getEndereco(),
+                pedido.getEnderecoEntrega());
+
+        Notificacao notificacao;
+
         if (status == StatusPagamento.APROVADO) {
-            Notificacao notificacao = new Notificacao(pedido.getCliente().getEmail(), "Pagamento aprovado",
-                    "O pagamento do pedido " + pedido.getId() + " foi aprovado. Rota estimada pelo e-mail: "
-                            + tempo + " minutos.")
-                    .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
-            emailClient.enviar(notificacao);
+            notificacao = new Notificacao(
+                    pedido.getCliente().getEmail(),
+                    "Pagamento aprovado",
+                    "O pagamento do pedido " + pedido.getId()
+                            + " foi aprovado. Rota estimada pelo e-mail: "
+                            + tempo + " minutos.");
+
         } else {
-            Notificacao notificacao = new Notificacao(pedido.getCliente().getEmail(), "Pagamento rejeitado",
-                    "O pagamento do pedido " + pedido.getId() + " foi rejeitado na zona "
-                            + zona + ".")
-                    .adicionarReferenciaGeografica(pedido.getEnderecoEntrega());
-            emailClient.enviar(notificacao);
+            notificacao = new Notificacao(
+                    pedido.getCliente().getEmail(),
+                    "Pagamento rejeitado",
+                    "O pagamento do pedido " + pedido.getId()
+                            + " foi rejeitado na zona " + zona + ".");
         }
+
+        return notificacao.adicionarReferenciaGeografica(
+                pedido.getEnderecoEntrega());
+    }
+
+    public void enviarNotificacao(Notificacao notificacao) {
+        emailClient.enviar(notificacao);
+    }
+
+    // Mantém o método anterior para preservar compatibilidade.
+    public void notificarPagamento(
+            Pedido pedido,
+            StatusPagamento status) {
+
+        Notificacao notificacao = prepararNotificacao(pedido, status);
+        enviarNotificacao(notificacao);
     }
 }
