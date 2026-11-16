@@ -1,7 +1,7 @@
 package br.edu.foodnow.service;
 
 import br.edu.foodnow.integration.FakeEmailClient;
-import br.edu.foodnow.logistica.LogisticaService;
+import br.edu.foodnow.event.PedidoConfirmado;
 import br.edu.foodnow.model.Notificacao;
 import br.edu.foodnow.model.Pedido;
 import br.edu.foodnow.model.StatusPagamento;
@@ -11,20 +11,16 @@ import org.springframework.stereotype.Service;
 public class NotificacaoService {
     private final FakeEmailClient emailClient;
     private final LocalizacaoService localizacaoService;
-    private final LogisticaService logisticaService;
 
-    public NotificacaoService(FakeEmailClient emailClient, LocalizacaoService localizacaoService,
-                              LogisticaService logisticaService) {
+    public NotificacaoService(FakeEmailClient emailClient, LocalizacaoService localizacaoService) {
         this.emailClient = emailClient;
         this.localizacaoService = localizacaoService;
-        this.logisticaService = logisticaService;
     }
 
-    public void notificarConfirmacao(Pedido pedido) {
-        var resumo = logisticaService.resumirPedido(pedido);
-        emailClient.enviar(pedido.getCliente().getEmail(), "Pedido confirmado",
-                "O pedido " + pedido.getId() + " foi confirmado para a região "
-                        + resumo.regiao() + ". Estimativa interna: " + resumo.tempoMinutos() + " minutos.");
+    public void notificarConfirmacao(PedidoConfirmado evento) {
+        emailClient.enviar(evento.destinatario(), "Pedido confirmado",
+                "O pedido " + evento.pedidoId() + " foi confirmado para a região "
+                        + evento.regiao() + ". Estimativa interna: " + evento.tempoEstimadoMinutos() + " minutos.");
     }
 
     public void notificarInicioEntrega(Pedido pedido) {
