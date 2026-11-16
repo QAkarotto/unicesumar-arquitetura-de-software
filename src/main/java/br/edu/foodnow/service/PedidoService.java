@@ -9,9 +9,11 @@ import br.edu.foodnow.model.Pedido;
 import br.edu.foodnow.model.Produto;
 import br.edu.foodnow.model.Restaurante;
 import br.edu.foodnow.repository.ClienteRepository;
+import br.edu.foodnow.event.PedidoConfirmado;
 import br.edu.foodnow.repository.PedidoRepository;
 import br.edu.foodnow.repository.ProdutoRepository;
 import br.edu.foodnow.repository.RestauranteRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,24 +27,30 @@ public class PedidoService {
     private final PedidoRepository pedidoRepository;
     private final LogisticaService logisticaService;
     private final PagamentoService pagamentoService;
-    private final NotificacaoService notificacaoService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public PedidoService(ClienteRepository clienteRepository, RestauranteRepository restauranteRepository,
                          ProdutoRepository produtoRepository, PedidoRepository pedidoRepository,
                          LogisticaService logisticaService, PagamentoService pagamentoService,
-                         NotificacaoService notificacaoService) {
+                         ApplicationEventPublisher eventPublisher) {
         this.clienteRepository = clienteRepository;
         this.restauranteRepository = restauranteRepository;
         this.produtoRepository = produtoRepository;
         this.pedidoRepository = pedidoRepository;
         this.logisticaService = logisticaService;
         this.pagamentoService = pagamentoService;
-        this.notificacaoService = notificacaoService;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
     public Pedido criar(Long clienteId, Long restauranteId, Long enderecoEntregaId,
                         List<ItemSolicitado> itensSolicitados) {
+        return criar(clienteId, restauranteId, enderecoEntregaId, itensSolicitados, null);
+    }
+
+    @Transactional
+    public Pedido criar(Long clienteId, Long restauranteId, Long enderecoEntregaId,
+                        List<ItemSolicitado> itensSolicitados, String observacao) {
         Cliente cliente = clienteRepository.findById(clienteId)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Cliente não encontrado"));
         Restaurante restaurante = restauranteRepository.findById(restauranteId)
@@ -53,7 +61,7 @@ public class PedidoService {
                 .orElseThrow(() -> new RegraNegocioException("Endereço não pertence ao cliente"));
 
         var cotacao = logisticaService.cotarPedido(cliente, restaurante, endereco);
-        Pedido pedido = new Pedido(cliente, restaurante, endereco);
+        Pedido pedido = new Pedido(cliente, restaurante, endereco, observacao);
         pedido.definirEntrega(cotacao.distanciaKm(), cotacao.taxaBase());
         for (ItemSolicitado item : itensSolicitados) {
             adicionarItemCarregado(pedido, item.produtoId(), item.quantidade());
@@ -101,8 +109,11 @@ public class PedidoService {
         } catch (IllegalStateException excecao) {
             throw new RegraNegocioException(excecao.getMessage());
         }
-        notificacaoService.notificarConfirmacao(pedido);
-        return pedidoRepository.save(pedido);
+        Pedido pedidoConfirmado = pedidoRepository.save(pedido);
+        var resumo = logisticaService.resumirPedido(pedidoConfirmado);
+        eventPublisher.publishEvent(new PedidoConfirmado(pedidoConfirmado.getId(),
+                pedidoConfirmado.getCliente().getEmail(), resumo.regiao(), resumo.tempoMinutos()));
+        return pedidoConfirmado;
     }
 
     public Pagamento pagar(Long pedidoId, FormaPagamento forma, String token) {

@@ -9,11 +9,15 @@ import br.edu.foodnow.model.StatusPagamento;
 import br.edu.foodnow.model.StatusPedido;
 import br.edu.foodnow.repository.PagamentoRepository;
 import br.edu.foodnow.repository.PedidoRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PagamentoService {
+    private static final Logger log = LoggerFactory.getLogger(PagamentoService.class);
+
     private final PedidoRepository pedidoRepository;
     private final PagamentoRepository pagamentoRepository;
     private final FakePaymentGateway paymentGateway;
@@ -59,11 +63,23 @@ public class PagamentoService {
         Pagamento pagamento = pagamentoRepository.save(new Pagamento(pedido, forma, status,
                 pedido.getValorTotal(), resposta.transactionCode(), resposta.providerMessage(),
                 regiao, rotaPagamento.distanciaKm()));
-        notificacaoService.notificarPagamento(pedido, status);
+        notificarSemComprometerPagamento(pedido, pagamento);
         if (status == StatusPagamento.APROVADO) {
             entregaService.criarPara(pedido);
         }
         return pagamento;
+    }
+
+    private void notificarSemComprometerPagamento(Pedido pedido, Pagamento pagamento) {
+        try {
+            notificacaoService.notificarPagamento(pedido, pagamento.getStatus());
+            log.info("Notificação de pagamento processada pedidoId={} pagamentoId={} status={} resultado=ENVIADA",
+                    pedido.getId(), pagamento.getId(), pagamento.getStatus());
+        } catch (RuntimeException falha) {
+            log.error("Falha na notificação de pagamento pedidoId={} pagamentoId={} status={} tipoFalha={} resultado=NAO_ENVIADA; pagamento preservado",
+                    pedido.getId(), pagamento.getId(), pagamento.getStatus(),
+                    falha.getClass().getSimpleName());
+        }
     }
 
     public Pagamento consultar(Long id) {
