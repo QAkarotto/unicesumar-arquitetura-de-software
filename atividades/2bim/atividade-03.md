@@ -1,52 +1,38 @@
-# Atividade 03 - 2BIM: Integrações Externas e Tratamento de Falhas no FoodNow
+## Atividade 03 – Integrações Externas e Tratamento de Falhas
 
-## Objetivo
+**Integrante:** Ramon Albini Vieira e Eduardo Rodrigues
 
-Analisar uma integração externa do **FoodNow** e implementar uma melhoria localizada para reduzir o impacto de falhas na comunicação entre sistemas.
+### Integração escolhida
 
-## Contexto
+Serviço de mapas e localização, por meio de `FakeMapsClient` e `MapsLocalizacaoAdapter`.
 
-O FoodNow possui integrações simuladas com serviços externos, como localização, pagamento e notificações. Essas dependências podem apresentar indisponibilidade, lentidão ou respostas inesperadas.
+### Cenários de falha identificados
 
-## Atividade
+1. Indisponibilidade temporária do provedor, causando falha na consulta de coordenadas ou rotas.
+2. Timeout persistente, no qual o provedor continua indisponível após novas tentativas.
+3. Resposta inválida, com coordenadas em formato incompatível com o esperado pela aplicação.
 
-Escolha **uma integração externa** do projeto e:
+### Decisão adotada
 
-1. identifique como o FoodNow depende atualmente desse serviço;
-2. descreva pelo menos **dois cenários de falha** relevantes;
-3. implemente uma melhoria para tratar um desses cenários, utilizando, quando aplicável:
-   - timeout;
-   - retry;
-   - tratamento de erros;
-   - idempotência;
-4. crie ou ajuste testes para validar o comportamento implementado;
-5. explique brevemente o benefício e o trade-off da decisão adotada.
+Foi implementada uma política de retry limitado no `MapsLocalizacaoAdapter`.
 
-Não é necessário modificar todas as integrações do projeto.
+A aplicação realiza até três tentativas para operações que lançam `FalhaTemporariaMapsException`, com intervalos crescentes de 50 ms e 100 ms.
 
-## Restrições
+Falhas não classificadas como transitórias não são repetidas.
 
-- Não altere os contratos existentes da API.
-- Não altere os testes de API existentes para adequá-los à solução.
-- Preserve o comportamento já existente nos cenários de sucesso.
-- Mantenha a cobertura mínima configurada no projeto.
+Quando todas as tentativas falham, a exceção é propagada.
 
-Valide a solução com:
+### Benefício
 
-```bash
-mvn clean verify
-```
+A solução permite recuperar operações de consulta após falhas temporárias do provedor, reduzindo interrupções causadas por indisponibilidades momentâneas.
 
-## Entrega
+### Trade-off
 
-A atividade pode ser realizada **individualmente ou em dupla**.
+As novas tentativas aumentam a latência das operações. Caso o serviço permaneça indisponível, a falha continua sendo propagada após o limite configurado.
 
-A entrega deverá ser feita por **Pull Request** contendo:
+A estratégia é adequada às operações de consulta de mapas, que não produzem alterações de estado no provedor.
 
-- integrantes;
-- integração escolhida;
-- cenários de falha analisados;
-- decisão adotada;
-- principais alterações;
-- benefício e trade-off;
-- resultado do `mvn clean verify`.
+### Validação
+
+- Comando: `mvn clean verify`
+- Cobertura JaCoCo: Cobertura de linhas - 97.30%
