@@ -1,51 +1,59 @@
 # Atividade 04 – Comunicação Assíncrona e Eventos no FoodNow
 
-## Contexto
+**Integrante:** Ramon Albini Vieira
 
-Uma operação do FoodNow pode desencadear uma ação secundária, como enviar uma notificação após a confirmação de um pedido. A execução dessa ação não deve atrasar nem invalidar uma operação de negócio já concluída.
+## 1. Operação escolhida
 
-Nesta atividade, implemente uma solução com **eventos locais e processamento assíncrono no Spring Boot**. Não é necessário instalar Kafka, RabbitMQ ou outro broker de mensagens.
+Foi escolhida a confirmação de pedidos.
 
-## Atividade
+A operação principal consiste em alterar o status do pedido de CRIADO para CONFIRMADO e persistir essa alteração no banco de dados.
 
-### 1. Identificação e modelagem
+A ação secundária é enviar uma notificação por e-mail ao cliente informando a confirmação.
 
-1. Escolha uma operação já existente no FoodNow que possa desencadear uma ação secundária.
-2. Identifique quando a operação principal é considerada concluída e qual tarefa pode ser executada separadamente.
-3. Represente brevemente o fluxo atual e o fluxo proposto, identificando o produtor, o evento e o consumidor.
-4. Defina um evento que represente um fato ocorrido, por exemplo, `PedidoConfirmado`, com os dados necessários para o processamento.
+## 2. Fluxo atual
 
-### 2. Implementação
+O `PedidoService` confirma o pedido e chama diretamente o `NotificacaoService`, que utiliza o `FakeEmailClient` para enviar a notificação.
 
-1. Publique o evento após a conclusão bem-sucedida da operação principal.
-2. Implemente um consumidor responsável por **uma única ação secundária**, utilizando uma integração simulada ou um registro de log, conforme o projeto.
-3. Configure o processamento assíncrono. No Spring, `@EventListener` não executa automaticamente em outra thread; utilize `@Async` com a configuração necessária ou abordagem equivalente.
-4. Trate falhas do consumidor sem alterar o resultado da operação principal já concluída.
-5. Caso haja transação de banco de dados, evite que o consumidor dependa de informações ainda não confirmadas. Considere `@TransactionalEventListener` com processamento após o commit.
+O envio acontece durante a execução da operação principal, criando dependência direta entre a confirmação e o processamento da notificação.
 
-### 3. Validação
+## 3. Fluxo proposto
 
-1. Preserve os endpoints e o comportamento da operação principal.
-2. Crie ou adapte **pelo menos um teste automatizado** que verifique a publicação do evento ou a execução do consumidor.
-3. Simule uma falha no processamento secundário e verifique que ela não desfaz a operação principal concluída.
-4. Execute `mvn clean verify` e registre o resultado.
+1. O `PedidoService` confirma e salva o pedido.
+2. O produtor publica `PedidoConfirmadoEvent`, contendo o identificador do pedido.
+3. O `PedidoConfirmadoListener` recebe o evento após o commit da transação.
+4. O consumidor executa em outra thread utilizando `@Async`.
+5. O consumidor recupera o pedido persistido e utiliza `NotificacaoService` para enviar a notificação pelo `FakeEmailClient`.
+6. Falhas na tarefa secundária são registradas em log, sem desfazer o pedido confirmado.
 
-### 4. Análise da solução
+## 4. Dependência reduzida
 
-Responda no Pull Request:
+A publicação do evento reduz o acoplamento entre `PedidoService` e `NotificacaoService`.
 
-- Qual dependência entre componentes foi reduzida com a publicação do evento?
-- O que pode acontecer se a aplicação encerrar depois da publicação, mas antes de o consumidor processar o evento?
-- Se a solução evoluir para um broker, **fila ou Publish/Subscribe** seria mais adequado ao fluxo escolhido? Justifique.
+O produtor não precisa conhecer o consumidor nem os detalhes da integração de e-mail. Ele apenas publica o fato de que um pedido foi confirmado.
 
-## Restrições
+Isso permite adicionar ou substituir consumidores sem alterar diretamente o fluxo de confirmação.
 
-- Não crie endpoints nem altere contratos públicos existentes.
-- Não altere testes de API para acomodar mudanças indevidas no comportamento esperado.
-- Limite a implementação ao fluxo selecionado, sem refatorações extensas.
-- Não implemente infraestrutura externa de mensageria.
-- Considere que eventos locais assíncronos, isoladamente, **não garantem entrega durável, reprocessamento ou idempotência**. Essas garantias não precisam ser implementadas nesta atividade.
+## 5. Risco de encerramento da aplicação
 
-## Entrega
+Como a solução utiliza eventos locais em memória, existe o risco de a aplicação encerrar após o commit e antes de o consumidor concluir o processamento.
 
-Abra um **Pull Request** individualmente ou em dupla, identificando os integrantes. Inclua a implementação, o teste automatizado, o resultado de `mvn clean verify`, os dois fluxos e as respostas da análise.
+Nesse cenário, o evento pode ser perdido e a notificação não será enviada.
+
+A solução não oferece entrega durável, reprocessamento automático ou garantia de processamento após reinicialização.
+
+Essas limitações são aceitas no escopo desta atividade, que não exige a implementação de broker ou infraestrutura adicional.
+
+## 6. Evolução para um broker
+
+Para o fluxo escolhido, uma fila seria mais adequada inicialmente.
+
+Existe uma única ação secundária: enviar a notificação de confirmação. Uma fila permitiria que um consumidor responsável pelo envio processasse cada mensagem, desacoplando ainda mais o produtor da infraestrutura de notificação.
+
+Publish/Subscribe seria mais interessante caso outros componentes precisassem reagir independentemente ao mesmo evento, como auditoria, analytics e atualização de outros sistemas.
+
+## 7. Validação
+
+- Testes de execução do consumidor assíncrono.
+- Teste de falha na notificação sem desfazer a confirmação.
+- Preservação do fluxo de pedidos existente.
+- Cobertura JaCoCo: 97,19%

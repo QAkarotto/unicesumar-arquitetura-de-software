@@ -4,7 +4,9 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.time.Duration;
 
+import static org.awaitility.Awaitility.await;
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -96,7 +98,16 @@ class FoodNowFlowIT extends ApiTestSupport {
         given().get("/pedidos/{id}", pedidoId).then().statusCode(200)
                 .body("status", equalTo("ENTREGUE"));
 
-        assertThat(emailClient.getEnviadas()).extracting("assunto")
-                .contains("Pedido confirmado", "Pagamento aprovado", "Entrega iniciada");
+        await()
+                .atMost(Duration.ofSeconds(5))
+                .untilAsserted(() ->
+                        assertThat(emailClient.getEnviadas())
+                                .extracting("assunto")
+                                .contains(
+                                        "Pedido confirmado",
+                                        "Pagamento aprovado",
+                                        "Entrega iniciada"
+                                )
+                );
     }
 }
