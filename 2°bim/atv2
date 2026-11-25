@@ -1,0 +1,14 @@
+# Atividade 02 - 2BIM: Dependency Rule e Limites Arquiteturais no FoodNow
+
+## Dependência escolhida
+Integração de pagamentos, envolvendo as classes `PagamentoService` e `FakePaymentGateway`.
+
+## Principais alterações
+- Criação da interface `PaymentGateway`.
+- Inversão da dependência no `PagamentoService`.
+- Implementação do contrato por `FakePaymentGateway`.
+- Criação de teste unitário utilizando mock da interface.
+- Preservação dos endpoints e do comportamento da API.
+
+## Conclusão
+Após a refatoração, o `PagamentoService` passou a depender da abstração `PaymentGateway`, e não diretamente da implementação concreta. Isso permite substituir a implementação do pagamento com menor impacto na regra da aplicação e facilita os testes unitários.

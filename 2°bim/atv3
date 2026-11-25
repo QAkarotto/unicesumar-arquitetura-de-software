@@ -1,0 +1,22 @@
+FoodNow — Tratamento de Falhas na Integração de Mapas
+
+Objetivo:
+Melhorar a identificação de falhas na integração com o FakeMapsClient, utilizado para consultar rotas e calcular 
+distâncias relacionadas às entregas.
+
+Cenários de falha:
+- Indisponibilidade do serviço durante a consulta de rotas.
+- Ausência de informações necessárias para o cálculo da rota.
+
+Melhoria implementada:
+Foram adicionados logs de aviso nos serviços NotificacaoService, EntregaService e PagamentoService, facilitando o 
+diagnóstico de falhas e preservando os tratamentos alternativos existentes.
+
+Para executar os testes e validar o projeto, utilize: mvn clean verify
+
+Benefícios:
+A melhoria facilita a investigação de problemas e ajuda a manter o funcionamento dos fluxos que possuem alternativas 
+para falhas na consulta de mapas.
+
+Limitação: 
+Os logs não corrigem a indisponibilidade do serviço, e os cálculos alternativos podem apresentar menor precisão.
