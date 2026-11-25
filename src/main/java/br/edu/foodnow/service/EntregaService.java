@@ -1,6 +1,6 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakeCourierClient;
+import br.edu.foodnow.entregadores.ProvedorEntregadores;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.Entrega;
 import br.edu.foodnow.model.Pedido;
@@ -16,26 +16,26 @@ public class EntregaService {
     private final PedidoRepository pedidoRepository;
     private final LogisticaService logisticaService;
     private final NotificacaoService notificacaoService;
-    private final FakeCourierClient courierClient;
+    private final ProvedorEntregadores provedorEntregadores;
 
     public EntregaService(EntregaRepository entregaRepository, PedidoRepository pedidoRepository,
                           LogisticaService logisticaService, NotificacaoService notificacaoService,
-                          FakeCourierClient courierClient) {
+                          ProvedorEntregadores provedorEntregadores) {
         this.entregaRepository = entregaRepository;
         this.pedidoRepository = pedidoRepository;
         this.logisticaService = logisticaService;
         this.notificacaoService = notificacaoService;
-        this.courierClient = courierClient;
+        this.provedorEntregadores = provedorEntregadores;
     }
 
     public Entrega criarPara(Pedido pedido) {
         var plano = logisticaService.planejarEntrega(pedido);
-        FakeCourierClient.CourierRequest requisicao = new FakeCourierClient.CourierRequest(pedido.getId(),
+        ProvedorEntregadores.SolicitacaoDespacho requisicao = new ProvedorEntregadores.SolicitacaoDespacho(pedido.getId(),
                 plano.distanciaKm(), plano.zona(), pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
-        FakeCourierClient.CourierDispatch despacho = courierClient.solicitarEntregador(requisicao);
-        int tempo = plano.tempoBaseMinutos() + despacho.pickupEtaMinutes();
+        ProvedorEntregadores.ResultadoDespacho despacho = provedorEntregadores.solicitarEntregador(requisicao);
+        int tempo = plano.tempoBaseMinutos() + despacho.minutosAteColeta();
         Entrega entrega = new Entrega(pedido, pedido.getEnderecoEntrega(), plano.distanciaKm(), tempo,
-                plano.zona(), despacho.courierCode(), despacho.providerStatus());
+                plano.zona(), despacho.codigoEntregador(), despacho.statusProvedor());
         return entregaRepository.save(entrega);
     }
 
