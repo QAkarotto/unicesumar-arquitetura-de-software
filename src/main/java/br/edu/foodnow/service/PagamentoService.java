@@ -7,10 +7,12 @@ import br.edu.foodnow.model.Pedido;
 import br.edu.foodnow.model.StatusPagamento;
 import br.edu.foodnow.model.StatusPedido;
 import br.edu.foodnow.pagamento.GatewayPagamento;
+import br.edu.foodnow.pagamento.PagamentoProcessado;
 import br.edu.foodnow.pagamento.ResultadoPagamento;
 import br.edu.foodnow.pagamento.SolicitacaoPagamento;
 import br.edu.foodnow.repository.PagamentoRepository;
 import br.edu.foodnow.repository.PedidoRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,22 +21,22 @@ public class PagamentoService {
     private final PedidoRepository pedidoRepository;
     private final PagamentoRepository pagamentoRepository;
     private final GatewayPagamento gatewayPagamento;
-    private final NotificacaoService notificacaoService;
     private final EntregaService entregaService;
     private final LocalizacaoService localizacaoService;
     private final LogisticaService logisticaService;
+    private final ApplicationEventPublisher eventos;
 
     public PagamentoService(PedidoRepository pedidoRepository, PagamentoRepository pagamentoRepository,
-                            GatewayPagamento gatewayPagamento, NotificacaoService notificacaoService,
-                            EntregaService entregaService, LocalizacaoService localizacaoService,
-                            LogisticaService logisticaService) {
+                            GatewayPagamento gatewayPagamento, EntregaService entregaService,
+                            LocalizacaoService localizacaoService, LogisticaService logisticaService,
+                            ApplicationEventPublisher eventos) {
         this.pedidoRepository = pedidoRepository;
         this.pagamentoRepository = pagamentoRepository;
         this.gatewayPagamento = gatewayPagamento;
-        this.notificacaoService = notificacaoService;
         this.entregaService = entregaService;
         this.localizacaoService = localizacaoService;
         this.logisticaService = logisticaService;
+        this.eventos = eventos;
     }
 
     @Transactional
@@ -59,10 +61,10 @@ public class PagamentoService {
         Pagamento pagamento = pagamentoRepository.save(new Pagamento(pedido, forma, status,
                 pedido.getValorTotal(), resultado.codigoTransacao(), resultado.mensagem(),
                 regiao, rotaPagamento.distanciaKm()));
-        notificacaoService.notificarPagamento(pedido, status);
         if (status == StatusPagamento.APROVADO) {
             entregaService.criarPara(pedido);
         }
+        eventos.publishEvent(new PagamentoProcessado(pagamento.getId(), pedido.getId(), status));
         return pagamento;
     }
 
