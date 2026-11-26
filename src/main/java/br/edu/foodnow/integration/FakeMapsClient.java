@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class FakeMapsClient {
 
+    /**
+     * @throws MapsIndisponivelException em falhas transitórias de comunicação;
+     * o simulador padrão responde sem falhas.
+     */
     public MapCoordinates buscarCoordenadas(Endereco endereco) {
         if (endereco.getLocalizacao() != null) {
             return new MapCoordinates(
@@ -21,6 +25,10 @@ public class FakeMapsClient {
         return new MapCoordinates(Double.toString(latitude), Double.toString(longitude), "APPROXIMATE");
     }
 
+    /**
+     * @throws MapsIndisponivelException em falhas transitórias de comunicação;
+     * o simulador padrão responde sem falhas.
+     */
     public RouteResult calcularRota(Localizacao origem, Localizacao destino) {
         double linhaReta = DistanciaUtil.calcularKm(origem, destino);
         double distanciaTrajeto = Math.round(linhaReta * 1.15 * 100.0) / 100.0;
