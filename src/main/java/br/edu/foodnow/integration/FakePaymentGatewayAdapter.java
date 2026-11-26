@@ -2,14 +2,14 @@ package br.edu.foodnow.integration;
 
 import br.edu.foodnow.model.StatusPagamento;
 import br.edu.foodnow.pagamento.GatewayPagamento;
+import br.edu.foodnow.pagamento.GatewayPagamentoIndisponivelException;
 import br.edu.foodnow.pagamento.ResultadoPagamento;
 import br.edu.foodnow.pagamento.SolicitacaoPagamento;
-import org.springframework.stereotype.Component;
 
 /**
  * Traduz o contrato {@link GatewayPagamento} para o formato do provedor simulado.
+ * Falhas técnicas do provedor são convertidas em {@link GatewayPagamentoIndisponivelException}.
  */
-@Component
 public class FakePaymentGatewayAdapter implements GatewayPagamento {
     private static final String STATUS_AUTORIZADO = "AUTHORIZED";
 
@@ -24,8 +24,14 @@ public class FakePaymentGatewayAdapter implements GatewayPagamento {
         FakePaymentGateway.GatewayRequest requisicao = FakePaymentGateway.GatewayRequest.from(
                 solicitacao.pedidoId(), solicitacao.valor(), solicitacao.token(), solicitacao.forma().name(),
                 solicitacao.regiaoEntrega(), solicitacao.origem().formatarParaProvedor(),
-                solicitacao.destino().formatarParaProvedor());
-        FakePaymentGateway.GatewayResult resposta = paymentGateway.processarPagamento(requisicao);
+                solicitacao.destino().formatarParaProvedor(), solicitacao.chaveIdempotencia());
+        FakePaymentGateway.GatewayResult resposta;
+        try {
+            resposta = paymentGateway.processarPagamento(requisicao);
+        } catch (RuntimeException falha) {
+            throw new GatewayPagamentoIndisponivelException("Falha na comunicação com o provedor de pagamento",
+                    falha);
+        }
         StatusPagamento status = STATUS_AUTORIZADO.equals(resposta.providerStatus())
                 ? StatusPagamento.APROVADO : StatusPagamento.REJEITADO;
         return new ResultadoPagamento(status, resposta.transactionCode(), resposta.providerMessage());
