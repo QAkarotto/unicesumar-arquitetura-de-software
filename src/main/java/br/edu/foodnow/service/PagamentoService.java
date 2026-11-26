@@ -1,14 +1,18 @@
 package br.edu.foodnow.service;
 
-import br.edu.foodnow.integration.FakePaymentGateway;
 import br.edu.foodnow.logistica.LogisticaService;
 import br.edu.foodnow.model.FormaPagamento;
 import br.edu.foodnow.model.Pagamento;
 import br.edu.foodnow.model.Pedido;
 import br.edu.foodnow.model.StatusPagamento;
 import br.edu.foodnow.model.StatusPedido;
+import br.edu.foodnow.pagamento.GatewayPagamento;
+import br.edu.foodnow.pagamento.PagamentoProcessado;
+import br.edu.foodnow.pagamento.ResultadoPagamento;
+import br.edu.foodnow.pagamento.SolicitacaoPagamento;
 import br.edu.foodnow.repository.PagamentoRepository;
 import br.edu.foodnow.repository.PedidoRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,23 +20,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class PagamentoService {
     private final PedidoRepository pedidoRepository;
     private final PagamentoRepository pagamentoRepository;
-    private final FakePaymentGateway paymentGateway;
-    private final NotificacaoService notificacaoService;
+    private final GatewayPagamento gatewayPagamento;
     private final EntregaService entregaService;
     private final LocalizacaoService localizacaoService;
     private final LogisticaService logisticaService;
+    private final ApplicationEventPublisher eventos;
 
     public PagamentoService(PedidoRepository pedidoRepository, PagamentoRepository pagamentoRepository,
-                            FakePaymentGateway paymentGateway, NotificacaoService notificacaoService,
-                            EntregaService entregaService, LocalizacaoService localizacaoService,
-                            LogisticaService logisticaService) {
+                            GatewayPagamento gatewayPagamento, EntregaService entregaService,
+                            LocalizacaoService localizacaoService, LogisticaService logisticaService,
+                            ApplicationEventPublisher eventos) {
         this.pedidoRepository = pedidoRepository;
         this.pagamentoRepository = pagamentoRepository;
-        this.paymentGateway = paymentGateway;
-        this.notificacaoService = notificacaoService;
+        this.gatewayPagamento = gatewayPagamento;
         this.entregaService = entregaService;
         this.localizacaoService = localizacaoService;
         this.logisticaService = logisticaService;
+        this.eventos = eventos;
     }
 
     @Transactional
@@ -46,23 +50,21 @@ public class PagamentoService {
         var rotaPagamento = localizacaoService.calcularRota(pedido.getRestaurante().getEndereco(),
                 pedido.getEnderecoEntrega());
         String regiao = logisticaService.resumirPedido(pedido).regiao();
-        FakePaymentGateway.GatewayRequest requisicao = FakePaymentGateway.GatewayRequest.from(
-                pedido.getId(), pedido.getValorTotal(), token, forma.name(), regiao,
-                pedido.getRestaurante().getEndereco().getLocalizacao().formatarParaProvedor(),
-                pedido.getEnderecoEntrega().getLocalizacao().formatarParaProvedor());
-        FakePaymentGateway.GatewayResult resposta = paymentGateway.processarPagamento(requisicao);
-        StatusPagamento status = "AUTHORIZED".equals(resposta.providerStatus())
-                ? StatusPagamento.APROVADO : StatusPagamento.REJEITADO;
+        ResultadoPagamento resultado = gatewayPagamento.autorizar(new SolicitacaoPagamento(
+                pedido.getId(), pedido.getValorTotal(), token, forma, regiao,
+                pedido.getRestaurante().getEndereco().getLocalizacao(),
+                pedido.getEnderecoEntrega().getLocalizacao()));
+        StatusPagamento status = resultado.status();
 
         pedido.registrarPagamento(status);
         pedidoRepository.save(pedido);
         Pagamento pagamento = pagamentoRepository.save(new Pagamento(pedido, forma, status,
-                pedido.getValorTotal(), resposta.transactionCode(), resposta.providerMessage(),
+                pedido.getValorTotal(), resultado.codigoTransacao(), resultado.mensagem(),
                 regiao, rotaPagamento.distanciaKm()));
-        notificacaoService.notificarPagamento(pedido, status);
         if (status == StatusPagamento.APROVADO) {
             entregaService.criarPara(pedido);
         }
+        eventos.publishEvent(new PagamentoProcessado(pagamento.getId(), pedido.getId(), status));
         return pagamento;
     }
 

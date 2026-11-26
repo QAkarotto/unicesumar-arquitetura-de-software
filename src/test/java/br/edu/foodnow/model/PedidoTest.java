@@ -92,6 +92,40 @@ class PedidoTest {
         assertThat(arriscado.getDistanciaValidadaKm()).isEqualTo(20.0);
     }
 
+    @Test
+    void deveArmazenarObservacaoInformadaNaCriacao() {
+        Cenario cenario = cenarioPadrao();
+        Pedido pedido = new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(),
+                "Não incluir talheres");
+
+        assertThat(pedido.getObservacao()).isEqualTo("Não incluir talheres");
+        assertThat(cenario.pedido().getObservacao()).isNull();
+    }
+
+    @Test
+    void deveNormalizarObservacaoNulaOuEmBrancoParaAusente() {
+        Cenario cenario = cenarioPadrao();
+
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), null)
+                .getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), "")
+                .getObservacao()).isNull();
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), "   ")
+                .getObservacao()).isNull();
+    }
+
+    @Test
+    void deveAceitarObservacaoNoLimiteERejeitarAcimaDele() {
+        Cenario cenario = cenarioPadrao();
+
+        assertThat(new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(), "a".repeat(500))
+                .getObservacao()).hasSize(500);
+        assertThatThrownBy(() -> new Pedido(cenario.cliente(), cenario.restaurante(), cenario.endereco(),
+                "a".repeat(501)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Observação deve ter no máximo 500 caracteres");
+    }
+
     private Cenario cenarioPadrao() {
         Endereco endereco = enderecoEm(-25.095, -50.160);
         Cliente cliente = new Cliente("Ana", "ana@foodnow.test");
