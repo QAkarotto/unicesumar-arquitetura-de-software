@@ -1,6 +1,7 @@
 package br.edu.foodnow.model;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -37,11 +38,21 @@ public class Pedido {
     private double distanciaEntregaKm;
     @Enumerated(EnumType.STRING)
     private StatusPedido status = StatusPedido.CRIADO;
+    @Column(length = 500)
+    private String observacao;
 
     protected Pedido() {
     }
 
     public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega) {
+        this(cliente, restaurante, enderecoEntrega, null);
+    }
+
+    public Pedido(Cliente cliente, Restaurante restaurante, Endereco enderecoEntrega, String observacao) {
+        if (observacao != null && observacao.length() > 500) {
+            throw new IllegalArgumentException("Observação deve ter no máximo 500 caracteres");
+        }
+        this.observacao = observacao;
         this.cliente = cliente;
         this.restaurante = restaurante;
         this.enderecoEntrega = enderecoEntrega;
@@ -99,5 +110,6 @@ public class Pedido {
     public BigDecimal getTaxaEntrega() { return taxaEntrega; }
     public BigDecimal getValorTotal() { return valorTotal; }
     public double getDistanciaEntregaKm() { return distanciaEntregaKm; }
+    public String getObservacao() { return observacao; }
     public StatusPedido getStatus() { return status; }
 }
