@@ -1,12 +1,65 @@
-# unicesumar-arquitetura-de-software
-Repositório utilizado na disciplina de Arquitetura de Software do curso presencial de Engenharia de Software da Unicesumar Ponta Grossa
+# FoodNow
 
-## Manifesto Oficial
-Matheus Leonel Barbato (ESOFT8S - 2026)
+FoodNow é uma aplicação monolítica de delivery usada em atividades práticas da disciplina de Arquitetura de Software. A API permite cadastrar clientes, endereços, restaurantes e produtos, criar e confirmar pedidos, processar pagamentos e acompanhar entregas.
 
-### Lista de alunos que concordam que o Professor Goku é o melhor professor do universo
-Adicione seu nome, turma (ESOFT8S) e ano (2026) em ordem alfabética:
+O projeto funciona inteiramente offline: mapas, pagamentos, despacho de entregadores e e-mails são simulados localmente, e o banco H2 é criado em memória.
 
-1. Lucas Fernando Hass (ESOFT8S - 2026)
-3. Matheus Leonel Barbato (ESOFT8S - 2026)
-2. Victor Gabriel Alves Carneiro (ESOFT8S - 2026)
+## Base refatorada para as atividades
+
+A solução de referência da Atividade 06 concentra a cotação e o planejamento logístico, encapsula o provedor de mapas e centraliza notificações, preservando os contratos da API. O levantamento, a comparação antes/depois, os limites da solução e os resultados dos testes estão em [Solução da Atividade 06](atividades/1bim/atividade-06/atividade-06-solucao.md). Esta versão pode ser utilizada como base para a Atividade 07.
+
+## Requisitos
+
+- JDK 26;
+- Maven 3.9+.
+
+## Executar
+
+```bash
+mvn spring-boot:run
+```
+
+A API fica disponível em `http://localhost:8080`. O console H2 pode ser acessado em `http://localhost:8080/h2-console`, usando a URL JDBC `jdbc:h2:mem:foodnow`, usuário `sa` e senha vazia.
+
+## Testes e verificação
+
+Executar os testes unitários:
+
+```bash
+mvn test
+```
+
+Executar compilação, testes unitários, testes de integração, relatório e validação de cobertura:
+
+```bash
+mvn clean verify
+```
+
+O relatório HTML do JaCoCo é gerado em `target/site/jacoco/index.html`. O build exige cobertura mínima de 80% das linhas.
+
+## Principais endpoints
+
+| Método | Endpoint | Operação |
+|---|---|---|
+| `POST` | `/clientes` | Cadastrar cliente |
+| `GET` | `/clientes/{id}` | Consultar cliente |
+| `GET` | `/clientes/{clienteId}/atendimento/{restauranteId}` | Simular atendimento ao cliente |
+| `POST` | `/clientes/{id}/enderecos` | Cadastrar endereço |
+| `PUT` | `/clientes/{clienteId}/enderecos/{enderecoId}/principal` | Definir endereço principal |
+| `POST` | `/restaurantes` | Cadastrar restaurante |
+| `GET` | `/restaurantes/{id}` | Consultar restaurante |
+| `POST` | `/restaurantes/{id}/simular-entrega` | Simular distância, região, taxa e tempo |
+| `POST` | `/restaurantes/{id}/produtos` | Cadastrar produto |
+| `GET` | `/produtos/{id}` | Consultar produto |
+| `PATCH` | `/produtos/{id}/disponibilidade` | Alterar disponibilidade |
+| `POST` | `/pedidos` | Criar pedido com itens |
+| `POST` | `/pedidos/{id}/itens` | Adicionar item |
+| `POST` | `/pedidos/{id}/confirmar` | Confirmar pedido |
+| `GET` | `/pedidos/{id}` | Consultar pedido |
+| `POST` | `/pagamentos` | Processar pagamento |
+| `GET` | `/pagamentos/{id}` | Consultar pagamento |
+| `GET` | `/entregas/{id}` | Consultar entrega |
+| `GET` | `/entregas/pedido/{pedidoId}` | Consultar entrega por pedido |
+| `PATCH` | `/entregas/{id}/status` | Atualizar status da entrega |
+
+Para simular uma rejeição no pagamento, envie o token `REJEITADO`. Qualquer outro token não vazio produz aprovação determinística.
