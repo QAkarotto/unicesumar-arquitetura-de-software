@@ -1,0 +1,482 @@
+openapi: 3.1.0
+info:
+  title: FoodNow API - Pedidos
+  version: 1.1.0
+  summary: Contrato das operações de pedidos do FoodNow.
+  description: |
+    Especificação das quatro operações de pedidos do FoodNow.
+
+    **1.1.0**: adiciona o campo opcional `observacao` em `PedidoRequest` e
+    `PedidoResponse`. A mudança é aditiva e compatível com a versão 1.0.0
+    (`docs/openapi-v1.0.0.yaml`):
+
+    - requisições sem `observacao` continuam válidas e produzem o mesmo JSON
+      de resposta da versão 1.0.0;
+    - `observacao` ausente, `null`, vazia ou composta apenas por espaços é
+      tratada como "sem observação" e o campo é omitido da resposta;
+    - textos com mais de 500 caracteres são rejeitados com `400 VALIDATION_ERROR`;
+    - a observação é definida somente na criação (`POST /pedidos`) e não pode
+      ser editada; as demais operações apenas a devolvem.
+  license:
+    name: Uso acadêmico
+    identifier: CC-BY-4.0
+servers:
+  - url: http://localhost:8080
+    description: Servidor local
+tags:
+  - name: pedidos
+    description: Criação, consulta, inclusão de itens e confirmação de pedidos.
+paths:
+  /pedidos:
+    post:
+      tags: [pedidos]
+      summary: Cria um pedido com itens
+      description: |
+        Cria um pedido em `CRIADO` para o cliente, restaurante e endereço
+        informados, calcula subtotal, taxa de entrega e valor total.
+        Opcionalmente recebe uma `observacao` de até 500 caracteres.
+      operationId: criarPedido
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PedidoRequest'
+            examples:
+              comObservacao:
+                summary: Pedido com observação (1.1.0)
+                value:
+                  clienteId: 1
+                  restauranteId: 1
+                  enderecoEntregaId: 1
+                  itens:
+                    - produtoId: 1
+                      quantidade: 2
+                  observacao: Não incluir talheres
+              semObservacao:
+                summary: Pedido sem observação (formato 1.0.0, continua válido)
+                value:
+                  clienteId: 1
+                  restauranteId: 1
+                  enderecoEntregaId: 1
+                  itens:
+                    - produtoId: 1
+                      quantidade: 2
+      responses:
+        '201':
+          description: Pedido criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              examples:
+                comObservacao:
+                  $ref: '#/components/examples/PedidoCriadoComObservacao'
+                semObservacao:
+                  $ref: '#/components/examples/PedidoCriadoSemObservacao'
+        '400':
+          $ref: '#/components/responses/RequisicaoInvalidaCriacao'
+        '404':
+          description: Cliente, restaurante ou produto não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Cliente não encontrado
+        '422':
+          description: |
+            Regra de negócio violada: endereço não pertence ao cliente, endereço
+            fora da área de entrega, produto indisponível, produto de outro
+            restaurante ou produto que não pode ser entregue no endereço.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: Endereço fora da área de entrega
+  /pedidos/{id}:
+    get:
+      tags: [pedidos]
+      summary: Consulta um pedido
+      operationId: consultarPedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              examples:
+                comObservacao:
+                  $ref: '#/components/examples/PedidoCriadoComObservacao'
+                semObservacao:
+                  $ref: '#/components/examples/PedidoCriadoSemObservacao'
+        '404':
+          $ref: '#/components/responses/PedidoNaoEncontrado'
+        '422':
+          $ref: '#/components/responses/IdInvalido'
+  /pedidos/{id}/itens:
+    post:
+      tags: [pedidos]
+      summary: Adiciona um item ao pedido
+      description: |
+        Adiciona um item e recalcula os valores. A `observacao` do pedido é
+        mantida; campos não previstos em `ItemPedidoRequest` (inclusive
+        `observacao`) são ignorados.
+      operationId: adicionarItemPedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ItemPedidoRequest'
+            example:
+              produtoId: 1
+              quantidade: 1
+      responses:
+        '200':
+          description: Item adicionado; o pedido atualizado é devolvido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              example:
+                id: 2
+                clienteId: 1
+                restauranteId: 1
+                enderecoEntregaId: 1
+                itens:
+                  - produtoId: 1
+                    nome: Pizza
+                    quantidade: 2
+                    precoUnitario: 30.00
+                    subtotal: 60.00
+                  - produtoId: 1
+                    nome: Pizza
+                    quantidade: 1
+                    precoUnitario: 30.00
+                    subtotal: 30.00
+                subtotal: 90.00
+                taxaEntrega: 6.55
+                valorTotal: 96.55
+                distanciaEntregaKm: 1.515
+                status: CRIADO
+                observacao: Não incluir talheres
+        '400':
+          description: Corpo inválido (validação ou JSON malformado).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ErroResponse'
+                  - $ref: '#/components/schemas/ErroPadraoSpring'
+              example:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: 'quantidade: deve ser maior que ou igual à 1'
+        '404':
+          description: Pedido ou produto não encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 404
+                erro: NOT_FOUND
+                mensagem: Produto não encontrado
+        '422':
+          description: |
+            Produto indisponível, de outro restaurante, que não pode ser entregue
+            no endereço do pedido, ou `id` não numérico.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: 'Produto indisponível: Pizza'
+  /pedidos/{id}/confirmar:
+    post:
+      tags: [pedidos]
+      summary: Confirma um pedido
+      description: |
+        Muda o status de `CRIADO` para `CONFIRMADO` e envia a notificação de
+        confirmação. A `observacao` é mantida.
+      operationId: confirmarPedido
+      parameters:
+        - $ref: '#/components/parameters/PedidoId'
+      responses:
+        '200':
+          description: Pedido confirmado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PedidoResponse'
+              example:
+                id: 2
+                clienteId: 1
+                restauranteId: 1
+                enderecoEntregaId: 1
+                itens:
+                  - produtoId: 1
+                    nome: Pizza
+                    quantidade: 2
+                    precoUnitario: 30.00
+                    subtotal: 60.00
+                subtotal: 60.00
+                taxaEntrega: 6.55
+                valorTotal: 66.55
+                distanciaEntregaKm: 1.515
+                status: CONFIRMADO
+                observacao: Não incluir talheres
+        '404':
+          $ref: '#/components/responses/PedidoNaoEncontrado'
+        '422':
+          description: Pedido fora do status `CRIADO`, pedido sem itens ou `id` não numérico.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErroResponse'
+              example:
+                status: 422
+                erro: REGRA_NEGOCIO
+                mensagem: Apenas pedidos criados podem ser confirmados
+components:
+  parameters:
+    PedidoId:
+      name: id
+      in: path
+      required: true
+      description: Identificador do pedido.
+      schema:
+        type: integer
+        format: int64
+      example: 1
+  responses:
+    PedidoNaoEncontrado:
+      description: Pedido não encontrado.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            status: 404
+            erro: NOT_FOUND
+            mensagem: Pedido não encontrado
+    IdInvalido:
+      description: |
+        `id` não numérico. Comportamento herdado: a falha de conversão do
+        parâmetro é tratada como regra de negócio.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErroResponse'
+          example:
+            status: 422
+            erro: REGRA_NEGOCIO
+            mensagem: "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"abc\""
+    RequisicaoInvalidaCriacao:
+      description: |
+        Corpo inválido: campo obrigatório ausente, `itens` vazio, item inválido,
+        `observacao` com mais de 500 caracteres (`ErroResponse`) ou JSON
+        malformado (`ErroPadraoSpring`).
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/ErroResponse'
+              - $ref: '#/components/schemas/ErroPadraoSpring'
+          examples:
+            observacaoAcimaDoLimite:
+              summary: Observação com 501 caracteres (1.1.0)
+              value:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: 'observacao: deve ter no máximo 500 caracteres'
+            itensVazios:
+              summary: Pedido sem itens
+              value:
+                status: 400
+                erro: VALIDATION_ERROR
+                mensagem: 'itens: não deve estar vazio'
+            jsonMalformado:
+              summary: JSON malformado (tratamento padrão do Spring)
+              value:
+                timestamp: '2026-11-26T12:12:29.668Z'
+                status: 400
+                error: Bad Request
+                path: /pedidos
+  examples:
+    PedidoCriadoComObservacao:
+      summary: Pedido com observação
+      value:
+        id: 2
+        clienteId: 1
+        restauranteId: 1
+        enderecoEntregaId: 1
+        itens:
+          - produtoId: 1
+            nome: Pizza
+            quantidade: 2
+            precoUnitario: 30.00
+            subtotal: 60.00
+        subtotal: 60.00
+        taxaEntrega: 6.55
+        valorTotal: 66.55
+        distanciaEntregaKm: 1.515
+        status: CRIADO
+        observacao: Não incluir talheres
+    PedidoCriadoSemObservacao:
+      summary: Pedido sem observação (campo omitido, mesmo JSON da 1.0.0)
+      value:
+        id: 1
+        clienteId: 1
+        restauranteId: 1
+        enderecoEntregaId: 1
+        itens:
+          - produtoId: 1
+            nome: Pizza
+            quantidade: 2
+            precoUnitario: 30.00
+            subtotal: 60.00
+        subtotal: 60.00
+        taxaEntrega: 6.55
+        valorTotal: 66.55
+        distanciaEntregaKm: 1.515
+        status: CRIADO
+  schemas:
+    PedidoRequest:
+      type: object
+      required: [clienteId, restauranteId, enderecoEntregaId, itens]
+      properties:
+        clienteId:
+          type: integer
+          format: int64
+        restauranteId:
+          type: integer
+          format: int64
+        enderecoEntregaId:
+          type: integer
+          format: int64
+          description: Endereço do cliente onde o pedido será entregue.
+        itens:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ItemPedidoRequest'
+        observacao:
+          type: [string, 'null']
+          maxLength: 500
+          description: |
+            Desde 1.1.0. Observação livre do cliente, como "Não incluir talheres".
+            Opcional. Ausente, `null`, vazia ou só com espaços: o pedido fica
+            sem observação. Mais de 500 caracteres: `400 VALIDATION_ERROR`.
+            Só pode ser definida na criação.
+          examples:
+            - Não incluir talheres
+    ItemPedidoRequest:
+      type: object
+      required: [produtoId, quantidade]
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+        quantidade:
+          type: integer
+          format: int32
+          minimum: 1
+    ItemResponse:
+      type: object
+      required: [produtoId, nome, quantidade, precoUnitario, subtotal]
+      properties:
+        produtoId:
+          type: integer
+          format: int64
+        nome:
+          type: string
+        quantidade:
+          type: integer
+          format: int32
+        precoUnitario:
+          type: number
+        subtotal:
+          type: number
+    PedidoResponse:
+      type: object
+      required: [id, clienteId, restauranteId, enderecoEntregaId, itens, subtotal, taxaEntrega,
+                 valorTotal, distanciaEntregaKm, status]
+      properties:
+        id:
+          type: integer
+          format: int64
+        clienteId:
+          type: integer
+          format: int64
+        restauranteId:
+          type: integer
+          format: int64
+        enderecoEntregaId:
+          type: integer
+          format: int64
+        itens:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItemResponse'
+        subtotal:
+          type: number
+        taxaEntrega:
+          type: number
+        valorTotal:
+          type: number
+        distanciaEntregaKm:
+          type: number
+          format: double
+        status:
+          $ref: '#/components/schemas/StatusPedido'
+        observacao:
+          type: string
+          minLength: 1
+          maxLength: 500
+          description: |
+            Desde 1.1.0. Observação informada na criação. Omitida quando o
+            pedido não tem observação; nunca vem como `null` nem vazia.
+    StatusPedido:
+      type: string
+      enum: [CRIADO, CONFIRMADO, PAGO, PAGAMENTO_REJEITADO, EM_ENTREGA, ENTREGUE]
+    ErroResponse:
+      type: object
+      required: [status, erro, mensagem]
+      properties:
+        status:
+          type: integer
+          format: int32
+        erro:
+          type: string
+          enum: [VALIDATION_ERROR, NOT_FOUND, REGRA_NEGOCIO]
+        mensagem:
+          type: string
+    ErroPadraoSpring:
+      type: object
+      description: Corpo de erro padrão do Spring Boot, usado quando o JSON não pode ser lido.
+      required: [timestamp, status, error, path]
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+          format: int32
+        error:
+          type: string
+        path:
+          type: string
