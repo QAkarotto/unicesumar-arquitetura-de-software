@@ -13,6 +13,8 @@ info:
 servers:
 - url: http://localhost:8080
   description: Servidor local
+# A API não exige autenticação (aplicação acadêmica, executada apenas localmente).
+security: []
 tags:
 - name: pedidos
   description: Criação, consulta, inclusão de itens e confirmação de pedidos.
