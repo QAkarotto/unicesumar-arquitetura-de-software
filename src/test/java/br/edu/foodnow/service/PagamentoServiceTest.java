@@ -14,12 +14,14 @@ import br.edu.foodnow.model.Restaurante;
 import br.edu.foodnow.model.StatusPagamento;
 import br.edu.foodnow.model.StatusPedido;
 import br.edu.foodnow.pagamento.GatewayPagamento;
+import br.edu.foodnow.pagamento.PagamentoProcessado;
 import br.edu.foodnow.pagamento.ResultadoPagamento;
 import br.edu.foodnow.pagamento.SolicitacaoPagamento;
 import br.edu.foodnow.repository.PagamentoRepository;
 import br.edu.foodnow.repository.PedidoRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -41,7 +43,7 @@ import static org.mockito.Mockito.when;
 class PagamentoServiceTest {
     private final PedidoRepository pedidoRepository = mock(PedidoRepository.class);
     private final PagamentoRepository pagamentoRepository = mock(PagamentoRepository.class);
-    private final NotificacaoService notificacaoService = mock(NotificacaoService.class);
+    private final ApplicationEventPublisher eventos = mock(ApplicationEventPublisher.class);
     private final EntregaService entregaService = mock(EntregaService.class);
     private final LocalizacaoService localizacaoService = mock(LocalizacaoService.class);
     private final LogisticaService logisticaService = mock(LogisticaService.class);
@@ -53,7 +55,7 @@ class PagamentoServiceTest {
     @BeforeEach
     void configurar() {
         pagamentoService = new PagamentoService(pedidoRepository, pagamentoRepository, gateway,
-                notificacaoService, entregaService, localizacaoService, logisticaService);
+                entregaService, localizacaoService, logisticaService, eventos);
         pedido = pedidoComItem();
         when(pedidoRepository.findById(1L)).thenReturn(Optional.of(pedido));
         when(pagamentoRepository.save(any(Pagamento.class))).thenAnswer(invocacao -> invocacao.getArgument(0));
@@ -75,7 +77,7 @@ class PagamentoServiceTest {
         assertThat(pagamento.getRegiaoEntrega()).isEqualTo("CENTRAL");
         assertThat(pagamento.getDistanciaValidadaKm()).isEqualTo(2.5);
         assertThat(pedido.getStatus()).isEqualTo(StatusPedido.PAGO);
-        verify(notificacaoService).notificarPagamento(pedido, StatusPagamento.APROVADO);
+        verify(eventos).publishEvent(new PagamentoProcessado(null, null, StatusPagamento.APROVADO));
         verify(entregaService).criarPara(pedido);
     }
 
@@ -105,7 +107,7 @@ class PagamentoServiceTest {
 
         assertThat(pagamento.getStatus()).isEqualTo(StatusPagamento.REJEITADO);
         assertThat(pedido.getStatus()).isEqualTo(StatusPedido.PAGAMENTO_REJEITADO);
-        verify(notificacaoService).notificarPagamento(pedido, StatusPagamento.REJEITADO);
+        verify(eventos).publishEvent(new PagamentoProcessado(null, null, StatusPagamento.REJEITADO));
         verify(entregaService, never()).criarPara(any());
     }
 
@@ -117,6 +119,7 @@ class PagamentoServiceTest {
 
         assertThat(gateway.solicitacoes).isEmpty();
         verify(pagamentoRepository, never()).save(any());
+        verify(eventos, never()).publishEvent(any());
     }
 
     @Test
